@@ -25,9 +25,9 @@
 class Iterator {
 public:
   /// Constructs a new Iterator depending on a geometry
-  Iterator(const Geometry *geom);
+  Iterator(const Geometry &geom);
   /// Constructs a new Iterator on a geometry with a defined starting value
-  Iterator(const Geometry *geom, const index_t &value);
+  Iterator(const Geometry &geom, const index_t &value);
 
   ///     Returns the current position value
   virtual const index_t &Value() const;
@@ -61,7 +61,7 @@ public:
   virtual Iterator Down() const;
 
 protected:
-  const Geometry *_geom;
+  const Geometry &_geom;
   index_t _value;
   bool _valid;
 };
@@ -72,7 +72,7 @@ protected:
 class InteriorIterator : public Iterator {
 public:
   /// Construct a new InteriorIterator
-  InteriorIterator(const Geometry *geom);
+  InteriorIterator(const Geometry &geom);
 
   /// Sets the iterator to the first element
   void First();
@@ -86,7 +86,7 @@ public:
 class BoundaryIterator : public Iterator {
 public:
   /// Constructs a new BoundaryIterator
-  BoundaryIterator(const Geometry *geom);
+  BoundaryIterator(const Geometry &geom);
 
   /// Sets the boundary to iterate
   void SetBoundary(const index_t &boundary);
