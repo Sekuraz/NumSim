@@ -41,11 +41,18 @@ public:
   void Load(const char *file);
 
   /// Returns the number of cells in each dimension
-  const multi_index_t &Size() const;
+  inline const multi_index_t &Size() const {
+    return this->_size;
+  }
+
   /// Returns the length of the domain
-  const multi_real_t &Length() const;
+  inline const multi_real_t &Length() const {
+    return this->_length;
+  }
   /// Returns the meshwidth
-  const multi_real_t &Mesh() const;
+  inline const multi_real_t &Mesh() const {
+    return this->_h;
+  }
 
   /// Updates the velocity field u
   void Update_U(Grid *u) const;
