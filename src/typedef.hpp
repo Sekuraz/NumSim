@@ -93,6 +93,7 @@ class Geometry;
 class Grid;
 class Parameter;
 class Solver;
+class SOR;
 class Compute;
 
 #endif // __TYPEDEF_HPP

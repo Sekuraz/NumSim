@@ -33,16 +33,16 @@ public:
   void TimeStep(bool printInfo);
 
   /// Returns the simulated time in total
-  const real_t &GetTime() const;
+  inline const real_t &GetTime() const { return this->_t; };
 
   /// Returns the pointer to U
-  const Grid *GetU() const;
+  inline const Grid *GetU() const { return this->_u; };
   /// Returns the pointer to V
-  const Grid *GetV() const;
+  inline const Grid *GetV() const { return this->_v; };
   /// Returns the pointer to P
-  const Grid *GetP() const;
+  inline const Grid *GetP() const { return this->_p; };
   /// Returns the pointer to RHS
-  const Grid *GetRHS() const;
+  inline const Grid *GetRHS() const { return this->_rhs; };
 
   /// Computes and returns the absolute velocity
   const Grid *GetVelocity();

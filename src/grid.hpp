@@ -45,17 +45,17 @@ public:
   /// Interpolate the value at a arbitrary position
   real_t Interpolate(const multi_real_t &pos) const;
 
-  /// Computes the left-sided difference quatient in x-dim at [it]
+  /// Computes the left-sided difference quotient in x-dim at [it]
   real_t dx_l(const Iterator &it) const;
-  /// Computes the right-sided difference quatient in x-dim at [it]
+  /// Computes the right-sided difference quotient in x-dim at [it]
   real_t dx_r(const Iterator &it) const;
-  /// Computes the left-sided difference quatient in y-dim at [it]
+  /// Computes the left-sided difference quotient in y-dim at [it]
   real_t dy_l(const Iterator &it) const;
-  /// Computes the right-sided difference quatient in x-dim at [it]
+  /// Computes the right-sided difference quotient in x-dim at [it]
   real_t dy_r(const Iterator &it) const;
-  /// Computes the central difference quatient of 2nd order in x-dim at [it]
+  /// Computes the central difference quotient of 2nd order in x-dim at [it]
   real_t dxx(const Iterator &it) const;
-  /// Computes the central difference quatient of 2nd order in y-dim at [it]
+  /// Computes the central difference quotient of 2nd order in y-dim at [it]
   real_t dyy(const Iterator &it) const;
 
   /// Computes u*du/dx with the donor cell method
@@ -75,7 +75,7 @@ public:
   real_t AbsMax() const;
 
   /// Returns a pointer to the raw data
-  real_t *Data();
+  inline real_t *Data() { return _data; };
 
 private:
   real_t *_data;

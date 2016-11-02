@@ -26,9 +26,9 @@
 class Solver {
 public:
   /// Constructor of the abstract Solver class
-  Solver(const Geometry *geom);
+  Solver(const Geometry *geom) : _geom(geom) {};
   /// Destructor of the Solver Class
-  virtual ~Solver();
+  virtual ~Solver() {};
 
   /// This function must be implemented in a child class
   // @param [in][out] grid current values
@@ -52,7 +52,7 @@ public:
   /// Constructs an actual SOR solver
   SOR(const Geometry *geom, const real_t &omega);
   /// Destructor
-  ~SOR();
+  ~SOR() {};
 
   /// Returns the total residual and executes a solver cycle
   // @param grid current pressure values

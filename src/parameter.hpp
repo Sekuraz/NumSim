@@ -24,20 +24,21 @@ class Parameter {
 public:
   /// Constructs a new Parameter set with default values
   // Driven Cavity parameters; see exercise sheet 1
-  Parameter();
+  Parameter() : _re(1000), _omega(1.7), _alpha(0.9), _dt(0.2), _tend(1),
+                _eps(1e-3), _tau(0.8), _itermax(100) {};
 
   /// Loads the parameter values from a file
   void Load(const char *file);
 
   /// Getter functions for all parameters
-  const real_t &Re() const;
-  const real_t &Omega() const;
-  const real_t &Alpha() const;
-  const real_t &Dt() const;
-  const real_t &Tend() const;
-  const index_t &IterMax() const;
-  const real_t &Eps() const;
-  const real_t &Tau() const;
+  inline const real_t &Re() const { return this->_re; };
+  inline const real_t &Omega() const { return this->_omega; };
+  inline const real_t &Alpha() const { return this->_alpha; };
+  inline const real_t &Dt() const { return this->_dt; };
+  inline const real_t &Tend() const { return this->_tend; };
+  inline const index_t &IterMax() const { return this->_itermax; };
+  inline const real_t &Eps() const { return this->_eps; };
+  inline const real_t &Tau() const { return this->_tau; };
 
 private:
   real_t _re;
