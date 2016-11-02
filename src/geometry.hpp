@@ -38,7 +38,7 @@ public:
   Geometry();
 
   /// Loads a geometry from a file
-  void Load(const char *file);
+  void Load(const char file[]);
 
   /// Returns the number of cells in each dimension
   inline const multi_index_t &Size() const {
@@ -55,11 +55,11 @@ public:
   }
 
   /// Updates the velocity field u
-  void Update_U(Grid *u) const;
+  void Update_U(Grid &u) const;
   /// Updates the velocity field v
-  void Update_V(Grid *v) const;
+  void Update_V(Grid &v) const;
   /// Updates the pressure field p
-  void Update_P(Grid *p) const;
+  void Update_P(Grid &p) const;
 
 private:
   multi_index_t _size;

@@ -15,24 +15,27 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include "typedef.hpp"
 #include "compute.hpp"
 #include "geometry.hpp"
+#include "iterator.hpp"
 #include "parameter.hpp"
 #include "visu.hpp"
 #include "vtk.hpp"
 
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
   // Create parameter and geometry instances with default values
   Parameter param;
+  param.Load("param.txt");
   Geometry geom;
   // Create the fluid solver
-  Compute comp(&geom, &param);
+  Compute comp(geom, param);
 
 #ifdef USE_DEBUG_VISU
   // Create and initialize the visualization
   Renderer visu(geom.Length(), geom.Mesh());
-  visu.Init(800, 800);
+  visu.Init(600,600);//(800, 800);
 #endif // USE_DEBUG_VISU
 
   // Create a VTK generator
@@ -41,7 +44,8 @@ int main(int argc, char **argv) {
   const Grid *visugrid;
   bool run = true;
 
-  visugrid = comp.GetVelocity();
+  visugrid = comp.GetU();
+//  visugrid = comp.GetVelocity();
 
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
@@ -51,10 +55,10 @@ int main(int argc, char **argv) {
     case -1:
       run = false;
       break;
-    case 0:
+/*    case 0:
       visugrid = comp.GetVelocity();
       break;
-    case 1:
+*/    case 1:
       visugrid = comp.GetU();
       break;
     case 2:
@@ -69,14 +73,19 @@ int main(int argc, char **argv) {
 #endif // DEBUG_VISU
 
     // Create a VTK File in the folder VTK (must exist)
-    vtk.Init("VTK/field");
-    vtk.AddField("Velocity", comp.GetU(), comp.GetV());
-    vtk.AddScalar("Pressure", comp.GetP());
-    vtk.Finish();
+//    vtk.Init("VTK/field");
+//    vtk.AddField("Velocity", comp.GetU(), comp.GetV());
+//    vtk.AddScalar("Pressure", comp.GetP());
+//    vtk.Finish();
 
+    Iterator it(geom);
+    std::cout << "t = " << comp.GetTime() << " " << "u = " << visugrid->Cell(it);
+    for(it.Next(); it.Valid(); it.Next())
+      std::cout << ", " << visugrid->Cell(it);
+    std::cout << std::endl;
     // Run a few steps
-    for (uint32_t i = 0; i < 9; ++i)
-      comp.TimeStep(false);
+//    for (index_t i = 0; i < 9; ++i)
+//      comp.TimeStep(false);
     comp.TimeStep(true);
   }
   return 0;

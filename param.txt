@@ -1,0 +1,8 @@
+Re = 1000
+omega = 1.7
+alpha = 0.9
+dt = 1
+tend = 200000000000
+eps = 1e-3
+tau = 0.8
+itermax = 100
