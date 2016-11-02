@@ -86,10 +86,16 @@ public:
 class BoundaryIterator : public Iterator {
 public:
   /// Constructs a new BoundaryIterator
-  BoundaryIterator(const Geometry &geom);
+  BoundaryIterator(const Geometry &geom) : Iterator(geom), _boundary(0) {}
 
   /// Sets the boundary to iterate
-  void SetBoundary(const index_t &boundary);
+  /// \param[in] boundary - the boundary to iterate over.
+  /// * 0 all \todo TODO: not implemented yet
+  /// * 1 north
+  /// * 2 west
+  /// * 3 south
+  /// * 4 east
+  inline void SetBoundary(const index_t &boundary) { this->_boundary = boundary; }
 
   /// Sets the iterator to the first element
   void First();

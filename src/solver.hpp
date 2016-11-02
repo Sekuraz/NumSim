@@ -26,7 +26,7 @@
 class Solver {
 public:
   /// Constructor of the abstract Solver class
-  Solver(const Geometry *geom) : _geom(geom) {};
+  Solver(const Geometry &geom) : _geom(geom) {};
   /// Destructor of the Solver Class
   virtual ~Solver() {};
 
@@ -34,13 +34,13 @@ public:
   // @param [in][out] grid current values
   // @param [in]      rhs  right hand side values
   // @returns accumulated residual
-  virtual real_t Cycle(Grid *grid, const Grid *rhs) const = 0;
+  virtual real_t Cycle(Grid &grid, const Grid &rhs) const = 0;
 
 protected:
-  const Geometry *_geom;
+  const Geometry &_geom;
 
   /// Returns the residual at [it] for the pressure-Poisson equation
-  real_t localRes(const Iterator &it, const Grid *grid, const Grid *rhs) const;
+  real_t localRes(const Iterator &it, const Grid &grid, const Grid &rhs) const;
 };
 
 //------------------------------------------------------------------------------
@@ -50,14 +50,14 @@ protected:
 class SOR : public Solver {
 public:
   /// Constructs an actual SOR solver
-  SOR(const Geometry *geom, const real_t &omega);
+  SOR(const Geometry &geom, const real_t &omega);
   /// Destructor
   ~SOR() {};
 
   /// Returns the total residual and executes a solver cycle
   // @param grid current pressure values
   // @param rhs right hand side
-  real_t Cycle(Grid *grid, const Grid *rhs) const;
+  real_t Cycle(Grid &grid, const Grid &rhs) const;
 
 protected:
   real_t _omega;

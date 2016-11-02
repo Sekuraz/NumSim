@@ -23,13 +23,13 @@
 class Grid {
 public:
   /// Constructs a grid based on a geometry
-  Grid(const Geometry *geom);
+  Grid(const Geometry &geom);
 
   /// Constructs a grid based on a geometry with an offset
   // @param geom   Geometry information
   // @param offset distance of staggered grid point to cell's anchor point;
   //               (anchor point = lower left corner)
-  Grid(const Geometry *geom, const multi_real_t &offset);
+  Grid(const Geometry &geom, const multi_real_t &offset);
 
   /// Deletes the grid
   ~Grid();
@@ -42,7 +42,7 @@ public:
   /// Read access to the grid cell at position [it]
   const real_t &Cell(const Iterator &it) const;
 
-  /// Interpolate the value at a arbitrary position
+  /// Interpolate the value at a arbitrary (real) position
   real_t Interpolate(const multi_real_t &pos) const;
 
   /// Computes the left-sided difference quotient in x-dim at [it]
@@ -80,7 +80,8 @@ public:
 private:
   real_t *_data;
   multi_real_t _offset;
-  const Geometry *_geom;
+  const Geometry &_geom;
+  index_t _sizeData;
 };
 //------------------------------------------------------------------------------
 #endif // __GRID_HPP
