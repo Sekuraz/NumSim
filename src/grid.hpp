@@ -78,6 +78,9 @@ public:
   /// Returns the absolute maximal value
   real_t AbsMax() const;
 
+  /// Returns the geometry
+  inline const Geometry &Geom() const { return this->_geom; }
+
   /// Returns the size of the Grid in each dimension
   inline const multi_index_t &Size() const {
       switch(this->_type) {

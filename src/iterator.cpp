@@ -22,7 +22,9 @@ Iterator::operator const index_t& () const {
 // Returns the position coordinates
 multi_index_t Iterator::Pos() const {
     // TODO: rewrite for n dimensions
-    return multi_index_t(this->_value % this->_grid.Size()[0], this->_value / this->_grid.Size()[0]);
+    const multi_real_t &h = this->_grid.Geom().Mesh();
+    return multi_index_t((this->_value % this->_grid.Size()[0]) * h[0],
+                         (this->_value / this->_grid.Size()[0]) * h[1]);
 }
 
 // Sets the iterator to the first element

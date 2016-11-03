@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cmath>
+#include <algorithm>
 #include "typedef.hpp"
 #include "grid.hpp"
 #include "iterator.hpp"
@@ -58,6 +60,7 @@ real_t Grid::Interpolate(const multi_real_t &pos) const {
   const multi_index_t &size = this->Size();
   const multi_real_t &h = this->_geom.Mesh();
 
+  // compute index from position
   index_t multSize = 1;
   index_t i = 0;
   multi_real_t delta;
@@ -70,19 +73,19 @@ real_t Grid::Interpolate(const multi_real_t &pos) const {
   }
 
   Iterator it(*this, i);
-  real_t value = 1e10;
+  real_t value = 0;
   if(it.Valid()) {
     // constant interpolation
-    value = this->_data[it];
+    //value = this->_data[it];
 
     // bilinear interpolation
     // TODO rewrite for n dim
-/*    value = this->_data[it] * (1.0 - delta[0])*(1.0 - delta[1])
+    value = this->_data[it] * (1.0 - delta[0])*(1.0 - delta[1])
           + this->_data[it.Right()] * delta[0]*(1.0 - delta[1])
           + this->_data[it.Top()] * (1.0 - delta[0])*delta[1]
           + this->_data[it.Top().Right()] * delta[0]*delta[1];
-*/
-  } else {
+
+  } else { // Error in index computation
     std::cerr << "Error: Grid: Pos out of area. Pos = " << pos[0] << ", " << pos[1]
               << ", it = " << it << std::endl;
   }
@@ -118,38 +121,47 @@ real_t Grid::dyy(const Iterator &it) const {
 
 // Computes u*du/dx with the donor cell method
 real_t Grid::DC_udu_x(const Iterator &it, const real_t &alpha) const {
-  // TODO
+  // TODO implement
   return 0;
 }
 // Computes v*du/dy with the donor cell method
 real_t Grid::DC_vdu_y(const Iterator &it, const real_t &alpha, const Grid *v) const {
-  // TODO
+  // TODO implement
   return 0;
 }
 // Computes u*dv/dx with the donor cell method
 real_t Grid::DC_udv_x(const Iterator &it, const real_t &alpha, const Grid *u) const {
-  // TODO
+  // TODO implement
   return 0;
 }
 // Computes v*dv/dy with the donor cell method
 real_t Grid::DC_vdv_y(const Iterator &it, const real_t &alpha) const {
-  // TODO
+  // TODO implement
   return 0;
 }
 
 // Returns the maximal value of the grid
 real_t Grid::Max() const {
-  // TODO
-  return 0;
+  // TODO rewrite efficient
+  real_t max = this->_data[0];
+  for(index_t i = 1; i < this->_sizeData; i++)
+    max = std::max(max, this->_data[i]);
+  return max;
 }
 // Returns the minimal value of the grid
 real_t Grid::Min() const {
-  // TODO
-  return 0;
+  // TODO rewrite efficient
+  real_t min = this->_data[0];
+  for(index_t i = 1; i < this->_sizeData; i++)
+    min = std::min(min, this->_data[i]);
+  return min;
 }
 // Returns the absolute maximal value
 real_t Grid::AbsMax() const {
-  // TODO
-  return 0;
+  // TODO rewrite efficient
+  real_t max = std::fabs(this->_data[0]);
+  for(index_t i = 1; i < this->_sizeData; i++)
+    max = std::max(max, std::fabs(this->_data[i]));
+  return max;
 }
 
