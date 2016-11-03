@@ -29,8 +29,6 @@ Grid::Grid(const Geometry &geom, const Grid::type &t, const multi_real_t &offset
     this->_sizeData *= size[i];
   }
   this->_data = new real_t[_sizeData];
-  // TODO: testing
-  std::cout << "offset " << offset[0] << " " << offset[1] << std::endl;
 }
 
 // Deletes the grid

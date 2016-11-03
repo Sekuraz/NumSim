@@ -25,10 +25,11 @@
 #include "vtk.hpp"
 
 int main(int argc, char *argv[]) {
-  // Create parameter and geometry instances with default values
+  // Create parameter and geometry instances and load values
   Parameter param;
   param.Load("param.txt");
   Geometry geom;
+  geom.Load("geometry.txt");
   // Create the fluid solver
   Compute comp(geom, param);
 
@@ -44,7 +45,7 @@ int main(int argc, char *argv[]) {
   const Grid *visugrid;
   bool run = true;
 
-  visugrid = comp.GetU();
+  visugrid = comp.GetP();
 //  visugrid = comp.GetVelocity();
 
   // Run the time steps until the end is reached

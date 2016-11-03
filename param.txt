@@ -1,8 +1,10 @@
 Re = 1000
 omega = 1.7
 alpha = 0.9
-dt = 1
-tend = 200000000000
+dt = 0.1
+tend = 1
 eps = 1e-3
 tau = 0.8
 itermax = 100
+
+tend = 1000

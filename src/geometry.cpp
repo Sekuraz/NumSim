@@ -5,15 +5,13 @@
 
 using namespace std;
 
-Geometry::Geometry() : _size(4,4/*128,128*/), _sizeU(_size), _sizeV(_size),
+Geometry::Geometry() : _size(128,128), _sizeU(_size), _sizeV(_size),
     _sizeP(_size), _length(1,1) {
   for(index_t dim = 0; dim < DIM; dim++) {
     this->_sizeU[dim] += (dim == 0)? 1 : 2;
     this->_sizeV[dim] += (dim == 1)? 1 : 2;
     this->_sizeP[dim] += 2;
     this->_h[dim] = this->_length[dim] / this->_size[dim];
-    cout << "Dim " << dim << ", u " << _sizeU[dim] << ", v " << _sizeV[dim]
-         << ", p " << _sizeP[dim] << ", h " << _h[dim] << endl;
   }
 }
 
@@ -27,11 +25,11 @@ void Geometry::Load(const char file[]) {
     in.ignore(); // removes '=' between parameter and value
     in >> ws >> value >> ws;
     if(!param.compare("Size") || !param.compare("size")) {
-      this->_size[0] = (index_t)value + 2;
+      this->_size[0] = (index_t)value;
       cout << "Geometry: Load size = " << value;
       for(index_t dim = 1; dim < DIM; dim++) {
         in >> value >> ws;
-        this->_size[dim] = (index_t)value + 2;
+        this->_size[dim] = (index_t)value;
         cout << " " << value;
       }
       cout << endl;
@@ -63,7 +61,10 @@ void Geometry::Load(const char file[]) {
   in.close();
 
   for(index_t dim = 0; dim < DIM; dim++) {
-    this->_h[dim] = this->_length[dim] / (this->_size[dim]-2);
+    this->_sizeU[dim] = this->_size[dim] + (dim == 0)? 1 : 2;
+    this->_sizeV[dim] = this->_size[dim] + (dim == 1)? 1 : 2;
+    this->_sizeP[dim] = this->_size[dim] + 2;
+    this->_h[dim] = this->_length[dim] / this->_size[dim];
   }
 }
 

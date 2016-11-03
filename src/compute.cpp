@@ -51,28 +51,33 @@ void Compute::TimeStep(bool printInfo) {
   // TODO: test
   Iterator u_it(*_u);
   while(u_it.Valid()){
-    _u->Cell(u_it) = u_it;
+    _u->Cell(u_it) = u_it * _t;
     u_it.Next();
   }
   Iterator v_it(*_v);
   while(v_it.Valid()){
-    _v->Cell(v_it) = v_it;
+    _v->Cell(v_it) = v_it * _t;
     v_it.Next();
   }
-  Iterator p_it(*_p);
-  while(p_it.Valid()){
-    _p->Cell(p_it) = p_it;
-    p_it.Next();
+
+  if(_t < _param.Dt()) {
+    const multi_index_t &size = _p->Size();
+    real_t* data = _p->Data();
+    data[size[0]*(size[1]/2-1)+size[0]/2-1] = 1;
+    data[size[0]*(size[1]/2-1)+size[0]/2] = 1;
+    data[size[0]*size[1]/2+size[0]/2-1] = 1;
+    data[size[0]*size[1]/2+size[0]/2] = 1;
   }
 
-/*  this->RHS(dt);
+  this->RHS(dt);
   for(index_t i = 0; i < this->_param.IterMax(); i++) {
-    real_t residual = this->_solver->Cycle(*(this->_p), *(this->_rhs));
+    real_t res = this->_solver->Cycle(*(this->_p), *(this->_rhs));
     if(printInfo) {
-      std::cout << "Error in iteration " << i << ":\t" << residual << std::endl;
+      std::cout << "\tError in SOR-iteration " << i << ":\t" << res << std::endl;
     }
+    if(res < this->_epslimit) break;
   }
-*/
+
   this->_t += dt;
 }
 
