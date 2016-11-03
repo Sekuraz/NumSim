@@ -1,7 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "typedef.hpp"
 #include "geometry.hpp"
+#include "iterator.hpp"
 
 using namespace std;
 
@@ -80,5 +82,22 @@ void Geometry::Update_V(Grid &v) const {
 
 // Updates the pressure field p
 void Geometry::Update_P(Grid &p) const {
-    //TODO noop
+  // homogenous Neumann condition
+  BoundaryIterator it(p);
+  it.SetBoundary(1);
+  for(it.First(); it.Valid(); it.Next()) {
+    p.Cell(it) = p.Cell(it.Down());
+  }
+  it.SetBoundary(2);
+  for(it.First(); it.Valid(); it.Next()) {
+    p.Cell(it) = p.Cell(it.Right());
+  }
+  it.SetBoundary(3);
+  for(it.First(); it.Valid(); it.Next()) {
+    p.Cell(it) = p.Cell(it.Top());
+  }
+  it.SetBoundary(4);
+  for(it.First(); it.Valid(); it.Next()) {
+    p.Cell(it) = p.Cell(it.Left());
+  }
 }

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include "typedef.hpp"
 #include "compute.hpp"
 #include "geometry.hpp"
@@ -44,12 +45,6 @@ Compute::~Compute() {
 // @ param printInfo print information about current solver state (residual
 // etc.)
 void Compute::TimeStep(bool printInfo) {
-  // TODO: timestep
-
-  // compute dt
-  // TODO: CFL and Pr condition
-  real_t dt = _param.Dt();
-
   // TODO: test
   Iterator u_it(*_u);
   while(u_it.Valid()){
@@ -71,9 +66,26 @@ void Compute::TimeStep(bool printInfo) {
   }
   // TODO: End test
 
+  // compute dt
+  real_t dt = this->_param.Dt();
+  // Test CFL condition
+  const multi_real_t &h = this->_geom.Mesh();
+  real_t dtCond = this->_param.Tau() * std::min(h[0] / this->_u->AbsMax(), h[1] / this->_v->AbsMax());
+  if(dtCond < dt) {
+    dt = dtCond;
+    std::cerr << "Warning: Compute: CFL > tau. New dt = " << dt << "!" << std::endl;
+  }
+  // Test Pr condition
+  dtCond = this->_param.Re() * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]);
+  if(dtCond < dt) {
+    dt = dtCond;
+    std::cerr << "Warning: Compute: Pr > tau. New dt = " << dt << "!" << std::endl;
+  }
+
   // set boundary values for u, v, F, G
   this->_geom.Update_U(*(this->_u));
   this->_geom.Update_V(*(this->_v));
+  // TODO: update F,G
 //  this->_geom.Update_F(*(this->_F));
 //  this->_geom.Update_G(*(this->_G));
 
@@ -110,14 +122,42 @@ const Grid *Compute::GetStream() { return nullptr; }
 
 // Compute the new velocites u,v
 void Compute::NewVelocities(const real_t &dt) {
-  // TODO
+  // compute u
+  for(InteriorIterator it(*(this->_u)); it.Valid(); it.Next()) {
+    // TODO: dp/dx (it)
+    //this->_u->Cell(it) = this->_F->Cell(it) - dt * this->_p->dx_r();
+  }
+  // compute v
+  for(InteriorIterator it(*(this->_v)); it.Valid(); it.Next()) {
+    // TODO: dp/dy (it)
+    //this->_v->Cell(it) = this->_G->Cell(it) - dt * this->_p->dy_r();
+  }
 }
 // Compute the temporary velocites F,G
 void Compute::MomentumEqu(const real_t &dt) {
-  // TODO
+  // compute F
+  for(InteriorIterator it(*(this->_F)); it.Valid(); it.Next()) {
+    this->_F->Cell(it) = this->_u->Cell(it) + dt * (
+        ( this->_u->dxx(it) + this->_u->dyy(it) )/this->_param.Re()
+        - this->_u->DC_udu_x(it, this->_param.Alpha())
+        - this->_u->DC_udv_x(it, this->_param.Alpha(), this->_v) );
+  }
+  // compute G
+  for(InteriorIterator it(*(this->_G)); it.Valid(); it.Next()) {
+    this->_G->Cell(it) = this->_v->Cell(it) + dt * (
+        ( this->_v->dxx(it) + this->_v->dyy(it) )/this->_param.Re()
+        - this->_v->DC_vdv_y(it, this->_param.Alpha())
+        - this->_v->DC_vdu_y(it, this->_param.Alpha(), this->_u) );
+  }
 }
+
 // Compute the RHS of the poisson equation
 void Compute::RHS(const real_t &dt) {
-  // TODO
+  const multi_real_t &h = this->_geom.Mesh();
+  for(InteriorIterator it(*(this->_p)); it.Valid(); it.Next()) {
+    // TODO F(it), G(it)
+    // this->_rhs->Cell(it) = ( (this->_F->Cell() - this->_F->Cell())/h[0]
+    //                        + (this->_G->Cell() - this->_G->Cell())/h[1]) / dt;
+  }
 }
 
