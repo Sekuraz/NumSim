@@ -61,8 +61,8 @@ void Geometry::Load(const char file[]) {
   in.close();
 
   for(index_t dim = 0; dim < DIM; dim++) {
-    this->_sizeU[dim] = this->_size[dim] + (dim == 0)? 1 : 2;
-    this->_sizeV[dim] = this->_size[dim] + (dim == 1)? 1 : 2;
+    this->_sizeU[dim] = this->_size[dim] + ((dim == 0)? 1 : 2);
+    this->_sizeV[dim] = this->_size[dim] + ((dim == 1)? 1 : 2);
     this->_sizeP[dim] = this->_size[dim] + 2;
     this->_h[dim] = this->_length[dim] / this->_size[dim];
   }

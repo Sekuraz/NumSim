@@ -46,20 +46,21 @@ Compute::~Compute() {
 void Compute::TimeStep(bool printInfo) {
   // TODO: timestep
 
+  // compute dt
+  // TODO: CFL and Pr condition
   real_t dt = _param.Dt();
 
   // TODO: test
   Iterator u_it(*_u);
   while(u_it.Valid()){
-    _u->Cell(u_it) = u_it * _t;
+    _u->Cell(u_it) = u_it;
     u_it.Next();
   }
   Iterator v_it(*_v);
   while(v_it.Valid()){
-    _v->Cell(v_it) = v_it * _t;
+    _v->Cell(v_it) = v_it;
     v_it.Next();
   }
-
   if(_t < _param.Dt()) {
     const multi_index_t &size = _p->Size();
     real_t* data = _p->Data();
@@ -68,9 +69,24 @@ void Compute::TimeStep(bool printInfo) {
     data[size[0]*size[1]/2+size[0]/2-1] = 1;
     data[size[0]*size[1]/2+size[0]/2] = 1;
   }
+  // TODO: End test
 
+  // set boundary values for u, v, F, G
+  this->_geom.Update_U(*(this->_u));
+  this->_geom.Update_V(*(this->_v));
+//  this->_geom.Update_F(*(this->_F));
+//  this->_geom.Update_G(*(this->_G));
+
+  // compute the momentum equations
+  this->MomentumEqu(dt);
+
+  // compute right-hand-side of the poisson equation
   this->RHS(dt);
+
+  // solve the poisson equation
   for(index_t i = 0; i < this->_param.IterMax(); i++) {
+    // set boundary values for p
+    this->_geom.Update_P(*(this->_p));
     real_t res = this->_solver->Cycle(*(this->_p), *(this->_rhs));
     if(printInfo) {
       std::cout << "\tError in SOR-iteration " << i << ":\t" << res << std::endl;
@@ -78,6 +94,10 @@ void Compute::TimeStep(bool printInfo) {
     if(res < this->_epslimit) break;
   }
 
+  // compute new velocites
+  this->NewVelocities(dt);
+
+  // update the time
   this->_t += dt;
 }
 

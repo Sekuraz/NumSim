@@ -3,4 +3,4 @@ length = 1 1
 velocity = 1 0
 pressure = 0
 
-size = 10 10
+size = 8 8

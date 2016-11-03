@@ -3,11 +3,8 @@
 #include "grid.hpp"
 
 Iterator::Iterator(const Grid &grid) : _grid(grid), _value(0), _valid(true) {}
-Iterator::Iterator(const Grid &grid, const index_t &value) : _grid(grid), _value(value), _valid(true) {
-  if (this->_value >= this->_grid.dataSize()) {
-    this->_valid = false;
-  }
-}
+Iterator::Iterator(const Grid &grid, const index_t &value)
+    : _grid(grid), _value(value), _valid(value < grid.dataSize()) {}
 
 //     Returns the current position value
 const index_t& Iterator::Value() const {
