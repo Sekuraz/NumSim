@@ -4,9 +4,9 @@
 #include "iterator.hpp"
 #include "geometry.hpp"
 
-// Constructs a grid based on a geometry
-Grid::Grid(const Geometry &geom) : _data(nullptr), _offset(), _geom(geom) {
-  const multi_index_t &size = _geom.Size();
+// Constructs a grid of type t based on a geometry
+Grid::Grid(const Geometry &geom, const Grid::type &t) : _data(nullptr), _offset(), _geom(geom), _type(t) {
+  const multi_index_t &size = this->Size();
   this->_sizeData = 1;
   for(index_t i = 0; i < DIM; i++) {
     this->_sizeData *= size[i];
@@ -15,17 +15,19 @@ Grid::Grid(const Geometry &geom) : _data(nullptr), _offset(), _geom(geom) {
 }
 
 // Constructs a grid based on a geometry with an offset
-// @param geom   Geometry information
-// @param offset distance of staggered grid point to cell's anchor point;
+// \param geom   Geometry information
+// \param t      type of the grid (u, v, p)
+// \param offset distance of staggered grid point to cell's anchor point;
 //               (anchor point = lower left corner)
-Grid::Grid(const Geometry &geom, const multi_real_t &offset)
-    : _data(nullptr), _offset(offset), _geom(geom) {
-  const multi_index_t &size = this->_geom.Size();
+Grid::Grid(const Geometry &geom, const Grid::type &t, const multi_real_t &offset)
+    : _data(nullptr), _offset(offset), _geom(geom), _type(t) {
+  const multi_index_t &size = this->Size();
   this->_sizeData = 1;
   for(index_t i = 0; i < DIM; i++) {
     this->_sizeData *= size[i];
   }
   this->_data = new real_t[_sizeData];
+  // TODO: testing
   std::cout << "offset " << offset[0] << " " << offset[1] << std::endl;
 }
 
@@ -53,7 +55,7 @@ const real_t &Grid::Cell(const Iterator &it) const {
 // Interpolate the value at a arbitrary position
 real_t Grid::Interpolate(const multi_real_t &pos) const {
   const multi_real_t &length = this->_geom.Length();
-  const multi_index_t &size = this->_geom.Size();
+  const multi_index_t &size = this->Size();
   const multi_real_t &h = this->_geom.Mesh();
 
   index_t multSize = 1;
@@ -67,7 +69,7 @@ real_t Grid::Interpolate(const multi_real_t &pos) const {
     multSize *= size[dim];
   }
 
-  Iterator it(this->_geom, i);
+  Iterator it(*this, i);
   real_t value = 1e10;
   if(it.Valid()) {
     // constant interpolation

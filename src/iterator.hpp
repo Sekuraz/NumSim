@@ -16,6 +16,7 @@
  */
 
 #include "typedef.hpp"
+#include "grid.hpp"
 //------------------------------------------------------------------------------
 #ifndef __ITERATOR_HPP
 #define __ITERATOR_HPP
@@ -24,10 +25,10 @@
 */
 class Iterator {
 public:
-  /// Constructs a new Iterator depending on a geometry
-  Iterator(const Geometry &geom);
-  /// Constructs a new Iterator on a geometry with a defined starting value
-  Iterator(const Geometry &geom, const index_t &value);
+  /// Constructs a new Iterator depending on a grid
+  Iterator(const Grid &grid);
+  /// Constructs a new Iterator on a grid with a defined starting value
+  Iterator(const Grid &grid, const index_t &value);
 
   ///     Returns the current position value
   virtual const index_t &Value() const;
@@ -61,7 +62,7 @@ public:
   virtual Iterator Down() const;
 
 protected:
-  const Geometry &_geom;
+  const Grid &_grid;
   index_t _value;
   bool _valid;
 };
@@ -72,7 +73,7 @@ protected:
 class InteriorIterator : public Iterator {
 public:
   /// Construct a new InteriorIterator
-  InteriorIterator(const Geometry &geom);
+  InteriorIterator(const Grid &grid) : Iterator(grid, grid.Size()[0] + 1) {}
 
   /// Sets the iterator to the first element
   void First();
@@ -86,7 +87,7 @@ public:
 class BoundaryIterator : public Iterator {
 public:
   /// Constructs a new BoundaryIterator
-  BoundaryIterator(const Geometry &geom) : Iterator(geom), _boundary(0) {}
+  BoundaryIterator(const Grid &grid) : Iterator(grid), _boundary(0) {}
 
   /// Sets the boundary to iterate
   /// \param[in] boundary - the boundary to iterate over.

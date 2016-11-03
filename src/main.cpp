@@ -78,11 +78,7 @@ int main(int argc, char *argv[]) {
 //    vtk.AddScalar("Pressure", comp.GetP());
 //    vtk.Finish();
 
-    Iterator it(geom);
-    std::cout << "t = " << comp.GetTime() << " " << "u = " << visugrid->Cell(it);
-    for(it.Next(); it.Valid(); it.Next())
-      std::cout << ", " << visugrid->Cell(it);
-    std::cout << std::endl;
+    std::cout << "t = " << comp.GetTime() << " " << std::endl;
     // Run a few steps
 //    for (index_t i = 0; i < 9; ++i)
 //      comp.TimeStep(false);

@@ -16,20 +16,24 @@
  */
 
 #include "typedef.hpp"
+#include "geometry.hpp"
 //------------------------------------------------------------------------------
 #ifndef __GRID_HPP
 #define __GRID_HPP
 //------------------------------------------------------------------------------
 class Grid {
 public:
+  // type defining the type of the grid
+  enum type{u, v, p};
+
   /// Constructs a grid based on a geometry
-  Grid(const Geometry &geom);
+  Grid(const Geometry &geom, const type &t);
 
   /// Constructs a grid based on a geometry with an offset
   // @param geom   Geometry information
   // @param offset distance of staggered grid point to cell's anchor point;
   //               (anchor point = lower left corner)
-  Grid(const Geometry &geom, const multi_real_t &offset);
+  Grid(const Geometry &geom, const type &t, const multi_real_t &offset);
 
   /// Deletes the grid
   ~Grid();
@@ -74,6 +78,18 @@ public:
   /// Returns the absolute maximal value
   real_t AbsMax() const;
 
+  /// Returns the size of the Grid in each dimension
+  inline const multi_index_t &Size() const {
+      switch(this->_type) {
+        case type::u: return this->_geom.SizeU();
+        case type::v: return this->_geom.SizeV();
+        case type::p: return this->_geom.SizeP();
+        default: return this->_geom.Size();
+      }
+  }
+  /// Returns the total data size of the Grid
+  inline const index_t &dataSize() const { return this->_sizeData; }
+
   /// Returns a pointer to the raw data
   inline real_t *Data() { return _data; };
 
@@ -81,6 +97,7 @@ private:
   real_t *_data;
   multi_real_t _offset;
   const Geometry &_geom;
+  const type _type;
   index_t _sizeData;
 };
 //------------------------------------------------------------------------------

@@ -45,6 +45,19 @@ public:
     return this->_size;
   }
 
+  /// Returns the number of u-variables in each dimension
+  inline const multi_index_t &SizeU() const {
+    return this->_sizeU;
+  }
+  /// Returns the number of v-variables  in each dimension
+  inline const multi_index_t &SizeV() const {
+    return this->_sizeV;
+  }
+  /// Returns the number of p-variables  in each dimension
+  inline const multi_index_t &SizeP() const {
+    return this->_sizeP;
+  }
+
   /// Returns the length of the domain
   inline const multi_real_t &Length() const {
     return this->_length;
@@ -63,6 +76,9 @@ public:
 
 private:
   multi_index_t _size;
+  multi_index_t _sizeU;
+  multi_index_t _sizeV;
+  multi_index_t _sizeP;
   multi_real_t _length;
   multi_real_t _h;
 

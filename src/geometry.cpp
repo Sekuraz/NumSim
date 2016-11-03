@@ -5,9 +5,15 @@
 
 using namespace std;
 
-Geometry::Geometry() : _size(5,5/*128+2,128+2*/), _length(1,1) {
+Geometry::Geometry() : _size(4,4/*128,128*/), _sizeU(_size), _sizeV(_size),
+    _sizeP(_size), _length(1,1) {
   for(index_t dim = 0; dim < DIM; dim++) {
-    this->_h[dim] = this->_length[dim] / (this->_size[dim]-2);
+    this->_sizeU[dim] += (dim == 0)? 1 : 2;
+    this->_sizeV[dim] += (dim == 1)? 1 : 2;
+    this->_sizeP[dim] += 2;
+    this->_h[dim] = this->_length[dim] / this->_size[dim];
+    cout << "Dim " << dim << ", u " << _sizeU[dim] << ", v " << _sizeV[dim]
+         << ", p " << _sizeP[dim] << ", h " << _h[dim] << endl;
   }
 }
 

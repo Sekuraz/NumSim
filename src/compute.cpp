@@ -10,22 +10,22 @@
 // Creates a compute instance with given geometry and parameter
 Compute::Compute(const Geometry &geom, const Parameter &param)
     : _t(0), _dtlimit(param.Dt()), _epslimit(param.Eps()),
-    _F(new Grid(geom)), _G(new Grid(geom)), _rhs(new Grid(geom)),
-    _tmp(new Grid(geom)), _geom(geom), _param(param) {
+    _F(new Grid(geom, Grid::type::u)), _G(new Grid(geom, Grid::type::v)),
+    _rhs(new Grid(geom, Grid::type::p)),
+    _tmp(new Grid(geom, Grid::type::p)), _geom(geom), _param(param) {
 
   // initialize the solver
   this->_solver = new SOR(geom, param.Omega());
 
   // initialize u,v,p
   const multi_real_t &h = this->_geom.Mesh();
-  // TODO: Compute offsets
-  multi_real_t offset(h[0], h[1]/2);
-  _u = new Grid(geom, offset);
+  multi_real_t offset(0, h[1]/2);
+  _u = new Grid(geom, Grid::type::u, offset);
   offset[0] = h[0]/2;
-  offset[1] = h[1];
-  _v = new Grid(geom, offset);
+  offset[1] = 0;
+  _v = new Grid(geom, Grid::type::v, offset);
   offset[1] = h[1]/2;
-  _p = new Grid(geom, offset);
+  _p = new Grid(geom, Grid::type::p, offset);
   this->_u->Initialize(0);
   this->_v->Initialize(0);
   this->_p->Initialize(0);
@@ -49,15 +49,21 @@ void Compute::TimeStep(bool printInfo) {
   real_t dt = _param.Dt();
 
   // TODO: test
-  Iterator it(_geom);
-  while(it.Valid()){
-    _u->Cell(it) = it;
-    _v->Cell(it) = it;
-    _p->Cell(it) = it;
-    it.Next();
+  Iterator u_it(*_u);
+  while(u_it.Valid()){
+    _u->Cell(u_it) = u_it;
+    u_it.Next();
   }
-//  if(it.Valid()) _u->Cell(it) = it;
-//  if(_t == 0) _u->Data()[0] = .1;
+  Iterator v_it(*_v);
+  while(v_it.Valid()){
+    _v->Cell(v_it) = v_it;
+    v_it.Next();
+  }
+  Iterator p_it(*_p);
+  while(p_it.Valid()){
+    _p->Cell(p_it) = p_it;
+    p_it.Next();
+  }
 
 /*  this->RHS(dt);
   for(index_t i = 0; i < this->_param.IterMax(); i++) {
