@@ -56,10 +56,10 @@ int main(int argc, char *argv[]) {
     case -1:
       run = false;
       break;
-/*    case 0:
+    case 0:
       visugrid = comp.GetVelocity();
       break;
-*/    case 1:
+    case 1:
       visugrid = comp.GetU();
       break;
     case 2:

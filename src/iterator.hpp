@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015   Malte Brunn
+ * Copyright (C) 2015   Malte Brunn, Stephan Lunowa, Markus Baur
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,10 @@ public:
   Iterator(const Grid &grid);
   /// Constructs a new Iterator on a grid with a defined starting value
   Iterator(const Grid &grid, const index_t &value);
+  /// Constructs a new Iterator on a grid with a defined starting position
+  Iterator(const Grid &grid, const multi_index_t &pos);
 
-  ///     Returns the current position value
+  /// Returns the current position value
   virtual const index_t &Value() const;
   /// Cast operator to convert Iterators to integers
   virtual operator const index_t &() const;

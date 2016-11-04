@@ -58,9 +58,6 @@ private:
   // donor-cell diffusion condition (p. 27)
   real_t _dtlimit;
 
-  // limit for residual
-  real_t _epslimit;
-
   // velocities
   Grid *_u;
   Grid *_v;

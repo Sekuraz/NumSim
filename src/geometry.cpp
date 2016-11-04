@@ -88,17 +88,59 @@ void Geometry::Load(const char file[]) {
 
 // Updates the velocity field u
 void Geometry::Update_U(Grid &u) const {
-    //TODO noop
+  BoundaryIterator it(u);
+  // driven cavity u given at top
+  // inhomogenous Dirichlet condition (mean) top
+  it.SetBoundary(1);
+  for(it.First(); it.Valid(); it.Next()) {
+    u.Cell(it) = 2*this->_velocity[0]-u.Cell(it.Down());
+  }
+  // homogenous Dirichlet condition left
+  it.SetBoundary(2);
+  for(it.First(); it.Valid(); it.Next()) {
+    u.Cell(it) = 0;
+  }
+  // homogenous Dirichlet condition (mean) down
+  it.SetBoundary(3);
+  for(it.First(); it.Valid(); it.Next()) {
+    u.Cell(it) = -u.Cell(it.Top());
+  }
+  // homogenous Dirichlet condition right
+  it.SetBoundary(4);
+  for(it.First(); it.Valid(); it.Next()) {
+    u.Cell(it) = 0;
+  }
 }
 
 // Updates the velocity field v
 void Geometry::Update_V(Grid &v) const {
-    //TODO noop
+  // driven cavity v given at top
+  // inhomogenous Dirichlet condition top
+  BoundaryIterator it(v);
+  it.SetBoundary(1);
+  for(it.First(); it.Valid(); it.Next()) {
+    v.Cell(it) = this->_velocity[1];
+  }
+  // homogenous Dirichlet condition (mean) left
+  it.SetBoundary(2);
+  for(it.First(); it.Valid(); it.Next()) {
+    v.Cell(it) = -v.Cell(it.Right());
+  }
+  // homogenous Dirichlet condition down
+  it.SetBoundary(3);
+  for(it.First(); it.Valid(); it.Next()) {
+    v.Cell(it) = 0;
+  }
+  // homogenous Dirichlet condition (mean) right
+  it.SetBoundary(4);
+  for(it.First(); it.Valid(); it.Next()) {
+    v.Cell(it) = -v.Cell(it.Left());
+  }
 }
 
 // Updates the pressure field p
 void Geometry::Update_P(Grid &p) const {
-  // homogenous Neumann condition
+  // homogenous Neumann condition at all sides
   BoundaryIterator it(p);
   it.SetBoundary(1);
   for(it.First(); it.Valid(); it.Next()) {

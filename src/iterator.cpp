@@ -21,8 +21,17 @@
 Iterator::Iterator(const Grid &grid) : _grid(grid), _value(0), _valid(true) {}
 Iterator::Iterator(const Grid &grid, const index_t &value)
     : _grid(grid), _value(value), _valid(value < grid.dataSize()) {}
+Iterator::Iterator(const Grid &grid, const multi_index_t &pos) : _grid(grid) {
+  this->_value = pos[DIM-1];
+  const multi_index_t &size = this->_grid.Size();
+  for(index_t dim = DIM-1; dim-- > 0; ) {
+    this->_value *= size[dim];
+    this->_value += pos[dim];
+  }
+  this->_valid = this->_value < this->_grid.dataSize();
+}
 
-//     Returns the current position value
+// Returns the current position value
 const index_t& Iterator::Value() const {
     return this->_value;
 }
@@ -35,9 +44,9 @@ Iterator::operator const index_t& () const {
 // Returns the position coordinates
 multi_index_t Iterator::Pos() const {
     // TODO: rewrite for n dimensions
-    const multi_real_t &h = this->_grid.Geom().Mesh();
-    return multi_index_t((this->_value % this->_grid.Size()[0]) * h[0],
-                         (this->_value / this->_grid.Size()[0]) * h[1]);
+    multi_index_t pos((this->_value % this->_grid.Size()[0]),
+                      (this->_value / this->_grid.Size()[0]));
+    return pos;
 }
 
 // Sets the iterator to the first element

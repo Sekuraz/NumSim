@@ -26,15 +26,14 @@
 
 // Creates a compute instance with given geometry and parameter
 Compute::Compute(const Geometry &geom, const Parameter &param)
-    : _t(0), _dtlimit(param.Dt()), _epslimit(param.Eps()),
-    _F(new Grid(geom, Grid::type::u)), _G(new Grid(geom, Grid::type::v)),
-    _rhs(new Grid(geom, Grid::type::p)),
-    _tmp(new Grid(geom, Grid::type::p)), _geom(geom), _param(param) {
+    : _t(0), _F(new Grid(geom, Grid::type::u)), _G(new Grid(geom, Grid::type::v)),
+    _rhs(new Grid(geom, Grid::type::p)), _tmp(new Grid(geom, Grid::type::p)),
+    _geom(geom), _param(param) {
 
   // initialize the solver
   this->_solver = new SOR(geom, param.Omega());
 
-  // initialize u,v,p
+  // initialize u,v,p,F,G,rhs
   const multi_real_t &h = this->_geom.Mesh();
   multi_real_t offset(0, h[1]/2);
   _u = new Grid(geom, Grid::type::u, offset);
@@ -62,16 +61,6 @@ Compute::~Compute() {
 // etc.)
 void Compute::TimeStep(bool printInfo) {
   // TODO: test
-  Iterator u_it(*_u);
-  while(u_it.Valid()){
-    _u->Cell(u_it) = u_it;
-    u_it.Next();
-  }
-  Iterator v_it(*_v);
-  while(v_it.Valid()){
-    _v->Cell(v_it) = v_it;
-    v_it.Next();
-  }
   if(_t < _param.Dt()) {
     const multi_index_t &size = _p->Size();
     real_t* data = _p->Data();
@@ -79,6 +68,24 @@ void Compute::TimeStep(bool printInfo) {
     data[size[0]*(size[1]/2-1)+size[0]/2] = 1;
     data[size[0]*size[1]/2+size[0]/2-1] = 1;
     data[size[0]*size[1]/2+size[0]/2] = 1;
+
+    Iterator u_it(*_u);
+    while(u_it.Valid()){
+      _u->Cell(u_it) = 1;
+      u_it.Next();
+    }
+    InteriorIterator v_it(*_v);
+    while(v_it.Valid()){
+      Iterator itU(*_u, v_it.Pos());
+      _v->Cell(v_it) = _u->Cell(itU);
+      v_it.Next();
+    }
+    InteriorIterator itP(*_p);
+    while(itP.Valid()){
+      Iterator itU(*_u, itP.Pos());
+      _p->Cell(itP) = _u->Cell(itU);
+      itP.Next();
+    }
   }
   // TODO: End test
 
@@ -86,24 +93,21 @@ void Compute::TimeStep(bool printInfo) {
   real_t dt = this->_param.Dt();
   // Test CFL condition
   const multi_real_t &h = this->_geom.Mesh();
-  real_t dtCond = this->_param.Tau() * std::min(h[0] / this->_u->AbsMax(), h[1] / this->_v->AbsMax());
-  if(dtCond < dt) {
-    dt = dtCond;
+  this->_dtlimit = this->_param.Tau() * std::min(h[0] / this->_u->AbsMax(), h[1] / this->_v->AbsMax());
+  if(this->_dtlimit < dt) {
+    dt = this->_dtlimit;
     std::cerr << "Warning: Compute: CFL > tau. New dt = " << dt << "!" << std::endl;
   }
   // Test Pr condition
-  dtCond = this->_param.Re() * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]);
-  if(dtCond < dt) {
-    dt = dtCond;
+  this->_dtlimit = this->_param.Re() * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]);
+  if(this->_dtlimit < dt) {
+    dt = this->_dtlimit;
     std::cerr << "Warning: Compute: Pr > tau. New dt = " << dt << "!" << std::endl;
   }
 
   // set boundary values for u, v, F, G
   this->_geom.Update_U(*(this->_u));
   this->_geom.Update_V(*(this->_v));
-  // TODO: update F,G
-//  this->_geom.Update_F(*(this->_F));
-//  this->_geom.Update_G(*(this->_G));
 
   // compute the momentum equations
   this->MomentumEqu(dt);
@@ -119,32 +123,43 @@ void Compute::TimeStep(bool printInfo) {
     if(printInfo) {
       std::cout << "\tError in SOR-iteration " << i << ":\t" << res << std::endl;
     }
-    if(res < this->_epslimit) break;
+    if(res < this->_param.Eps()) break;
   }
 
   // compute new velocites
-  this->NewVelocities(dt);
+//  this->NewVelocities(dt);
 
   // update the time
   this->_t += dt;
 }
 
 // Computes and returns the absolute velocity
-const Grid *Compute::GetVelocity() { return nullptr; }
+const Grid *Compute::GetVelocity() {
+  // TODO: implement
+  return _tmp;
+}
 // Computes and returns the vorticity
-const Grid *Compute::GetVorticity() { return nullptr; }
+const Grid *Compute::GetVorticity() {
+  // TODO: implement
+  return _tmp;
+}
 // Computes and returns the stream line values
-const Grid *Compute::GetStream() { return nullptr; }
+const Grid *Compute::GetStream() {
+  // TODO: implement
+  return _tmp;
+}
 
 // Compute the new velocites u,v
 void Compute::NewVelocities(const real_t &dt) {
   // compute u
   for(InteriorIterator it(*(this->_u)); it.Valid(); it.Next()) {
+    //Iterator p_it(*(this->_p), it.Pos())
     // TODO: dp/dx (it)
     //this->_u->Cell(it) = this->_F->Cell(it) - dt * this->_p->dx_r();
   }
   // compute v
   for(InteriorIterator it(*(this->_v)); it.Valid(); it.Next()) {
+    //Iterator p_it(*(this->_p), it.Pos())
     // TODO: dp/dy (it)
     //this->_v->Cell(it) = this->_G->Cell(it) - dt * this->_p->dy_r();
   }
@@ -171,6 +186,8 @@ void Compute::MomentumEqu(const real_t &dt) {
 void Compute::RHS(const real_t &dt) {
   const multi_real_t &h = this->_geom.Mesh();
   for(InteriorIterator it(*(this->_p)); it.Valid(); it.Next()) {
+    //Iterator itF(*(this->_F), it.Pos())
+    //Iterator itG(*(this->_G), it.Pos())
     // TODO F(it), G(it)
     // this->_rhs->Cell(it) = ( (this->_F->Cell() - this->_F->Cell())/h[0]
     //                        + (this->_G->Cell() - this->_G->Cell())/h[1]) / dt;

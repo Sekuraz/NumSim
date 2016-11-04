@@ -37,14 +37,10 @@ Grid::Grid(const Geometry &geom, const Grid::type &t) : _data(nullptr), _offset(
 // \param t      type of the grid (u, v, p)
 // \param offset distance of staggered grid point to cell's anchor point;
 //               (anchor point = lower left corner)
-Grid::Grid(const Geometry &geom, const Grid::type &t, const multi_real_t &offset)
-    : _data(nullptr), _offset(offset), _geom(geom), _type(t) {
-  const multi_index_t &size = this->Size();
-  this->_sizeData = 1;
-  for(index_t i = 0; i < DIM; i++) {
-    this->_sizeData *= size[i];
+Grid::Grid(const Geometry &geom, const Grid::type &t, const multi_real_t &offset) : Grid(geom, t) {
+  for(index_t dim = 0; dim < DIM; dim++) {
+    this->_offset[dim] = offset[dim];
   }
-  this->_data = new real_t[_sizeData];
 }
 
 // Deletes the grid
@@ -98,7 +94,6 @@ real_t Grid::Interpolate(const multi_real_t &pos) const {
           + this->_data[it.Right()] * delta[0]*(1.0 - delta[1])
           + this->_data[it.Top()] * (1.0 - delta[0])*delta[1]
           + this->_data[it.Top().Right()] * delta[0]*delta[1];
-
   } else { // Error in index computation
     std::cerr << "Error: Grid: Pos out of area. Pos = " << pos[0] << ", " << pos[1]
               << ", it = " << it << std::endl;
