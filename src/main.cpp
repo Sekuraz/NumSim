@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2015   Malte Brunn
+ *  Copyright (C) 2016   Malte Brunn, Stephan Lunowa, Markus Baur
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
