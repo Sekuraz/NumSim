@@ -94,10 +94,10 @@ public:
   /// Sets the boundary to iterate
   /// \param[in] boundary - the boundary to iterate over.
   /// * 0 all \todo TODO: not implemented yet
-  /// * 1 north
-  /// * 2 west
-  /// * 3 south
-  /// * 4 east
+  /// * 1 top
+  /// * 2 left
+  /// * 3 down
+  /// * 4 right
   inline void SetBoundary(const index_t &boundary) { this->_boundary = boundary; }
 
   /// Sets the iterator to the first element

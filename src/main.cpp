@@ -45,9 +45,9 @@ int main(int argc, char *argv[]) {
   const Grid *visugrid;
   bool run = true;
 
-  visugrid = comp.GetP();
-//  visugrid = comp.GetVelocity();
+  visugrid = comp.GetVelocity();
 
+  real_t nextTimeVTK = 0;
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
 #ifdef USE_DEBUG_VISU
@@ -73,17 +73,21 @@ int main(int argc, char *argv[]) {
     };
 #endif // DEBUG_VISU
 
-    // Create a VTK File in the folder VTK (must exist)
-//    vtk.Init("VTK/field");
-//    vtk.AddField("Velocity", comp.GetU(), comp.GetV());
-//    vtk.AddScalar("Pressure", comp.GetP());
-//    vtk.Finish();
+    if(comp.GetTime() >= nextTimeVTK ) {
+      // Create a VTK File in the folder VTK (must exist)
+//      vtk.Init("VTK/field");
+//      vtk.AddField("Velocity", comp.GetU(), comp.GetV());
+//      vtk.AddScalar("Pressure", comp.GetP());
+//      vtk.Finish();
+      nextTimeVTK += 0.2;
+    }
 
     std::cout << "t = " << comp.GetTime() << " " << std::endl;
-    // Run a few steps
-//    for (index_t i = 0; i < 9; ++i)
-//      comp.TimeStep(false);
+#ifdef DEBUG_VISU
     comp.TimeStep(true);
+#else
+    comp.TimeStep(false);
+#endif
   }
   return 0;
 }

@@ -129,13 +129,13 @@ void InteriorIterator::Next() {
 // Sets the iterator to the first element
 void BoundaryIterator::First() {
   switch(this->_boundary) {
-    case 1:
+    case 1: // top
       this->_value = this->_grid.Size()[0]*(this->_grid.Size()[1]-1);
       break;
-    case 4:
+    case 4: // right
       this->_value = this->_grid.Size()[0]-1;
       break;
-    default:
+    default: // left, down, all
       this->_value = 0;
       break;
   }
@@ -144,31 +144,36 @@ void BoundaryIterator::First() {
 // Goes to the next element of the iterator, disables it if position is end
 void BoundaryIterator::Next() {
   switch(this->_boundary) {
-    case 1:
+    case 0: // all
+      // TODO implement all boundaries
+      std::cerr << "Error: BoundaryIterator: all boundaries not implemented.";
+      this->_valid = false;
+      break;
+    case 1: // top
       Iterator::Next();
       break;
-    case 2:
+    case 2: // left
       this->_value += this->_grid.Size()[0];
       if(this->_value >= this->_grid.dataSize()) {
         this->_valid = false;
       }
       break;
-    case 3:
+    case 3: // down
       Iterator::Next();
       if(this->_value >= this->_grid.Size()[0]) {
         this->_valid = false;
       }
       break;
-    case 4:
+    case 4: // right
       this->_value += this->_grid.Size()[0];
       if(this->_value >= this->_grid.dataSize()) {
         this->_valid = false;
       }
       break;
     default:
-      // TODO
-      std::cerr << "Error: BoundaryIterator: all boundaries not implemented.";
-      this->_value = 0;
+      std::cerr << "Error: BoundaryIterator: boundary " << this->_boundary
+                << " does not exist!" << std::endl;
+      this->_valid = false;
       break;
   }
 }
