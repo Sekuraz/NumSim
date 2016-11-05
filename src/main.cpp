@@ -84,7 +84,8 @@ int main(int argc, char *argv[]) {
 
     std::cout << "t = " << comp.GetTime() << " " << std::endl;
 #ifdef DEBUG_VISU
-    comp.TimeStep(true);
+//    comp.TimeStep(true);
+    comp.TimeStep(false);
 #else
     comp.TimeStep(false);
 #endif

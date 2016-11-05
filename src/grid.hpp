@@ -24,7 +24,7 @@
 class Grid {
 public:
   // type defining the type of the grid
-  enum type{u, v, p};
+  enum type{u, v, p, inner};
 
   /// Constructs a grid based on a geometry
   Grid(const Geometry &geom, const type &t);
