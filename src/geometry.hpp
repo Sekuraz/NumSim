@@ -62,6 +62,10 @@ public:
   inline const multi_real_t &Length() const {
     return this->_length;
   }
+  /// Returns the velocity at the boundary
+  inline const multi_real_t &Velocity() const {
+    return this->_velocity;
+  }
   /// Returns the meshwidth
   inline const multi_real_t &Mesh() const {
     return this->_h;

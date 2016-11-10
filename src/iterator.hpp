@@ -98,7 +98,10 @@ public:
   /// * 2 left
   /// * 3 down
   /// * 4 right
-  inline void SetBoundary(const index_t &boundary) { this->_boundary = boundary; }
+  inline void SetBoundary(const index_t &boundary) {
+      this->_boundary = boundary;
+      this->First();
+  }
 
   /// Sets the iterator to the first element
   void First();

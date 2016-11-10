@@ -28,7 +28,7 @@
 // Creates a compute instance with given geometry and parameter
 Compute::Compute(const Geometry &geom, const Parameter &param)
     : _t(0), _F(new Grid(geom, Grid::type::u)), _G(new Grid(geom, Grid::type::v)),
-    _rhs(new Grid(geom, Grid::type::p)), _tmp(new Grid(geom, Grid::type::inner)),
+    _rhs(new Grid(geom, Grid::type::p)),
     _geom(geom), _param(param) {
 
   // initialize the solver
@@ -43,7 +43,7 @@ Compute::Compute(const Geometry &geom, const Parameter &param)
   this->_v = new Grid(geom, Grid::type::v, offset);
   offset[1] = h[1]/2;
   this->_p = new Grid(geom, Grid::type::p, offset);
-
+  this->_tmp = new Grid(geom, Grid::type::p, offset);
   this->_u->Initialize(0);
   this->_v->Initialize(0);
   this->_p->Initialize(0);
@@ -107,12 +107,31 @@ void Compute::TimeStep(bool printInfo) {
 
 // Computes and returns the absolute velocity
 const Grid *Compute::GetVelocity() {
-  for(Iterator it(*(this->_tmp)); it.Valid(); it.Next()) {
+  _tmp->Initialize(0);
+  for(InteriorIterator it(*(this->_tmp)); it.Valid(); it.Next()) {
     Iterator itU(*(this->_u), it.Pos());
     Iterator itV(*(this->_v), it.Pos());
-    real_t uMean = (this->_u->Cell(itU) + this->_u->Cell(itU.Top()))/2;
-    real_t vMean = (this->_v->Cell(itV) + this->_v->Cell(itV.Right()))/2;
+    real_t uMean = (this->_u->Cell(itU.Left()) + this->_u->Cell(itU))/2;
+    real_t vMean = (this->_v->Cell(itV) + this->_v->Cell(itV.Down()))/2;
     this->_tmp->Cell(it) = std::sqrt(uMean*uMean + vMean*vMean);
+  }
+  BoundaryIterator it(*(this->_tmp));
+  it.SetBoundary(1);
+  multi_real_t v = this->_geom.Velocity();
+  for(; it.Valid(); it.Next()) {
+    this->_tmp->Cell(it) = 2*std::sqrt(v[0]*v[0] + v[1]*v[1]) - this->_tmp->Cell(it.Down());
+  }
+  it.SetBoundary(2);
+  for(; it.Valid(); it.Next()) {
+    this->_tmp->Cell(it) = -this->_tmp->Cell(it.Right());
+  }
+    it.SetBoundary(3);
+  for(; it.Valid(); it.Next()) {
+    this->_tmp->Cell(it) = -this->_tmp->Cell(it.Top());
+  }
+    it.SetBoundary(4);
+  for(; it.Valid(); it.Next()) {
+    this->_tmp->Cell(it) = -this->_tmp->Cell(it.Left());
   }
   return _tmp;
 }

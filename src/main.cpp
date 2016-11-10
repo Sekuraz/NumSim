@@ -86,15 +86,15 @@ int main(int argc, char *argv[]) {
 #ifdef USE_DEBUG_VISU
 //    comp.TimeStep(true);
     comp.TimeStep(false);
-    const Grid* v = comp.GetU();
-    for (Iterator it(*v); it.Valid(); it.Next()) {
-        if (it.Pos()[0] == 0) {
-            std::cout << std::endl;
-        }
-//        printf("%+.2f, ", v->Cell(it) * 1000);
-    }
-    std::cout << std::endl;
-    //std::cin.get();
+//    const Grid* v = comp.GetVelocity();
+//    for (Iterator it(*v); it.Valid(); it.Next()) {
+//        if (it.Pos()[0] == 0) {
+//            std::cout << std::endl;
+//        }
+//        printf("%+.2f, ", v->Cell(it) * 10);
+//    }
+//    std::cout << std::endl;
+//    std::cin.get();
 
 #else
     comp.TimeStep(false);
