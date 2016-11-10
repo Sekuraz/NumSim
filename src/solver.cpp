@@ -44,6 +44,6 @@ real_t SOR::Cycle(Grid &grid, const Grid &rhs) const {
     residuum += localRes * localRes;
     grid.Cell(it) = grid.Cell(it) - prefactor * localRes;
   }
-  return std::sqrt(residuum);
+  return residuum / (h[0] * h[1]);
 }
 

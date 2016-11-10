@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
     default:
       break;
     };
-#endif // DEBUG_VISU
+#endif // USE_DEBUG_VISU
 
     if(comp.GetTime() >= nextTimeVTK ) {
       // Create a VTK File in the folder VTK (must exist)
@@ -83,9 +83,19 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "t = " << comp.GetTime() << " " << std::endl;
-#ifdef DEBUG_VISU
+#ifdef USE_DEBUG_VISU
 //    comp.TimeStep(true);
     comp.TimeStep(false);
+    const Grid* v = comp.GetU();
+    for (Iterator it(*v); it.Valid(); it.Next()) {
+        if (it.Pos()[0] == 0) {
+            std::cout << std::endl;
+        }
+//        printf("%+.2f, ", v->Cell(it) * 1000);
+    }
+    std::cout << std::endl;
+    //std::cin.get();
+
 #else
     comp.TimeStep(false);
 #endif

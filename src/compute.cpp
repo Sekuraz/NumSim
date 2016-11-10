@@ -92,7 +92,7 @@ void Compute::TimeStep(bool printInfo) {
     if(printInfo) {
       std::cout << "\tError in SOR-iteration " << i << ":\t" << res << std::endl;
     }
-    if(res < this->_param.Eps()) break;
+    if(res < this->_param.Eps() * this->_param.Eps()) break;
     if(i == this->_param.IterMax()) {
       std::cerr << "Warning: SOR did not converge! res = " << res << std::endl;
     }

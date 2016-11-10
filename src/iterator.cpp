@@ -73,7 +73,7 @@ Iterator Iterator::Left() const {
     if (this->_value % this->_grid.Size()[0] == 0) {
         return *this;
     }
-    return Iterator(_grid, this->_value - 1);
+    return Iterator(this->_grid, this->_value - 1);
 }
 
 // Returns an Iterator that is located right from this one
@@ -82,7 +82,7 @@ Iterator Iterator::Right() const {
     if ((this->_value + 1) % this->_grid.Size()[0] == 0) {
         return *this;
     }
-    return Iterator(_grid, this->_value + 1);
+    return Iterator(this->_grid, this->_value + 1);
 }
 
 // Returns an Iterator that is located above this one
@@ -91,7 +91,7 @@ Iterator Iterator::Top() const {
     if (this->_value >= this->_grid.Size()[0]*(this->_grid.Size()[1]-1)) {
         return *this;
     }
-    return Iterator(_grid, this->_value + this->_grid.Size()[0]);
+    return Iterator(this->_grid, this->_value + this->_grid.Size()[0]);
 }
 
 // Returns an Iterator that is located below this one
@@ -100,7 +100,7 @@ Iterator Iterator::Down() const {
     if (this->_value < this->_grid.Size()[0]) {
         return *this;
     }
-    return Iterator(_grid, this->_value - this->_grid.Size()[0]);
+    return Iterator(this->_grid, this->_value - this->_grid.Size()[0]);
 }
 
 //------------------------------------------------------------------------------
