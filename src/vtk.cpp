@@ -48,17 +48,17 @@ void VTK::Init(const char *path) {
 
   fprintf(_handle, "<?xml version=\"1.0\"?>\n");
   fprintf(_handle, "<VTKFile type=\"StructuredGrid\">\n");
-  fprintf(_handle, "<StructuredGrid WholeExtent=\"0 %i 0 %i 0 %i \">\n",
+  fprintf(_handle, "<StructuredGrid WholeExtent=\"0 %lu 0 %lu 0 %lu \">\n",
           _size[0] - 1, _size[1] - 1, (DIM == 3 ? _size[2] - 1 : 0));
-  fprintf(_handle, "<Piece Extent=\"0 %i 0 %i 0 %i \">\n", _size[0] - 1,
-          _size[1] - 1, (DIM == 3 ? _size[2] - 1 : 0));
+  fprintf(_handle, "<Piece Extent=\"0 %lu 0 %lu 0 %lu \">\n",
+          _size[0] - 1, _size[1] - 1, (DIM == 3 ? _size[2] - 1 : 0));
   fprintf(_handle, "<Points>\n");
   fprintf(_handle, "<DataArray type=\"Float64\" format=\"ascii\" "
                    "NumberOfComponents=\"3\">\n");
 
-  for (uint32_t z = 0; z < (DIM == 3 ? _size[2] : 1); ++z)
-    for (uint32_t y = 0; y < _size[1]; ++y)
-      for (uint32_t x = 0; x < _size[0]; ++x)
+  for (index_t z = 0; z < (DIM == 3 ? _size[2] : 1); ++z)
+    for (index_t y = 0; y < _size[1]; ++y)
+      for (index_t x = 0; x < _size[0]; ++x)
         fprintf(_handle, "%le %le %le\n", (double)x * _h[0] + _offset[0],
                 (double)y * _h[1] + _offset[1],
                 (DIM == 3 ? (double)z * _h[2] + _offset[2] : 0));
@@ -92,13 +92,13 @@ void VTK::AddScalar(const char *title, const Grid *grid) {
           "<DataArray Name=\"%s\" type=\"Float64\" format=\"ascii\">\n", title);
 
   multi_real_t pos;
-  for (uint32_t z = 0; z < (DIM == 3 ? _size[2] : 1); ++z) {
+  for (index_t z = 0; z < (DIM == 3 ? _size[2] : 1); ++z) {
 #if DIM == 3
     pos[2] = (double)z * _h[2] + _offset[2];
 #endif // DIM
-    for (uint32_t y = 0; y < _size[1]; ++y) {
+    for (index_t y = 0; y < _size[1]; ++y) {
       pos[1] = (double)y * _h[1] + _offset[1];
-      for (uint32_t x = 0; x < _size[0]; ++x) {
+      for (index_t x = 0; x < _size[0]; ++x) {
         pos[0] = (double)x * _h[0] + _offset[0];
         fprintf(_handle, "%le ", (double)grid->Interpolate(pos));
 #if DIM == 3
@@ -126,9 +126,9 @@ void VTK::AddField(const char *title, const Grid *v1, const Grid *v2) {
 #if DIM == 3
   pos[2] = 0;
 #endif // DIM
-  for (uint32_t y = 0; y < _size[1]; ++y) {
+  for (index_t y = 0; y < _size[1]; ++y) {
     pos[1] = (double)y * _h[1] + _offset[1];
-    for (uint32_t x = 0; x < _size[0]; ++x) {
+    for (index_t x = 0; x < _size[0]; ++x) {
       pos[0] = (double)x * _h[0] + _offset[0];
       fprintf(_handle, "%le %le 0\n", (double)v1->Interpolate(pos),
               (double)v2->Interpolate(pos));
@@ -151,9 +151,9 @@ void VTK::AddField(const char *title, const Grid *v1, const Grid *v2,
 #if DIM == 3
   pos[2] = 0;
 #endif // DIM
-  for (uint32_t y = 0; y < _size[1]; ++y) {
+  for (index_t y = 0; y < _size[1]; ++y) {
     pos[1] = (double)y * _h[1] + _offset[1];
-    for (uint32_t x = 0; x < _size[0]; ++x) {
+    for (index_t x = 0; x < _size[0]; ++x) {
       pos[0] = (double)x * _h[0] + _offset[0];
       fprintf(_handle, "%le %le %le\n", (double)v1->Interpolate(pos),
               (double)v2->Interpolate(pos), (double)v3->Interpolate(pos));
