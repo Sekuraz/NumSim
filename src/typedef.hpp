@@ -84,7 +84,7 @@ template <typename _type, index_t _dim> struct array_t {
 
 template <typename _type, index_t _dim> std::ostream& operator<<(std::ostream& os, const array_t<_type, _dim> value) {
     os << "[";
-    for (int i = 0; i < value.dim; i++) {
+    for (index_t i = 0; i < value.dim; i++) {
         os << value.x[i] << ", ";
     }
     os << "]";
