@@ -25,7 +25,7 @@ public:
   /// Constructs a new Parameter set with default values
   // Driven Cavity parameters; see exercise sheet 1
   Parameter() : _re(1), _omega(1), _alpha(0.5), _dt(1e-2), _tend(1),
-                _eps(1e-3), _tau(0.8), _itermax(100) {};
+                _eps(1e-3), _tau(0.8), _itermax(100), _vtkDt(0.2) {};
 
   /// Loads the parameter values from a file
   void Load(const char file[]);
@@ -39,6 +39,7 @@ public:
   inline const index_t &IterMax() const { return this->_itermax; };
   inline const real_t &Eps() const { return this->_eps; };
   inline const real_t &Tau() const { return this->_tau; };
+  inline const real_t &VtkDt() const { return this->_vtkDt; };
 
 private:
   real_t _re;
@@ -49,6 +50,7 @@ private:
   real_t _eps;
   real_t _tau;
   index_t _itermax;
+  real_t _vtkDt;
 };
 //------------------------------------------------------------------------------
 #endif // __PARAMETER_HPP

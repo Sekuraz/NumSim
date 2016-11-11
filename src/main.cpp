@@ -75,27 +75,19 @@ int main(int argc, char *argv[]) {
 
     if(comp.GetTime() >= nextTimeVTK ) {
       // Create a VTK File in the folder VTK (must exist)
-//      vtk.Init("VTK/field");
-//      vtk.AddField("Velocity", comp.GetU(), comp.GetV());
-//      vtk.AddScalar("Pressure", comp.GetP());
-//      vtk.Finish();
-      nextTimeVTK += 0.2;
+      vtk.Init("VTK/field");
+      vtk.AddField("Velocity", comp.GetU(), comp.GetV());
+      vtk.AddScalar("Pressure", comp.GetP());
+      vtk.AddScalar("x-Velocity", comp.GetU());
+      vtk.AddScalar("y-Velocity", comp.GetV());
+      vtk.Finish();
+      nextTimeVTK += param.VtkDt();
     }
 
     std::cout << "t = " << comp.GetTime() << " " << std::endl;
 #ifdef USE_DEBUG_VISU
-//    comp.TimeStep(true);
+    //comp.TimeStep(true);
     comp.TimeStep(false);
-//    const Grid* v = comp.GetVelocity();
-//    for (Iterator it(*v); it.Valid(); it.Next()) {
-//        if (it.Pos()[0] == 0) {
-//            std::cout << std::endl;
-//        }
-//        printf("%+.2f, ", v->Cell(it) * 10);
-//    }
-//    std::cout << std::endl;
-//    std::cin.get();
-
 #else
     comp.TimeStep(false);
 #endif

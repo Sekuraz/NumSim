@@ -55,6 +55,9 @@ void Parameter::Load(const char file[]) {
     } else if(!param.compare("IterMax") || !param.compare("Itermax") || !param.compare("itermax")) {
       this->_itermax = value;
       cout << "Parameter: Load IterMax = " << this->_itermax << endl;
+    } else if(!param.compare("vtkdt") || !param.compare("vtkDt") || !param.compare("VTKdt")) {
+      this->_vtkDt = value;
+      cout << "Parameter: Load vtkDt = " << this->_vtkDt << endl;
     } else {
       cerr << "Parameter: Unknown identifier " << param << endl;
     }

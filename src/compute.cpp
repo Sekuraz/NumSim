@@ -90,11 +90,11 @@ void Compute::TimeStep(bool printInfo) {
     this->_geom.Update_P(*(this->_p));
     real_t res = this->_solver->Cycle(*(this->_p), *(this->_rhs));
     if(printInfo) {
-      std::cout << "\tError in SOR-iteration " << i << ":\t" << res << std::endl;
+      std::cout << "\tError in SOR-iteration " << i << ":\t" << std::sqrt(res) << std::endl;
     }
     if(res < this->_param.Eps() * this->_param.Eps()) break;
     if(i == this->_param.IterMax()) {
-      std::cerr << "Warning: SOR did not converge! res = " << res << std::endl;
+      std::cerr << "Warning: SOR did not converge! res = " << std::sqrt(res) << std::endl;
     }
   }
 
