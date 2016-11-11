@@ -17,6 +17,7 @@
 
 #include <stdint.h>
 #include <cstdlib>
+#include <iostream>
 
 //------------------------------------------------------------------------------
 
@@ -80,6 +81,15 @@ template <typename _type, index_t _dim> struct array_t {
   _type x[_dim];
   static const index_t dim = _dim;
 };
+
+template <typename _type, index_t _dim> std::ostream& operator<<(std::ostream& os, const array_t<_type, _dim> value) {
+    os << "[";
+    for (int i = 0; i < value.dim; i++) {
+        os << value.x[i] << ", ";
+    }
+    os << "]";
+    return os;
+}
 /// Typedef for d-dimensional array of reals
 typedef array_t<real_t, DIM> multi_real_t;
 /// Typedef for d-dimensional array of integer

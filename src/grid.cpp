@@ -140,22 +140,25 @@ real_t Grid::DC_udu_x(const Iterator &it, const real_t &alpha) const {
 real_t Grid::DC_vdu_y(const Iterator &it, const real_t &alpha, const Grid *v) const {
   const multi_real_t &h = this->_geom.Mesh();
   Iterator itV(*v, it.Pos());
-  real_t vMeanTop = (this->_data[itV] + this->_data[itV.Right()])/2;
+  std::cout << it.Pos() << "  " << itV.Pos() << "  " << it.Value() << "  " << itV.Value() << " ";
+  real_t vMeanRight = (this->_data[itV] + this->_data[itV.Right()])/2;
   real_t vMeanDown = (this->_data[itV.Down()] + this->_data[itV.Down().Right()])/2;
-  return ( ( vMeanTop *(this->_data[it] + this->_data[it.Top()])/2
+  real_t value = ( ( vMeanRight *(this->_data[it] + this->_data[it.Top()])/2
             -vMeanDown*(this->_data[it.Down()] + this->_data[it])/2 ) / h[1]
-          + alpha * (-std::fabs(vMeanTop) *this->dy_r(it)/2
+          + alpha * (-std::fabs(vMeanRight) *this->dy_r(it)/2
                      +std::fabs(vMeanDown)*this->dy_l(it)/2) );
+  std::cout << value << std::endl;
+  return value;
 }
 // Computes u*dv/dx with the donor cell method
 real_t Grid::DC_udv_x(const Iterator &it, const real_t &alpha, const Grid *u) const {
   const multi_real_t &h = this->_geom.Mesh();
   Iterator itU(*u, it.Pos());
-  real_t uMeanRight = (u->_data[itU] + u->_data[itU.Top()])/2;
+  real_t uMeanTop = (u->_data[itU] + u->_data[itU.Top()])/2;
   real_t uMeanLeft = (u->_data[itU.Left()] + u->_data[itU.Left().Top()])/2;
-  return ( ( uMeanRight*(this->_data[it] + this->_data[it.Right()])/2
+  return ( ( uMeanTop*(this->_data[it] + this->_data[it.Right()])/2
             -uMeanLeft *(this->_data[it.Left()] + this->_data[it])/2 ) / h[0]
-          + alpha * (-std::fabs(uMeanRight)*this->dx_r(it)/2
+          + alpha * (-std::fabs(uMeanTop)*this->dx_r(it)/2
                      +std::fabs(uMeanLeft) *this->dx_l(it)/2) );
 }
 // Computes v*dv/dy with the donor cell method

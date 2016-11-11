@@ -23,7 +23,9 @@
 
 using namespace std;
 
-Geometry::Geometry() : _size(128,128), _sizeU(_size), _sizeV(_size),
+Geometry::Geometry() : Geometry(multi_index_t {128, 128}) {}
+
+Geometry::Geometry(const multi_index_t& size) : _size(size), _sizeU(_size), _sizeV(_size),
     _sizeP(_size), _length(1,1) {
   for(index_t dim = 0; dim < DIM; dim++) {
     this->_sizeU[dim] += (dim == 0)? 1 : 2;

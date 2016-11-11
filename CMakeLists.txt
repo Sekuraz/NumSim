@@ -57,7 +57,6 @@ set (HEADERS
   )
 
 set (SOURCES
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/compute.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/geometry.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/grid.cpp
@@ -84,8 +83,14 @@ if (DEBUG_VISU)
 endif (DEBUG_VISU)
 
 # build executable and link libs against it
-add_executable (numsim ${SOURCES})
-target_link_libraries (numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
+add_executable (numsim ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+add_executable (iter_test ${CMAKE_CURRENT_SOURCE_DIR}/src/test_iterator.cpp)
+add_executable (dc_test ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dc.cpp)
+add_library (libnumsim ${SOURCES})
+
+target_link_libraries (numsim libnumsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
+target_link_libraries (iter_test libnumsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
+target_link_libraries (dc_test libnumsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
 
 if (MPI_COMPILE_FLAGS)
   set_target_properties(numsim PROPERTIES

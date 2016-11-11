@@ -34,29 +34,37 @@ int main(int argc, char *argv[]) {
 
   const multi_real_t &h = geom.Mesh();
   multi_real_t offset(h[0]/2, 0);
-  Grid g (geom,Grid::type::v, offset);
-  g.Initialize(0);
+  Grid v (geom,Grid::type::v, offset);
+  offset = {0, h[1]/2};
+  Grid u (geom,Grid::type::u, offset);
 
-  // Create and initialize the visualization
-  Renderer visu(geom.Length(), geom.Mesh());
-  visu.Init(600,600);//(800, 800);
+  for (Iterator it(v); it.Valid(); it.Next()) {
+      v.Cell(it) = it.Value();
+  }
+  for (Iterator it(u); it.Valid(); it.Next()) {
+      u.Cell(it) = it.Value();
+  }
 
-  for (InteriorIterator it (g); it.Valid(); it.Next()) {
+  for (InteriorIterator it (u); it.Valid(); it.Next()) {
 
-    g.Cell(it) = 1;
-    geom.Update_V(g);
-    visu.Render(&g);
+    u.DC_vdu_y(it, 1.0, &v);
 
-    for (Iterator it(g); it.Valid(); it.Next()) {
+    for (Iterator it(u); it.Valid(); it.Next()) {
         if (it.Pos()[0] == 0) {
             std::cout << std::endl;
         }
-        printf("%+.2f, ", g.Cell(it) * 1);
+        printf("%+.2f, ", u.Cell(it) * 1);
+    }
+    std::cout << std::endl;
+    for (Iterator it(v); it.Valid(); it.Next()) {
+        if (it.Pos()[0] == 0) {
+            std::cout << std::endl;
+        }
+        printf("%+.2f, ", v.Cell(it) * 1);
     }
     std::cout << std::endl;
     std::cin.get();
 
-    g.Cell(it) = 0;
   }
 
 /*

@@ -36,6 +36,7 @@ public:
   //    -------------
   //      u=0, v=0
   Geometry();
+  Geometry(const multi_index_t& size);
 
   /// Loads a geometry from a file
   void Load(const char file[]);
