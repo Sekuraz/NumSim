@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016   Stephan Lunowa, Markus Baur
+ * Copyright (C) 2016   Stephan Lunowa, Markus Baur, Jonas Harsch
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,11 +92,6 @@ void Geometry::Load(const char file[]) {
 void Geometry::Update_U(Grid &u) const {
   BoundaryIterator it(u);
   // driven cavity u given at top
-  // inhomogenous Dirichlet condition (mean) top
-  it.SetBoundary(1);
-  for(it.First(); it.Valid(); it.Next()) {
-    u.Cell(it) = 2*this->_velocity[0]-u.Cell(it.Down());
-  }
   // homogenous Dirichlet condition left
   it.SetBoundary(2);
   for(it.First(); it.Valid(); it.Next()) {
@@ -112,17 +107,17 @@ void Geometry::Update_U(Grid &u) const {
   for(it.First(); it.Valid(); it.Next()) {
     u.Cell(it) = 0;
   }
+	// inhomogenous Dirichlet condition (mean) top
+  it.SetBoundary(1);
+  for(it.First(); it.Valid(); it.Next()) {
+    u.Cell(it) = 2*this->_velocity[0]-u.Cell(it.Down());
+  }
 }
 
 // Updates the velocity field v
 void Geometry::Update_V(Grid &v) const {
-  // driven cavity v given at top
-  // inhomogenous Dirichlet condition top
-  BoundaryIterator it(v);
-  it.SetBoundary(1);
-  for(it.First(); it.Valid(); it.Next()) {
-    v.Cell(it) = this->_velocity[1];
-  }
+	BoundaryIterator it(v);
+  // driven cavity v given at top  
   // homogenous Dirichlet condition (mean) left
   it.SetBoundary(2);
   for(it.First(); it.Valid(); it.Next()) {
@@ -138,16 +133,17 @@ void Geometry::Update_V(Grid &v) const {
   for(it.First(); it.Valid(); it.Next()) {
     v.Cell(it) = -v.Cell(it.Left());
   }
+	// inhomogenous Dirichlet condition top
+	it.SetBoundary(1);
+  for(it.First(); it.Valid(); it.Next()) {
+    v.Cell(it) = this->_velocity[1];
+  }
 }
 
 // Updates the pressure field p
 void Geometry::Update_P(Grid &p) const {
+	BoundaryIterator it(p);
   // homogenous Neumann condition at all sides
-  BoundaryIterator it(p);
-  it.SetBoundary(1);
-  for(it.First(); it.Valid(); it.Next()) {
-    p.Cell(it) = p.Cell(it.Down());
-  }
   it.SetBoundary(2);
   for(it.First(); it.Valid(); it.Next()) {
     p.Cell(it) = p.Cell(it.Right());
@@ -159,5 +155,9 @@ void Geometry::Update_P(Grid &p) const {
   it.SetBoundary(4);
   for(it.First(); it.Valid(); it.Next()) {
     p.Cell(it) = p.Cell(it.Left());
+  }
+	it.SetBoundary(1);
+  for(it.First(); it.Valid(); it.Next()) {
+    p.Cell(it) = p.Cell(it.Down());
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016   Stephan Lunowa, Markus Baur
+ * Copyright (C) 2016   Stephan Lunowa, Markus Baur, Jonas Harsch
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -116,11 +116,6 @@ const Grid *Compute::GetVelocity() {
     this->_tmp->Cell(it) = std::sqrt(uMean*uMean + vMean*vMean);
   }
   BoundaryIterator it(*(this->_tmp));
-  it.SetBoundary(1);
-  multi_real_t v = this->_geom.Velocity();
-  for(; it.Valid(); it.Next()) {
-    this->_tmp->Cell(it) = 2*std::sqrt(v[0]*v[0] + v[1]*v[1]) - this->_tmp->Cell(it.Down());
-  }
   it.SetBoundary(2);
   for(; it.Valid(); it.Next()) {
     this->_tmp->Cell(it) = -this->_tmp->Cell(it.Right());
@@ -132,6 +127,11 @@ const Grid *Compute::GetVelocity() {
     it.SetBoundary(4);
   for(; it.Valid(); it.Next()) {
     this->_tmp->Cell(it) = -this->_tmp->Cell(it.Left());
+  }
+	it.SetBoundary(1);
+  multi_real_t v = this->_geom.Velocity();
+  for(; it.Valid(); it.Next()) {
+    this->_tmp->Cell(it) = 2*std::sqrt(v[0]*v[0] + v[1]*v[1]) - this->_tmp->Cell(it.Down());
   }
   return _tmp;
 }
