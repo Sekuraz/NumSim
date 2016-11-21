@@ -22,8 +22,8 @@
 //------------------------------------------------------------------------------
 class Compute {
 public:
-  /// Creates a compute instance with given geometry and parameter
-  Compute(const Geometry &geom, const Parameter &param);
+  /// Creates a compute instance with given geometry, parameter and Communicator
+  Compute(const Geometry &geom, const Parameter &param, const Communicator &comm);
   /// Deletes all grids
   ~Compute();
 
@@ -52,33 +52,25 @@ public:
   const Grid *GetStream();
 
 private:
-  // current timestep
-  real_t _t;
+  real_t _t; ///< current timestep
 
-  // donor-cell diffusion condition (p. 27)
-  real_t _dtlimit;
+  real_t _dtlimit; ///< donor-cell diffusion condition (p. 27)
 
-  // velocities
-  Grid *_u;
-  Grid *_v;
+  Grid *_u; ///< velocities in x-direction
+  Grid *_v; ///< velocities in y-direction
+  Grid *_p; ///< pressure
 
-  // pressure
-  Grid *_p;
+  Grid *_F; /// prel. velocities in x-direction
+  Grid *_G; /// prel. velocities in y-direction
+  Grid *_rhs; ///< right-hand side of the pressure (poisson) equation
 
-  // prel. vel
-  Grid *_F;
-  Grid *_G;
+  Grid *_tmp; ///< container for interpolating whichever values
 
-  // right-hand side
-  Grid *_rhs;
+  Solver *_solver; ///< solver for the pressure (poisson) equation
 
-  // container for interpolating whichever values
-  Grid *_tmp;
-
-  Solver *_solver;
-
-  const Geometry &_geom;
-  const Parameter &_param;
+  const Geometry &_geom; ///< geometry of the problem
+  const Parameter &_param; ///< parameters for the computation
+  const Communicator &_comm; ///< communicator for boundary exchange
 
   /// Compute the new velocites u,v
   void NewVelocities(const real_t &dt);

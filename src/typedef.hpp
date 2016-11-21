@@ -98,12 +98,14 @@ typedef array_t<index_t, DIM> multi_index_t;
 //------------------------------------------------------------------------------
 
 /// Forward declaration of classes used
-class Iterator;
+class Communicator;
+class Compute;
 class Geometry;
 class Grid;
+class Iterator;
 class Parameter;
 class Solver;
 class SOR;
-class Compute;
+class RedOrBlackSOR;
 
 #endif // __TYPEDEF_HPP

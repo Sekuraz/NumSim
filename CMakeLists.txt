@@ -24,11 +24,11 @@ if (NOT CMAKE_BUILD_TYPE)
 endif (NOT CMAKE_BUILD_TYPE)
 
 # set compiler
-set (CMAKE_CC_COMPILER "/usr/bin/gcc")
-set (CMAKE_CXX_COMPILER "/usr/bin/g++")
+set (CMAKE_CC_COMPILER "/usr/bin/mpicc")
+set (CMAKE_CXX_COMPILER "/usr/bin/mpic++")
 
 # set some good compiler flags
-set (GOOD_FLAGS "-Wall -Wextra -pedantic -O3 -std=c++11")
+set (GOOD_FLAGS "-Wall -Wextra -pedantic -O3 -march=native -std=c++11")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GOOD_FLAGS}")
 
 # debug visu?
@@ -46,6 +46,7 @@ INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES} ${MPI_INCLUDE_PATH})
 
 # Using glob is discouraged in cmake.
 set (HEADERS
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/comm.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/compute.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/geometry.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/grid.hpp
@@ -57,6 +58,7 @@ set (HEADERS
   )
 
 set (SOURCES
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/comm.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/compute.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/geometry.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/grid.cpp

@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include "typedef.hpp"
+#include "comm.hpp"
 #include "compute.hpp"
 #include "geometry.hpp"
 #include "iterator.hpp"
@@ -27,10 +28,11 @@
 #include "solver.hpp"
 
 int main(int argc, char *argv[]) {
+  Communicator comm(&argc, &argv);
   // Create parameter and geometry instances and load values
   Parameter param;
   param.Load("param.txt");
-  Geometry geom ({4, 4});
+  Geometry geom (comm, {4, 4});
 
   const multi_real_t &h = geom.Mesh();
   multi_real_t offset(h[0]/2, 0);

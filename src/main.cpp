@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include "typedef.hpp"
+#include "comm.hpp"
 #include "compute.hpp"
 #include "geometry.hpp"
 #include "iterator.hpp"
@@ -25,13 +26,14 @@
 #include "vtk.hpp"
 
 int main(int argc, char *argv[]) {
-  // Create parameter and geometry instances and load values
+  // Create communicator, parameter and geometry instances and load values
+  Communicator comm(&argc, &argv);
   Parameter param;
   param.Load("param.txt");
-  Geometry geom;
+  Geometry geom(comm);
   geom.Load("geometry.txt");
   // Create the fluid solver
-  Compute comp(geom, param);
+  Compute comp(geom, param, comm);
 
 #ifdef USE_DEBUG_VISU
   // Create and initialize the visualization
@@ -76,6 +78,7 @@ int main(int argc, char *argv[]) {
     if(comp.GetTime() >= nextTimeVTK ) {
       // Create a VTK File in the folder VTK (must exist)
       vtk.Init("VTK/field");
+      // TODO: get all data from the processes
       vtk.AddField("Velocity", comp.GetU(), comp.GetV());
       vtk.AddScalar("Pressure", comp.GetP());
       vtk.AddScalar("x-Velocity", comp.GetU());
@@ -84,7 +87,9 @@ int main(int argc, char *argv[]) {
       nextTimeVTK += param.VtkDt();
     }
 
-    std::cout << "t = " << comp.GetTime() << " " << std::endl;
+    if(comm.ThreadNum() == 0) {
+      std::cout << "t = " << comp.GetTime() << " " << std::endl;
+    }
 #ifdef USE_DEBUG_VISU
     //comp.TimeStep(true);
     comp.TimeStep(false);

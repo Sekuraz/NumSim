@@ -25,11 +25,11 @@
 #include "parameter.hpp"
 #include "solver.hpp"
 
-// Creates a compute instance with given geometry and parameter
-Compute::Compute(const Geometry &geom, const Parameter &param)
+// Creates a compute instance with given geometry, parameter and communicator
+Compute::Compute(const Geometry &geom, const Parameter &param, const Communicator &comm)
     : _t(0), _F(new Grid(geom, Grid::type::u)), _G(new Grid(geom, Grid::type::v)),
     _rhs(new Grid(geom, Grid::type::p)),
-    _geom(geom), _param(param) {
+    _geom(geom), _param(param), _comm(comm) {
 
   // initialize the solver
   this->_solver = new SOR(geom, param.Omega());
@@ -58,6 +58,8 @@ Compute::~Compute() {
 // @ param printInfo print information about current solver state (residual
 // etc.)
 void Compute::TimeStep(bool printInfo) {
+  // TODO: rewrite parallel (MPI)
+
   // compute dt
   real_t dt = this->_param.Dt();
   // Test CFL condition

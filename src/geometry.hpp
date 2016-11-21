@@ -35,8 +35,8 @@ public:
   //    |           |
   //    -------------
   //      u=0, v=0
-  Geometry();
-  Geometry(const multi_index_t& size);
+  Geometry(const Communicator &comm);
+  Geometry(const Communicator &comm, const multi_index_t& size);
 
   /// Loads a geometry from a file
   void Load(const char file[]);
@@ -80,15 +80,16 @@ public:
   void Update_P(Grid &p) const;
 
 private:
-  multi_index_t _size;
-  multi_index_t _sizeU;
-  multi_index_t _sizeV;
-  multi_index_t _sizeP;
-  multi_real_t _length;
-  multi_real_t _h;
+  const Communicator &_comm; ///< Communicator for boundary exchange and local sizes of Grids
+  multi_index_t _size;  ///< cartesian size of cells
+  multi_index_t _sizeU; ///< cartesian size of the local Grid for the velocities u in x-direction
+  multi_index_t _sizeV; ///< cartesian size of the local Grid for the velocities v in y-direction
+  multi_index_t _sizeP; ///< cartesian size of the local Grid for the pressure p
+  multi_real_t _length; ///< length of the physical domain in each dimension
+  multi_real_t _h; ///< cartesian size of Grid for velocities u in x-direction
 
-  multi_real_t _velocity;
-  real_t _pressure;
+  multi_real_t _velocity; ///< constant boundary velocities (u,v) at upper boundary
+  real_t _pressure; ///< constant pressure p at ?
 };
 //------------------------------------------------------------------------------
 #endif // __GEOMETRY_HPP
