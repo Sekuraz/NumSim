@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <mpi.h>
 #include "grid.hpp"
 #include "typedef.hpp"
 //------------------------------------------------------------------------------
@@ -82,6 +83,7 @@ public:
 private:
   multi_index_t _tidx; ///< The cartesian position of the process.
   multi_index_t _tdim; ///< The cartesian sizes in the dimensions.
+  MPI_Comm _mpi_cart_comm; ///< MPI_Comm with cartesian coordinates.
   int _rank; ///< The continous rank of this process.
   int _size; ///< The total amount of processes.
   bool _evenodd; ///< whether this process has a black or red domain.

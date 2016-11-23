@@ -3,30 +3,34 @@
 #include "grid.hpp"
 #include "typedef.hpp"
 
-Communicator::Communicator (int* argc, char*** argv) : _tidx(), _tdim() {
+Communicator::Communicator (int* argc, char*** argv) : _tidx(), _tdim(), _mpi_cart_comm() {
   MPI_Init(argc, argv);
-    
+
   // Get the rank of the current thread
   MPI_Comm_rank(MPI_COMM_WORLD, &this->_rank);
   // Get total number of threads
   MPI_Comm_size(MPI_COMM_WORLD, &this->_size);
   
   // compute idx and dim from rank and size
-  int dims[DIM];
+  int dims[DIM], periodic[DIM];
   for(index_t dim = 0; dim < DIM; dim++) {
     dims[dim] = 0;
+    periodic[dim] = 0;
   }
   MPI_Dims_create(this->_size, (int)DIM, dims);
-  
   for(index_t dim = 0; dim < DIM; dim++) {
     this->_tdim[dim] = dims[dim];
   }
-  // TODO: rewrite for DIM > 2
-  this->_tidx[1] = this->_rank / this->_tdim[0];
-  this->_tidx[0] = this->_rank % this->_tdim[0];
-  
+
+  MPI_Cart_create(MPI_COMM_WORLD, (int)DIM, dims, periodic, 0, &this->_mpi_cart_comm);
+  int coords[DIM];
+  MPI_Cart_get(this->_mpi_cart_comm, (int)DIM, dims, periodic, coords);
+  for(index_t dim = 0; dim < DIM; dim++) {
+    this->_tidx[dim] = coords[dim];
+  }
+
   // TODO: for testing
-  printf("Dims: %lu %lu \nRank: %i Idx: %lu %lu \n", _tdim[0], _tdim[1], _rank, _tidx[0], _tidx[1]);
+  printf("Dims: %lu %lu Rank: %i Idx: %lu %lu \n", _tdim[0], _tdim[1], _rank, _tidx[0], _tidx[1]);
 }
 
 Communicator::~Communicator () {
