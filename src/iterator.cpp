@@ -129,13 +129,13 @@ void InteriorIterator::Next() {
 // Sets the iterator to the first element
 void BoundaryIterator::First() {
   switch(this->_boundary) {
-    case 1: // top
+    case BoundaryIterator::boundary::top:
       this->_value = this->_grid.Size()[0]*(this->_grid.Size()[1]-1);
       break;
-    case 4: // right
+    case BoundaryIterator::boundary::right:
       this->_value = this->_grid.Size()[0]-1;
       break;
-    default: // left, down, all
+    default: // left, down
       this->_value = 0;
       break;
   }
@@ -144,27 +144,22 @@ void BoundaryIterator::First() {
 // Goes to the next element of the iterator, disables it if position is end
 void BoundaryIterator::Next() {
   switch(this->_boundary) {
-    case 0: // all
-      // TODO implement all boundaries
-      std::cerr << "Error: BoundaryIterator: all boundaries not implemented.";
-      this->_valid = false;
-      break;
-    case 1: // top
+    case BoundaryIterator::boundary::top:
       Iterator::Next();
       break;
-    case 2: // left
+    case BoundaryIterator::boundary::left:
       this->_value += this->_grid.Size()[0];
       if(this->_value >= this->_grid.dataSize()) {
         this->_valid = false;
       }
       break;
-    case 3: // down
+    case BoundaryIterator::boundary::down:
       Iterator::Next();
       if(this->_value >= this->_grid.Size()[0]) {
         this->_valid = false;
       }
       break;
-    case 4: // right
+    case BoundaryIterator::boundary::right:
       this->_value += this->_grid.Size()[0];
       if(this->_value >= this->_grid.dataSize()) {
         this->_valid = false;

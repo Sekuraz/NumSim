@@ -88,18 +88,17 @@ public:
 */
 class BoundaryIterator : public Iterator {
 public:
+  /// enum for the boundaries
+  enum boundary{left, down, right, top};
+
   /// Constructs a new BoundaryIterator
-  BoundaryIterator(const Grid &grid, index_t boundary = 0) : Iterator(grid), _boundary(boundary) {this->First();}
+  BoundaryIterator(const Grid &grid, BoundaryIterator::boundary b = BoundaryIterator::boundary::down)
+      : Iterator(grid), _boundary(b) { this->First(); }
 
   /// Sets the boundary to iterate
-  /// \param[in] boundary - the boundary to iterate over.
-  /// * 0 all \todo TODO: not implemented yet
-  /// * 1 top
-  /// * 2 left
-  /// * 3 down
-  /// * 4 right
-  inline void SetBoundary(const index_t &boundary) {
-      this->_boundary = boundary;
+  /// \param[in] b - the boundary to iterate over.
+  inline void SetBoundary(const BoundaryIterator::boundary &b) {
+      this->_boundary = b;
       this->First();
   }
 
@@ -109,7 +108,7 @@ public:
   void Next();
 
 private:
-  index_t _boundary;
+  BoundaryIterator::boundary _boundary;
 };
 //------------------------------------------------------------------------------
 #endif // __ITERATOR_HPP

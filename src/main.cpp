@@ -29,16 +29,21 @@ int main(int argc, char *argv[]) {
   // Create communicator, parameter and geometry instances and load values
   Communicator comm(&argc, &argv);
   Parameter param;
-  param.Load("param.txt");
+  param.Load("param.txt", (comm.ThreadNum() == 0));
   Geometry geom(comm);
   geom.Load("geometry.txt");
+
+  // TODO: for testing
+  std::cout << "Grids: " << geom.Size() << ", u " << geom.SizeU() << ", v " << geom.SizeV()
+            << ", p " << geom.SizeP() << std::endl;
+
   // Create the fluid solver
   Compute comp(geom, param, comm);
 
 #ifdef USE_DEBUG_VISU
   // Create and initialize the visualization
   Renderer visu(geom.Length(), geom.Mesh());
-  visu.Init(600,600);//(800, 800);
+  visu.Init(600 / comm.ThreadDim()[0],600 / comm.ThreadDim()[1]);
 #endif // USE_DEBUG_VISU
 
   // Create a VTK generator
@@ -91,10 +96,15 @@ int main(int argc, char *argv[]) {
       std::cout << "t = " << comp.GetTime() << " " << std::endl;
     }
 #ifdef USE_DEBUG_VISU
-    //comp.TimeStep(true);
+    //comp.TimeStep(comm.ThreadNum() == 0);
     comp.TimeStep(false);
 #else
     comp.TimeStep(false);
+#endif
+
+#ifdef USE_DEBUG_VISU
+    // Gather if one process stopped
+    run = comm.gatherAnd(run);
 #endif
   }
   return 0;

@@ -117,20 +117,19 @@ const Grid *Compute::GetVelocity() {
     real_t vMean = (this->_v->Cell(itV) + this->_v->Cell(itV.Down()))/2;
     this->_tmp->Cell(it) = std::sqrt(uMean*uMean + vMean*vMean);
   }
-  BoundaryIterator it(*(this->_tmp));
-  it.SetBoundary(2);
+  BoundaryIterator it(*(this->_tmp), BoundaryIterator::boundary::left);
   for(; it.Valid(); it.Next()) {
     this->_tmp->Cell(it) = -this->_tmp->Cell(it.Right());
   }
-    it.SetBoundary(3);
+  it.SetBoundary(BoundaryIterator::boundary::down);
   for(; it.Valid(); it.Next()) {
     this->_tmp->Cell(it) = -this->_tmp->Cell(it.Top());
   }
-    it.SetBoundary(4);
+  it.SetBoundary(BoundaryIterator::boundary::right);
   for(; it.Valid(); it.Next()) {
     this->_tmp->Cell(it) = -this->_tmp->Cell(it.Left());
   }
-	it.SetBoundary(1);
+  it.SetBoundary(BoundaryIterator::boundary::top);
   multi_real_t v = this->_geom.Velocity();
   for(; it.Valid(); it.Next()) {
     this->_tmp->Cell(it) = 2*std::sqrt(v[0]*v[0] + v[1]*v[1]) - this->_tmp->Cell(it.Down());

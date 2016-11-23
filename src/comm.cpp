@@ -38,6 +38,12 @@ Communicator::~Communicator () {
   MPI_Finalize();
 }
 
+bool Communicator::gatherAnd(const bool& val) const {
+  bool ret;
+  MPI_Allreduce(&val, &ret, 1, MPI_CXX_BOOL, MPI_LAND, this->_mpi_cart_comm);
+  return ret;
+}
+
 real_t Communicator::gatherSum(const real_t& val) const {
   real_t sum;
   MPI_Allreduce(&val, &sum, 1, MPI_REAL_TYPE, MPI_SUM, this->_mpi_cart_comm);
@@ -88,19 +94,20 @@ void Communicator::copyBoundary(Grid& grid) const {
 }
 
 bool Communicator::copyLeftBoundary(Grid& grid) const {
-  index_t size = grid.Size()[1];
+  const index_t& size = grid.Size()[1];
   real_t* buffer = new real_t[size];
 
   index_t i = 0;
-  BoundaryIterator it (grid, 2);
+  BoundaryIterator it (grid, BoundaryIterator::boundary::left);
   for(it.First(); it.Valid(); it.Next()) {
     buffer[i] = grid.Cell(it.Right());
     i++;
   }
 
-  int source, dest;
+  int source, dest, result;
   MPI_Cart_shift(this->_mpi_cart_comm, 0, -1, &source, &dest);
-  MPI_Sendrecv_replace(buffer, i, MPI_REAL_TYPE, dest, 0, dest, 0, this->_mpi_cart_comm, MPI_STATUS_IGNORE);
+  result = MPI_Sendrecv_replace(buffer, size, MPI_REAL_TYPE, dest, 0, dest, 0,
+                                this->_mpi_cart_comm, MPI_STATUS_IGNORE);
 
   i = 0;
   for(it.First(); it.Valid(); it.Next()) {
@@ -110,22 +117,23 @@ bool Communicator::copyLeftBoundary(Grid& grid) const {
 
   delete[] buffer;
 
-  return false;
+  return (result == MPI_SUCCESS);
 }
 bool Communicator::copyRightBoundary(Grid& grid) const {
-  index_t size = grid.Size()[1];
+  const index_t& size = grid.Size()[1];
   real_t* buffer = new real_t[size];
 
   index_t i = 0;
-  BoundaryIterator it (grid, 4);
+  BoundaryIterator it (grid, BoundaryIterator::boundary::right);
   for(it.First(); it.Valid(); it.Next()) {
     buffer[i] = grid.Cell(it.Left());
     i++;
   }
 
-  int source, dest;
+  int source, dest, result;
   MPI_Cart_shift(this->_mpi_cart_comm, 0, 1, &source, &dest);
-  MPI_Sendrecv_replace(buffer, i, MPI_REAL_TYPE, dest, 0, dest, 0, this->_mpi_cart_comm, MPI_STATUS_IGNORE);
+  result = MPI_Sendrecv_replace(buffer, size, MPI_REAL_TYPE, dest, 0, dest, 0,
+                                this->_mpi_cart_comm, MPI_STATUS_IGNORE);
 
   i = 0;
   for(it.First(); it.Valid(); it.Next()) {
@@ -135,22 +143,23 @@ bool Communicator::copyRightBoundary(Grid& grid) const {
 
   delete[] buffer;
 
-  return false;
+  return (result == MPI_SUCCESS);
 }
 bool Communicator::copyTopBoundary(Grid& grid) const {
-  index_t size = grid.Size()[0];
+  const index_t& size = grid.Size()[0];
   real_t* buffer = new real_t[size];
 
   index_t i = 0;
-  BoundaryIterator it (grid, 1);
+  BoundaryIterator it (grid, BoundaryIterator::boundary::top);
   for(it.First(); it.Valid(); it.Next()) {
     buffer[i] = grid.Cell(it.Down());
     i++;
   }
 
-  int source, dest;
+  int source, dest, result;
   MPI_Cart_shift(this->_mpi_cart_comm, 1, 1, &source, &dest);
-  MPI_Sendrecv_replace(buffer, i, MPI_REAL_TYPE, dest, 0, dest, 0, this->_mpi_cart_comm, MPI_STATUS_IGNORE);
+  result = MPI_Sendrecv_replace(buffer, size, MPI_REAL_TYPE, dest, 0, dest, 0,
+                                this->_mpi_cart_comm, MPI_STATUS_IGNORE);
 
   i = 0;
   for(it.First(); it.Valid(); it.Next()) {
@@ -160,22 +169,23 @@ bool Communicator::copyTopBoundary(Grid& grid) const {
 
   delete[] buffer;
 
-  return false;
+  return (result == MPI_SUCCESS);
 }
 bool Communicator::copyBottomBoundary(Grid& grid) const {
-  index_t size = grid.Size()[0];
+  const index_t& size = grid.Size()[0];
   real_t* buffer = new real_t[size];
 
   index_t i = 0;
-  BoundaryIterator it (grid, 3);
+  BoundaryIterator it (grid, BoundaryIterator::boundary::down);
   for(it.First(); it.Valid(); it.Next()) {
     buffer[i] = grid.Cell(it.Top());
     i++;
   }
 
-  int source, dest;
+  int source, dest, result;
   MPI_Cart_shift(this->_mpi_cart_comm, 1, -1, &source, &dest);
-  MPI_Sendrecv_replace(buffer, i, MPI_REAL_TYPE, dest, 0, dest, 0, this->_mpi_cart_comm, MPI_STATUS_IGNORE);
+  result = MPI_Sendrecv_replace(buffer, size, MPI_REAL_TYPE, dest, 0, dest, 0,
+                                this->_mpi_cart_comm, MPI_STATUS_IGNORE);
 
   i = 0;
   for(it.First(); it.Valid(); it.Next()) {
@@ -185,6 +195,6 @@ bool Communicator::copyBottomBoundary(Grid& grid) const {
 
   delete[] buffer;
 
-  return false;
+  return (result == MPI_SUCCESS);
 }
 

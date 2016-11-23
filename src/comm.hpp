@@ -30,7 +30,7 @@
   #define MPI_REAL_TYPE MPI_FLOAT
 #endif
 
-
+/// Class for all data exchange between the processes (via MPI).
 class Communicator {
 public:
   /// Communicator constructor. Initializes MPI Environment.
@@ -54,6 +54,10 @@ public:
   /// Returns whether this process is a red or a black field.
   inline const bool& EvenOdd() const { return this->_evenodd; };
 
+  /// Returns if the values of all processes are true.
+  /// \param [in] val The data over which the logical operation is to be calculated
+  /// \return Whether the values of all processes are true.
+  bool gatherAnd(const bool& val) const;
   /// Gets the sum of all values and distributes the result among all processes.
   /// \param [in] val The data over which the sum is to be calculated
   /// \return The sum of the values of all processes
