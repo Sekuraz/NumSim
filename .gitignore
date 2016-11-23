@@ -1,7 +1,6 @@
 *
+!/**/
 !*.*
-!*/*
-
 
 # Compiled Object files
 *.slo
@@ -32,9 +31,6 @@
 *.exe
 *.out
 *.app
-numsim
-dc_test
-iter_test
 
 # Makefiles
 CMakeCache.txt

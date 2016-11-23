@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include "typedef.hpp"
+#include "comm.hpp"
 #include "compute.hpp"
 #include "geometry.hpp"
 #include "iterator.hpp"
@@ -27,17 +28,18 @@
 #include "solver.hpp"
 
 int main(int argc, char *argv[]) {
+  Communicator comm(&argc, &argv);
   // Create parameter and geometry instances and load values
   Parameter param;
   param.Load("param.txt");
-  Geometry geom;
+  Geometry geom(comm, {16,16});
 
   Grid g (geom,Grid::type::p);
   Grid rhs (geom,Grid::type::p);
   g.Initialize(0);
   rhs.Initialize(0);
 
-  SOR sor(geom, 0.5);
+  SOR sor(geom, param.Omega());
   // Create and initialize the visualization
   Renderer visu(geom.Length(), geom.Mesh());
   visu.Init(600,600);//(800, 800);
