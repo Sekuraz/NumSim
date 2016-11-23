@@ -44,9 +44,10 @@ int main(int argc, char *argv[]) {
   Renderer visu(geom.Length(), geom.Mesh());
   visu.Init(600,600);//(800, 800);
     multi_index_t half = {geom.Size()[0]/2, geom.Size()[1]/2};
-    g.Cell(Iterator(g, half)) = 1000;
+  g.Cell(Iterator(g, half)) = 1000;
 
-  for (int i = 0; true; i++) {
+  bool run = true;
+  for (int i = 0; run; i++) {
     std::cout << "step = " << i << " " << std::endl;
 
     geom.Update_P(g);
@@ -61,8 +62,9 @@ int main(int argc, char *argv[]) {
         printf("%+.2f, ", g.Cell(it) * 1);
     }
     std::cout << std::endl;
-    std::cin.get();
 
+    if(std::cin.get() == 'q') run = false;
+    run = comm.gatherAnd(run);
   }
   return 0;
 }

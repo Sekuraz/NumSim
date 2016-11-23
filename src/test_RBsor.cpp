@@ -50,14 +50,24 @@ int main(int argc, char *argv[]) {
   multi_index_t half = {geom.Size()[0]/2, geom.Size()[1]/2};
   g.Cell(Iterator(g, half)) = 1000;
 
-  for (int i = 0; true; i++) {
-    std::cout << "step = " << i << " " << std::endl;
+  bool run = true;
+  for (int i = 0; run; i++) {
+    if(comm.ThreadNum() == 0) {
+      std::cout << "step = " << i << " " << std::endl;
+    }
 
     geom.Update_P(g);
     rbsor.RedCycle(g, rhs);
     geom.Update_P(g);
     rbsor.BlackCycle(g,rhs);
-    visu.Render(&g);
+
+    // compute global min and max
+    real_t min, max;
+    g.MinMax(min, max);
+    min = comm.gatherMin(min);
+    max = comm.gatherMax(max);
+
+    visu.Render(&g, min, max);
 
     /*for (Iterator it(g); it.Valid(); it.Next()) {
         if (it.Pos()[0] == 0) {
@@ -66,8 +76,9 @@ int main(int argc, char *argv[]) {
         printf("%+.2f, ", g.Cell(it) * 1);
     }
     std::cout << std::endl;*/
-    std::cin.get();
-
+    if(std::cin.get() == 'q') run = false;
+    run = comm.gatherAnd(run);
   }
+
   return 0;
 }
