@@ -41,6 +41,11 @@ public:
   /// Loads a geometry from a file
   void Load(const char file[]);
 
+  /// Returns the total number of cells in each dimension
+  const multi_index_t& TotalSize () const {
+    return this->_totalSize;
+  }
+
   /// Returns the number of cells in each dimension
   inline const multi_index_t &Size() const {
     return this->_size;
@@ -80,16 +85,19 @@ public:
   void Update_P(Grid &p) const;
 
 private:
-  const Communicator &_comm; ///< Communicator for boundary exchange and local sizes of Grids
-  multi_index_t _size;  ///< cartesian size of cells
-  multi_index_t _sizeU; ///< cartesian size of the local Grid for the velocities u in x-direction
-  multi_index_t _sizeV; ///< cartesian size of the local Grid for the velocities v in y-direction
-  multi_index_t _sizeP; ///< cartesian size of the local Grid for the pressure p
-  multi_real_t _length; ///< length of the physical domain in each dimension
-  multi_real_t _h; ///< cartesian size of Grid for velocities u in x-direction
+  /// Computes the sizes of the grids.
+  void computeSizes();
 
-  multi_real_t _velocity; ///< constant boundary velocities (u,v) at upper boundary
-  real_t _pressure; ///< constant pressure p at ?
+  const Communicator &_comm; ///< Communicator for boundary exchange and local sizes of Grids
+  multi_index_t _totalSize;  ///< cartesian total number of cells
+  multi_index_t _size;       ///< cartesian local number of cells
+  multi_index_t _sizeU;      ///< cartesian size of the local Grid for the velocities u in x-direction
+  multi_index_t _sizeV;      ///< cartesian size of the local Grid for the velocities v in y-direction
+  multi_index_t _sizeP;      ///< cartesian size of the local Grid for the pressure p
+  multi_real_t _length;      ///< length of the physical domain in each dimension
+  multi_real_t _h;           ///< cartesian size of Grid for velocities u in x-direction
+  multi_real_t _velocity;    ///< constant boundary velocities (u,v) at upper boundary
+  real_t _pressure;          ///< constant pressure p at ?
 };
 //------------------------------------------------------------------------------
 #endif // __GEOMETRY_HPP

@@ -40,19 +40,19 @@ Communicator::~Communicator () {
 
 real_t Communicator::gatherSum(const real_t& val) const {
   real_t sum;
-  MPI_Allreduce(&val, &sum, 1, MPI_REAL_TYPE, MPI_SUM, MPI_COMM_WORLD);
+  MPI_Allreduce(&val, &sum, 1, MPI_REAL_TYPE, MPI_SUM, this->_mpi_cart_comm);
   return sum;
 }
 
 real_t Communicator::gatherMin(const real_t& val) const {
   real_t min;
-  MPI_Allreduce(&val, &min, 1, MPI_REAL_TYPE, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(&val, &min, 1, MPI_REAL_TYPE, MPI_MIN, this->_mpi_cart_comm);
   return min;
 }
 
 real_t Communicator::gatherMax(const real_t& val) const {
   real_t max;
-  MPI_Allreduce(&val, &max, 1, MPI_REAL_TYPE, MPI_MAX, MPI_COMM_WORLD);
+  MPI_Allreduce(&val, &max, 1, MPI_REAL_TYPE, MPI_MAX, this->_mpi_cart_comm);
   return max;
 }
 
