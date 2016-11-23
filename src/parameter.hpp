@@ -28,7 +28,7 @@ public:
                 _eps(1e-3), _tau(0.8), _itermax(100), _vtkDt(0.2) {};
 
   /// Loads the parameter values from a file
-  void Load(const char file[]);
+  void Load(const char file[], const bool printinfo = 0);
 
   /// Getter functions for all parameters
   inline const real_t &Re() const { return this->_re; };

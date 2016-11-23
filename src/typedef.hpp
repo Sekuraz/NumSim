@@ -83,12 +83,12 @@ template <typename _type, index_t _dim> struct array_t {
 };
 
 template <typename _type, index_t _dim> std::ostream& operator<<(std::ostream& os, const array_t<_type, _dim> value) {
-    os << "[";
-    for (index_t i = 0; i < value.dim; i++) {
-        os << value.x[i] << ", ";
-    }
-    os << "]";
-    return os;
+  os << "[" << value.x[0];
+  for (index_t i = 1; i < value.dim; i++) {
+      os << ", " << value.x[i];
+  }
+  os << "]";
+  return os;
 }
 /// Typedef for d-dimensional array of reals
 typedef array_t<real_t, DIM> multi_real_t;

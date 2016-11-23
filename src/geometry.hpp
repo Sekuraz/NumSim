@@ -64,7 +64,7 @@ public:
     return this->_sizeP;
   }
 
-  /// Returns the length of the domain
+  /// Returns the local length of the domain
   inline const multi_real_t &Length() const {
     return this->_length;
   }
@@ -94,7 +94,8 @@ private:
   multi_index_t _sizeU;      ///< cartesian size of the local Grid for the velocities u in x-direction
   multi_index_t _sizeV;      ///< cartesian size of the local Grid for the velocities v in y-direction
   multi_index_t _sizeP;      ///< cartesian size of the local Grid for the pressure p
-  multi_real_t _length;      ///< length of the physical domain in each dimension
+  multi_real_t _totalLength; ///< total length of the physical domain in each dimension
+  multi_real_t _length;      ///< local length of the physical domain in each dimension
   multi_real_t _h;           ///< cartesian size of Grid for velocities u in x-direction
   multi_real_t _velocity;    ///< constant boundary velocities (u,v) at upper boundary
   real_t _pressure;          ///< constant pressure p at ?

@@ -22,57 +22,60 @@
 #include "geometry.hpp"
 #include "iterator.hpp"
 
-using namespace std;
-
 Geometry::Geometry(const Communicator &comm) : Geometry(comm, multi_index_t {128, 128}) {}
 
 Geometry::Geometry(const Communicator &comm, const multi_index_t& size)
-    : _comm(comm), _totalSize(size), _size(), _sizeU(), _sizeV(), _sizeP(), _length(1,1) {
+    : _comm(comm), _totalSize(size), _size(), _sizeU(), _sizeV(), _sizeP(), _totalLength(1,1) {
   this->computeSizes();
 }
 
 /// Loads a geometry from a file
 void Geometry::Load(const char file[]) {
-  string param;
+  std::string param;
   real_t value;
-  ifstream in(file);
+  std::ifstream in(file);
   while(in.good()) {
-    in >> ws >> param >> ws;
-    in.ignore(); // removes '=' between parameter and value
-    in >> ws >> value >> ws;
+    in >> param >> std::ws;
+    if(!std::isdigit(in.peek())) {
+      in.ignore(); // removes separator between parameter and value
+    }
+    in >> value;
     if(!param.compare("Size") || !param.compare("size")) {
       this->_totalSize[0] = (index_t)value;
-      cout << "Geometry: Load size = " << value;
       for(index_t dim = 1; dim < DIM; dim++) {
-        in >> value >> ws;
+        in >> value;
         this->_totalSize[dim] = (index_t)value;
-        cout << " " << value;
       }
-      cout << endl;
+      if(this->_comm.ThreadNum() == 0) {
+        std::cout << "Geometry: Load size = " << this->_totalSize << std::endl;
+      }
     } else if(!param.compare("Length") || !param.compare("length")) {
-      this->_length[0] = value;
-      cout << "Geometry: Load length = " << value;
+      this->_totalLength[0] = value;
       for(index_t dim = 1; dim < DIM; dim++) {
-        in >> value >> ws;
-        this->_length[dim] = value;
-        cout << " " << value;
+        in >> value;
+        this->_totalLength[dim] = value;
       }
-      cout << endl;
+      if(this->_comm.ThreadNum() == 0) {
+        std::cout << "Geometry: Load length = " << this->_totalLength << std::endl;
+      }
     } else if(!param.compare("Velocity") || !param.compare("velocity")) {
       this->_velocity[0] = value;
-      cout << "Geometry: Load velocity = " << value;
       for(index_t dim = 1; dim < DIM; dim++) {
-        in >> value >> ws;
+        in >> value;
         this->_velocity[dim] = value;
-        cout << " " << value;
       }
-      cout << endl;
+      if(this->_comm.ThreadNum() == 0) {
+        std::cout << "Geometry: Load velocity = " << this->_velocity << std::endl;
+      }
     } else if(!param.compare("Pressure") || !param.compare("pressure")) {
-      cout << "Geometry: Load pressure = " << value << endl;
       this->_pressure = value;
+      if(this->_comm.ThreadNum() == 0) {
+        std::cout << "Geometry: Load pressure = " << this->_pressure << std::endl;
+      }
     } else {
-      cerr << "Geometry: unknown identifier " << param;
+      std::cerr << "Geometry: unknown identifier " << param << std::endl;
     }
+    in >> std::ws;
   }
   in.close();
 
@@ -189,6 +192,7 @@ void Geometry::computeSizes() {
   //const multi_index_t& idx = this->_comm.ThreadIdx();
   for(index_t dim = 0; dim < DIM; dim++) {
     this->_size[dim] = this->_totalSize[dim] / numProc[dim];
+    this->_length[dim] = this->_totalLength[dim] / numProc[dim];
     if(this->_size[dim] % 2 == 1) {
       this->_size[dim]++;
     }
