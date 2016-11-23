@@ -86,11 +86,13 @@ endif (DEBUG_VISU)
 
 # build executable and link libs against it
 add_executable (numsim ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+add_executable (mpi_test ${CMAKE_CURRENT_SOURCE_DIR}/src/test_mpi.cpp)
 add_executable (iter_test ${CMAKE_CURRENT_SOURCE_DIR}/src/test_iterator.cpp)
 add_executable (dc_test ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dc.cpp)
 add_library (libnumsim ${SOURCES})
 
 target_link_libraries (numsim libnumsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
+target_link_libraries (mpi_test libnumsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
 target_link_libraries (iter_test libnumsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
 target_link_libraries (dc_test libnumsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
 

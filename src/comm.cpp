@@ -1,6 +1,7 @@
 #include <mpi.h>
 #include "comm.hpp"
 #include "grid.hpp"
+#include "iterator.hpp"
 #include "typedef.hpp"
 
 Communicator::Communicator (int* argc, char*** argv) : _tidx(), _tdim(), _mpi_cart_comm() {
@@ -10,7 +11,7 @@ Communicator::Communicator (int* argc, char*** argv) : _tidx(), _tdim(), _mpi_ca
   MPI_Comm_rank(MPI_COMM_WORLD, &this->_rank);
   // Get total number of threads
   MPI_Comm_size(MPI_COMM_WORLD, &this->_size);
-  
+
   // compute idx and dim from rank and size
   int dims[DIM], periodic[DIM];
   for(index_t dim = 0; dim < DIM; dim++) {
@@ -87,19 +88,103 @@ void Communicator::copyBoundary(Grid& grid) const {
 }
 
 bool Communicator::copyLeftBoundary(Grid& grid) const {
-  // TODO implement
+  index_t size = grid.Size()[1];
+  real_t* buffer = new real_t[size];
+
+  index_t i = 0;
+  BoundaryIterator it (grid, 2);
+  for(it.First(); it.Valid(); it.Next()) {
+    buffer[i] = grid.Cell(it.Right());
+    i++;
+  }
+
+  int source, dest;
+  MPI_Cart_shift(this->_mpi_cart_comm, 0, -1, &source, &dest);
+  MPI_Sendrecv_replace(buffer, i, MPI_REAL_TYPE, dest, 0, dest, 0, this->_mpi_cart_comm, MPI_STATUS_IGNORE);
+
+  i = 0;
+  for(it.First(); it.Valid(); it.Next()) {
+    grid.Cell(it) = buffer[i];
+    i++;
+  }
+
+  delete[] buffer;
+
   return false;
 }
 bool Communicator::copyRightBoundary(Grid& grid) const {
-  // TODO implement
+  index_t size = grid.Size()[1];
+  real_t* buffer = new real_t[size];
+
+  index_t i = 0;
+  BoundaryIterator it (grid, 4);
+  for(it.First(); it.Valid(); it.Next()) {
+    buffer[i] = grid.Cell(it.Left());
+    i++;
+  }
+
+  int source, dest;
+  MPI_Cart_shift(this->_mpi_cart_comm, 0, 1, &source, &dest);
+  MPI_Sendrecv_replace(buffer, i, MPI_REAL_TYPE, dest, 0, dest, 0, this->_mpi_cart_comm, MPI_STATUS_IGNORE);
+
+  i = 0;
+  for(it.First(); it.Valid(); it.Next()) {
+    grid.Cell(it) = buffer[i];
+    i++;
+  }
+
+  delete[] buffer;
+
   return false;
 }
 bool Communicator::copyTopBoundary(Grid& grid) const {
-  // TODO implement
+  index_t size = grid.Size()[0];
+  real_t* buffer = new real_t[size];
+
+  index_t i = 0;
+  BoundaryIterator it (grid, 1);
+  for(it.First(); it.Valid(); it.Next()) {
+    buffer[i] = grid.Cell(it.Down());
+    i++;
+  }
+
+  int source, dest;
+  MPI_Cart_shift(this->_mpi_cart_comm, 1, 1, &source, &dest);
+  MPI_Sendrecv_replace(buffer, i, MPI_REAL_TYPE, dest, 0, dest, 0, this->_mpi_cart_comm, MPI_STATUS_IGNORE);
+
+  i = 0;
+  for(it.First(); it.Valid(); it.Next()) {
+    grid.Cell(it) = buffer[i];
+    i++;
+  }
+
+  delete[] buffer;
+
   return false;
 }
 bool Communicator::copyBottomBoundary(Grid& grid) const {
-  // TODO implement
+  index_t size = grid.Size()[0];
+  real_t* buffer = new real_t[size];
+
+  index_t i = 0;
+  BoundaryIterator it (grid, 3);
+  for(it.First(); it.Valid(); it.Next()) {
+    buffer[i] = grid.Cell(it.Top());
+    i++;
+  }
+
+  int source, dest;
+  MPI_Cart_shift(this->_mpi_cart_comm, 1, -1, &source, &dest);
+  MPI_Sendrecv_replace(buffer, i, MPI_REAL_TYPE, dest, 0, dest, 0, this->_mpi_cart_comm, MPI_STATUS_IGNORE);
+
+  i = 0;
+  for(it.First(); it.Valid(); it.Next()) {
+    grid.Cell(it) = buffer[i];
+    i++;
+  }
+
+  delete[] buffer;
+
   return false;
 }
 

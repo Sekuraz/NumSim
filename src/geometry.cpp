@@ -28,7 +28,7 @@ Geometry::Geometry(const Communicator &comm) : Geometry(comm, multi_index_t {128
 Geometry::Geometry(const Communicator &comm, const multi_index_t& size)
     : _comm(comm), _size(size), _sizeU(_size), _sizeV(_size), _sizeP(_size), _length(1,1) {
   // TODO resize grids for processes
-  
+
   for(index_t dim = 0; dim < DIM; dim++) {
     this->_sizeU[dim] += (dim == 0)? 1 : 2;
     this->_sizeV[dim] += (dim == 1)? 1 : 2;
@@ -83,7 +83,7 @@ void Geometry::Load(const char file[]) {
   in.close();
 
   // TODO resize grids for processes
-  
+
   for(index_t dim = 0; dim < DIM; dim++) {
     this->_sizeU[dim] = this->_size[dim] + ((dim == 0)? 1 : 2);
     this->_sizeV[dim] = this->_size[dim] + ((dim == 1)? 1 : 2);
@@ -125,7 +125,7 @@ void Geometry::Update_V(Grid &v) const {
   // TODO update inner boundaries for processes
 
   BoundaryIterator it(v);
-  // driven cavity v given at top  
+  // driven cavity v given at top
   // homogenous Dirichlet condition (mean) left
   it.SetBoundary(2);
   for(it.First(); it.Valid(); it.Next()) {

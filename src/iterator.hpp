@@ -89,7 +89,7 @@ public:
 class BoundaryIterator : public Iterator {
 public:
   /// Constructs a new BoundaryIterator
-  BoundaryIterator(const Grid &grid) : Iterator(grid), _boundary(0) {}
+  BoundaryIterator(const Grid &grid, index_t boundary = 0) : Iterator(grid), _boundary(boundary) {this->First();}
 
   /// Sets the boundary to iterate
   /// \param[in] boundary - the boundary to iterate over.
