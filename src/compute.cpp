@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <cmath>
 #include "typedef.hpp"
+#include "comm.hpp"
 #include "compute.hpp"
 #include "geometry.hpp"
 #include "grid.hpp"
@@ -28,11 +29,11 @@
 // Creates a compute instance with given geometry, parameter and communicator
 Compute::Compute(const Geometry &geom, const Parameter &param, const Communicator &comm)
     : _t(0), _F(new Grid(geom, Grid::type::u)), _G(new Grid(geom, Grid::type::v)),
-    _rhs(new Grid(geom, Grid::type::p)),
+    _rhs(new Grid(geom, Grid::type::p)), _velocities(new Grid(geom, Grid::type::inner)),
     _geom(geom), _param(param), _comm(comm) {
 
   // initialize the solver
-  this->_solver = new SOR(geom, param.Omega());
+  this->_solver = new RedOrBlackSOR(geom, param.Omega());
 
   // initialize u,v,p
   const multi_real_t &h = this->_geom.Mesh();
@@ -51,30 +52,22 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
 // Deletes all grids
 Compute::~Compute() {
   delete _u; delete _v; delete _p; delete _F; delete _G;
-  delete _rhs; delete _tmp; delete _solver;
+  delete _rhs; delete _velocities; delete _tmp; delete _solver;
 }
 
 // Execute one time step of the fluid simulation (with or without debug info)
 // @ param printInfo print information about current solver state (residual
 // etc.)
 void Compute::TimeStep(bool printInfo) {
-  // TODO: rewrite parallel (MPI)
-
-  // compute dt
-  real_t dt = this->_param.Dt();
-  // Test CFL condition
+  // compute local dt
+  // Test CFL and Pr condition
   const multi_real_t &h = this->_geom.Mesh();
-  this->_dtlimit = this->_param.Tau() * std::min(h[0] / this->_u->AbsMax(), h[1] / this->_v->AbsMax());
-  if(this->_dtlimit < dt) {
-    dt = this->_dtlimit;
-    std::cerr << "Warning: Compute: CFL > tau. New dt = " << dt << "!" << std::endl;
-  }
-  // Test Pr condition
-  this->_dtlimit = this->_param.Tau() * this->_param.Re() * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]);
-  if(this->_dtlimit < dt) {
-    dt = this->_dtlimit;
-    std::cerr << "Warning: Compute: Pr > tau. New dt = " << dt << "!" << std::endl;
-  }
+  this->_dtlimit = this->_param.Tau()
+                 * std::min(std::min(h[0] / this->_u->AbsMax(), h[1] / this->_v->AbsMax()),
+                            this->_param.Re() * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]));
+  real_t dt = std::min(this->_dtlimit, this->_param.Dt());
+  // gather global dt
+  dt = this->_comm.gatherMin(dt);
 
   // set boundary values for u, v
   this->_geom.Update_U(*(this->_u));
@@ -87,21 +80,43 @@ void Compute::TimeStep(bool printInfo) {
   this->RHS(dt);
 
   // solve the poisson equation for the pressure
-  for(index_t i = 1; i <= this->_param.IterMax(); i++) {
+  real_t res = 1000000;
+  index_t i;
+  for(i = 0; (i < this->_param.IterMax()) && (res > this->_param.Eps() * this->_param.Eps()) ; i++) {
     // set boundary values for p
     this->_geom.Update_P(*(this->_p));
-    real_t res = this->_solver->Cycle(*(this->_p), *(this->_rhs));
-    if(printInfo) {
-      std::cout << "\tError in SOR-iteration " << i << ":\t" << std::sqrt(res) << std::endl;
+    // first half-step
+    if(this->_comm.EvenOdd()) {
+      res = this->_solver->RedCycle(*(this->_p), *(this->_rhs));
+    } else {
+      res = this->_solver->BlackCycle(*(this->_p), *(this->_rhs));
     }
-    if(res < this->_param.Eps() * this->_param.Eps()) break;
-    if(i == this->_param.IterMax()) {
-      std::cerr << "Warning: SOR did not converge! res = " << std::sqrt(res) << std::endl;
+    // set boundary values for p
+    this->_geom.Update_P(*(this->_p));
+    // second half-step
+    if(this->_comm.EvenOdd()) {
+      res += this->_solver->BlackCycle(*(this->_p), *(this->_rhs));
+    } else {
+      res += this->_solver->RedCycle(*(this->_p), *(this->_rhs));
     }
+
+    // gather global residual
+    res = this->_comm.gatherSum(res);
+  }
+  if((i == this->_param.IterMax()) && (this->_comm.ThreadNum() == 0)) {
+    std::cerr << "Warning: SOR did not converge! res = " << std::sqrt(res) << std::endl;
   }
 
   // compute new velocites
   this->NewVelocities(dt);
+
+  // print information
+  if(printInfo) {
+    std::cout.precision(4);
+    std::cout << std::fixed << "t = " << this->_t << std::scientific
+              << "\tdt = " << dt << "\titer = " << i
+              << "\tres = " << std::sqrt(res) << std::endl;
+  }
 
   // update the time
   this->_t += dt;
@@ -109,33 +124,16 @@ void Compute::TimeStep(bool printInfo) {
 
 // Computes and returns the absolute velocity
 const Grid *Compute::GetVelocity() {
-  _tmp->Initialize(0);
-  for(InteriorIterator it(*(this->_tmp)); it.Valid(); it.Next()) {
+  for(Iterator it(*(this->_velocities)); it.Valid(); it.Next()) {
     Iterator itU(*(this->_u), it.Pos());
     Iterator itV(*(this->_v), it.Pos());
-    real_t uMean = (this->_u->Cell(itU.Left()) + this->_u->Cell(itU))/2;
-    real_t vMean = (this->_v->Cell(itV) + this->_v->Cell(itV.Down()))/2;
-    this->_tmp->Cell(it) = std::sqrt(uMean*uMean + vMean*vMean);
+    real_t uMean = (this->_u->Cell(itU) + this->_u->Cell(itU.Top()))/2;
+    real_t vMean = (this->_v->Cell(itV) + this->_v->Cell(itV.Right()))/2;
+    this->_velocities->Cell(it) = std::sqrt(uMean*uMean + vMean*vMean);
   }
-  BoundaryIterator it(*(this->_tmp), BoundaryIterator::boundary::left);
-  for(; it.Valid(); it.Next()) {
-    this->_tmp->Cell(it) = -this->_tmp->Cell(it.Right());
-  }
-  it.SetBoundary(BoundaryIterator::boundary::down);
-  for(; it.Valid(); it.Next()) {
-    this->_tmp->Cell(it) = -this->_tmp->Cell(it.Top());
-  }
-  it.SetBoundary(BoundaryIterator::boundary::right);
-  for(; it.Valid(); it.Next()) {
-    this->_tmp->Cell(it) = -this->_tmp->Cell(it.Left());
-  }
-  it.SetBoundary(BoundaryIterator::boundary::top);
-  multi_real_t v = this->_geom.Velocity();
-  for(; it.Valid(); it.Next()) {
-    this->_tmp->Cell(it) = 2*std::sqrt(v[0]*v[0] + v[1]*v[1]) - this->_tmp->Cell(it.Down());
-  }
-  return _tmp;
+  return _velocities;
 }
+
 // Computes and returns the vorticity
 const Grid *Compute::GetVorticity() {
   // TODO: implement
@@ -160,6 +158,7 @@ void Compute::NewVelocities(const real_t &dt) {
     this->_v->Cell(it) = this->_G->Cell(it) - dt * this->_p->dy_r(itP);
   }
 }
+
 // Compute the temporary velocites F,G
 void Compute::MomentumEqu(const real_t &dt) {
   // compute F

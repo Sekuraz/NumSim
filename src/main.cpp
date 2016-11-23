@@ -34,16 +34,20 @@ int main(int argc, char *argv[]) {
   geom.Load("geometry.txt");
 
   // TODO: for testing
-  std::cout << "Grids: " << geom.Size() << ", u " << geom.SizeU() << ", v " << geom.SizeV()
-            << ", p " << geom.SizeP() << std::endl;
+  if(comm.ThreadNum() == 0) {
+    std::cout << "Grids: " << geom.Size() << ", u " << geom.SizeU() << ", v " << geom.SizeV()
+              << ", p " << geom.SizeP() << std::endl;
+  }
 
   // Create the fluid solver
   Compute comp(geom, param, comm);
 
 #ifdef USE_DEBUG_VISU
   // Create and initialize the visualization
+  const int hRes = 600;
+  const int vRes = (int)(hRes / geom.TotalLength()[0]);
   Renderer visu(geom.Length(), geom.Mesh());
-  visu.Init(600 / comm.ThreadDim()[0],600 / comm.ThreadDim()[1]);
+  visu.Init(hRes / comm.ThreadDim()[0], vRes / comm.ThreadDim()[1], comm.ThreadNum());
 #endif // USE_DEBUG_VISU
 
   // Create a VTK generator
@@ -58,8 +62,13 @@ int main(int argc, char *argv[]) {
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
 #ifdef USE_DEBUG_VISU
+    // compute global min and max
+    real_t min, max;
+    visugrid->MinMax(min, max);
+    min = comm.gatherMin(min);
+    max = comm.gatherMax(max);
     // Render and check if window is closed
-    switch (visu.Render(visugrid)) {
+    switch (visu.Render(visugrid, min, max)) {
     case -1:
       run = false;
       break;
@@ -92,12 +101,8 @@ int main(int argc, char *argv[]) {
       nextTimeVTK += param.VtkDt();
     }
 
-    if(comm.ThreadNum() == 0) {
-      std::cout << "t = " << comp.GetTime() << " " << std::endl;
-    }
 #ifdef USE_DEBUG_VISU
-    //comp.TimeStep(comm.ThreadNum() == 0);
-    comp.TimeStep(false);
+    comp.TimeStep(comm.ThreadNum() == 0);
 #else
     comp.TimeStep(false);
 #endif

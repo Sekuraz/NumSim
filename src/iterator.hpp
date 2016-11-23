@@ -21,6 +21,7 @@
 #ifndef __ITERATOR_HPP
 #define __ITERATOR_HPP
 //------------------------------------------------------------------------------
+
 /** Iterator base class
 */
 class Iterator {

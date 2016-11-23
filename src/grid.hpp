@@ -24,7 +24,7 @@
 class Grid {
 public:
   // type defining the type of the grid
-  enum type{u, v, p};
+  enum type{u, v, p, inner};
 
   /// Constructs a grid based on a geometry
   Grid(const Geometry &geom, const type &t);
@@ -38,7 +38,7 @@ public:
   /// Deletes the grid
   ~Grid();
 
-  ///     Initializes the grid with a value
+  /// Initializes the grid with a value
   void Initialize(const real_t &value);
 
   /// Write access to the grid cell at position [it]
@@ -75,8 +75,10 @@ public:
   real_t Max() const;
   /// Returns the minimal value of the grid
   real_t Min() const;
-  /// Returns the absolute maximal value
+  /// Returns the absolute maximal value of the grid
   real_t AbsMax() const;
+  /// Sets min, max to the minimal and maximal value of the grid
+  void MinMax(real_t &min, real_t &max) const;
 
   /// Returns the geometry
   inline const Geometry &Geom() const { return this->_geom; }
@@ -87,6 +89,7 @@ public:
         case type::u: return this->_geom.SizeU();
         case type::v: return this->_geom.SizeV();
         case type::p: return this->_geom.SizeP();
+        case type::inner: return this->_geom.SizeVar();
         default: return this->_geom.Size();
       }
   }

@@ -64,17 +64,18 @@ private:
   Grid *_G; /// prel. velocities in y-direction
   Grid *_rhs; ///< right-hand side of the pressure (poisson) equation
 
+  Grid *_velocities; ///< grid for absolute velocities
   Grid *_tmp; ///< container for interpolating whichever values
 
-  Solver *_solver; ///< solver for the pressure (poisson) equation
+  RedOrBlackSOR *_solver; ///< solver for the pressure (poisson) equation
 
   const Geometry &_geom; ///< geometry of the problem
   const Parameter &_param; ///< parameters for the computation
   const Communicator &_comm; ///< communicator for boundary exchange
 
-  /// Compute the new velocites u,v
+  /// Compute the new velocities u,v
   void NewVelocities(const real_t &dt);
-  /// Compute the temporary velocites F,G
+  /// Compute the temporary velocities F,G
   void MomentumEqu(const real_t &dt);
   /// Compute the RHS of the poisson equation
   void RHS(const real_t &dt);

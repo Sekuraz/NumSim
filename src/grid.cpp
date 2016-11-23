@@ -195,4 +195,15 @@ real_t Grid::AbsMax() const {
     max = std::max(max, std::fabs(this->_data[i]));
   return max;
 }
+// Sets min, max to the minimal and maximal value of the grid
+void Grid::MinMax(real_t &min, real_t &max) const {
+  min = max = this->_data[0];
+  for(index_t i = 1; i < this->_sizeData; i++) {
+    if(min > this->_data[i]) {
+      min = this->_data[i];
+    } else if(max < this->_data[i]) {
+      max = this->_data[i];
+    }
+  }
+}
 
