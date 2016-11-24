@@ -16,6 +16,7 @@
  */
 
 #include <iostream>
+#include <cmath>
 #include "typedef.hpp"
 #include "comm.hpp"
 #include "compute.hpp"
@@ -47,27 +48,39 @@ int main(int argc, char *argv[]) {
   visu.Init(hRes / comm.ThreadDim()[0], vRes / comm.ThreadDim()[1], comm.ThreadNum());
   
   // insert pertubation
-  multi_index_t half = {geom.Size()[0]/2, geom.Size()[1]/2};
-  g.Cell(Iterator(g, half)) = 1000;
+  if(comm.ThreadNum() == 0) {
+    multi_index_t half = {geom.Size()[0]/2, geom.Size()[1]/2};
+    g.Cell(Iterator(g, half)) = 1000;
+  }
 
   bool run = true;
   for (int i = 0; run; i++) {
-    if(comm.ThreadNum() == 0) {
-      std::cout << "step = " << i << " " << std::endl;
+    real_t res = 0;
+    geom.Update_P(g);
+    if(comm.EvenOdd()) {
+      res = rbsor.RedCycle(g, rhs);
+    } else {
+      res = rbsor.BlackCycle(g, rhs);
     }
-
     geom.Update_P(g);
-    rbsor.RedCycle(g, rhs);
-    geom.Update_P(g);
-    rbsor.BlackCycle(g,rhs);
+    if(comm.EvenOdd()) {
+      res += rbsor.BlackCycle(g, rhs);
+    } else {
+      res += rbsor.RedCycle(g, rhs);
+    }
 
     // compute global min and max
     real_t min, max;
     g.MinMax(min, max);
     min = comm.gatherMin(min);
     max = comm.gatherMax(max);
-
+    res = comm.gatherSum(res);
+    
     visu.Render(&g, min, max);
+    if(comm.ThreadNum() == 0) {
+      std::cout << "step = " << i << "\tmax-min = " << (max-min)
+                << "\tres = " << std::sqrt(res) << std::endl;
+    }
 
     /*for (Iterator it(g); it.Valid(); it.Next()) {
         if (it.Pos()[0] == 0) {

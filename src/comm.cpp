@@ -26,12 +26,14 @@ Communicator::Communicator (int* argc, char*** argv) : _tidx(), _tdim(), _mpi_ca
   MPI_Cart_create(MPI_COMM_WORLD, (int)DIM, dims, periodic, 0, &this->_mpi_cart_comm);
   int coords[DIM];
   MPI_Cart_get(this->_mpi_cart_comm, (int)DIM, dims, periodic, coords);
+  this->_evenodd = true;
   for(index_t dim = 0; dim < DIM; dim++) {
     this->_tidx[dim] = coords[dim];
+    this->_evenodd ^= ((coords[dim] % 2) == 1);
   }
 
   // TODO: for testing
-  printf("Dims: %lu %lu Rank: %i Idx: %lu %lu \n", _tdim[0], _tdim[1], _rank, _tidx[0], _tidx[1]);
+  printf("Dims: %lu %lu Rank: %i Idx: %lu %lu odd: %i\n", _tdim[0], _tdim[1], _rank, _tidx[0], _tidx[1], _evenodd);
 }
 
 Communicator::~Communicator () {
