@@ -26,10 +26,12 @@
 #include "vtk.hpp"
 
 int main(int argc, char *argv[]) {
-  // Delete old VTK files, prevents bugs in paraview
-  system("exec rm -r ./VTK/*");
   // Create communicator, parameter and geometry instances and load values
   Communicator comm(&argc, &argv);
+  // Delete old VTK files, prevents bugs in paraview
+  if(comm.ThreadNum() == 0) {
+    system("exec rm -r ./VTK/*");
+  }
   Parameter param;
   param.Load("param.txt", (comm.ThreadNum() == 0));
   Geometry geom(comm);
@@ -38,7 +40,7 @@ int main(int argc, char *argv[]) {
   // TODO: for testing
   if(comm.ThreadNum() == 0) {
     std::cout << "Grids: " << geom.Size() << ", u " << geom.SizeU() << ", v " << geom.SizeV()
-              << ", p " << geom.SizeP() << std::endl;
+              << ", p " << geom.SizeP() << ", vort/stream" << geom.SizeS() << std::endl;
   }
 
   // Create the fluid solver
@@ -85,6 +87,12 @@ int main(int argc, char *argv[]) {
       break;
     case 3:
       visugrid = comp.GetP();
+      break;
+    case 4:
+      visugrid = comp.GetVorticity();
+      break;
+    case 5:
+      visugrid = comp.GetStreamline();
       break;
     default:
       break;

@@ -125,7 +125,7 @@ void Compute::TimeStep(bool printInfo) {
               << "\tres = " << std::sqrt(res) << std::endl;
   }
 
-  // TODO: calculate streamlines and vorticity
+  // calculate streamlines and vorticity
   this->Stream();
   this->Vort();
 
@@ -157,7 +157,7 @@ void Compute::Vort() {
 // Computes and returns the stream line values
 void Compute::Stream() {
   _streamline->Initialize(0);
-  for(BoundaryIterator it(*this->_streamline,3); it.Valid(); it.Next()) {
+  for(BoundaryIterator it(*(this->_streamline),BoundaryIterator::boundary::down); it.Valid(); it.Next()) {
     Iterator itV(*(this->_v), it.Pos());
     this->_streamline->Cell(it) = this->_streamline->Cell(it.Left()) + _geom.Mesh()[0] * this->_v->Cell(itV);
   }

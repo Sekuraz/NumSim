@@ -200,7 +200,7 @@ void Geometry::computeSizes() {
     this->_sizeU[dim] = this->_size[dim] + ((dim == 0)? 1 : 2);
     this->_sizeV[dim] = this->_size[dim] + ((dim == 1)? 1 : 2);
     this->_sizeP[dim] = this->_size[dim] + 2;
-    this->_sizeS[dim] += 1;
+    this->_sizeS[dim] = this->_size[dim] + 1;
     this->_h[dim] = this->_length[dim] / this->_size[dim];
   }
 }
