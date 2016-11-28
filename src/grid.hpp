@@ -24,7 +24,7 @@
 class Grid {
 public:
   // type defining the type of the grid
-  enum type{u, v, p, inner};
+  enum type{u, v, p, s, inner};
 
   /// Constructs a grid based on a geometry
   Grid(const Geometry &geom, const type &t);
@@ -89,6 +89,7 @@ public:
         case type::u: return this->_geom.SizeU();
         case type::v: return this->_geom.SizeV();
         case type::p: return this->_geom.SizeP();
+        case type::s: return this->_geom.SizeS();
         case type::inner: return this->_geom.SizeVar();
         default: return this->_geom.Size();
       }

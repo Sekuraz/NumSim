@@ -29,7 +29,7 @@
 // Creates a compute instance with given geometry, parameter and communicator
 Compute::Compute(const Geometry &geom, const Parameter &param, const Communicator &comm)
     : _t(0), _F(new Grid(geom, Grid::type::u)), _G(new Grid(geom, Grid::type::v)),
-    _rhs(new Grid(geom, Grid::type::p)), _velocities(new Grid(geom, Grid::type::inner)),
+    _rhs(new Grid(geom, Grid::type::p)), _velocities(new Grid(geom, Grid::type::inner)), _streamline(new Grid(geom, Grid::type::s)), _vorticity(new Grid(geom, Grid::type::s)),
     _geom(geom), _param(param), _comm(comm) {
 
   // initialize the solver
@@ -45,14 +45,21 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
   offset[1] = h[1]/2;
   this->_p = new Grid(geom, Grid::type::p, offset);
   this->_tmp = new Grid(geom, Grid::type::p, offset);
+  offset[0] = 0;
+  offset[1] = 0;
+  this->_streamline = new Grid(geom, Grid::type::s, offset);
+  this->_vorticity = new Grid(geom, Grid::type::s, offset);
   this->_u->Initialize(0);
   this->_v->Initialize(0);
   this->_p->Initialize(0);
+  this->_streamline->Initialize(0);
+  this->_vorticity->Initialize(0);
 }
 // Deletes all grids
 Compute::~Compute() {
   delete _u; delete _v; delete _p; delete _F; delete _G;
   delete _rhs; delete _velocities; delete _tmp; delete _solver;
+  delete _streamline; delete _vorticity;
 }
 
 // Execute one time step of the fluid simulation (with or without debug info)
@@ -118,6 +125,10 @@ void Compute::TimeStep(bool printInfo) {
               << "\tres = " << std::sqrt(res) << std::endl;
   }
 
+  // TODO: calculate streamlines and vorticity
+  this->Stream();
+  this->Vort();
+
   // update the time
   this->_t += dt;
 }
@@ -135,14 +146,26 @@ const Grid *Compute::GetVelocity() {
 }
 
 // Computes and returns the vorticity
-const Grid *Compute::GetVorticity() {
-  // TODO: implement
-  return _tmp;
+void Compute::Vort() {
+  _vorticity->Initialize(0);
+  for(InteriorIterator it(*(this->_vorticity)); it.Valid(); it.Next()) {
+    Iterator itU(*(this->_u), it.Pos());
+    Iterator itV(*(this->_v), it.Pos());
+    this->_vorticity->Cell(it) = (-this->_u->dy_r(itU) + this->_v->dx_r(itV));
+  }
 }
 // Computes and returns the stream line values
-const Grid *Compute::GetStream() {
-  // TODO: implement
-  return _tmp;
+void Compute::Stream() {
+  _streamline->Initialize(0);
+  for(BoundaryIterator it(*this->_streamline,3); it.Valid(); it.Next()) {
+    Iterator itV(*(this->_v), it.Pos());
+    this->_streamline->Cell(it) = this->_streamline->Cell(it.Left()) + _geom.Mesh()[0] * this->_v->Cell(itV);
+  }
+  InteriorIterator it(*(this->_streamline));
+  for(((it) + this->_geom.SizeS()[0]); it.Valid(); it.Next()) {
+    Iterator itU(*(this->_u), it.Pos());
+    this->_streamline->Cell(it) = this->_streamline->Cell(it.Down()) + _geom.Mesh()[1] * this->_u->Cell(itU);
+  }
 }
 
 // Compute the new velocites u,v

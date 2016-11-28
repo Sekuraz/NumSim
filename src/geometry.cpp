@@ -26,7 +26,7 @@ Geometry::Geometry(const Communicator &comm) : Geometry(comm, multi_index_t {128
 
 Geometry::Geometry(const Communicator &comm, const multi_index_t& size)
     : _comm(comm), _totalSize(size), _size(), _sizeVar(), _sizeU(), _sizeV(),
-      _sizeP(), _totalLength(1,1) {
+      _sizeP(), _sizeS(_size), _totalLength(1,1) {
   this->computeSizes();
 }
 
@@ -200,6 +200,7 @@ void Geometry::computeSizes() {
     this->_sizeU[dim] = this->_size[dim] + ((dim == 0)? 1 : 2);
     this->_sizeV[dim] = this->_size[dim] + ((dim == 1)? 1 : 2);
     this->_sizeP[dim] = this->_size[dim] + 2;
+    this->_sizeS[dim] += 1;
     this->_h[dim] = this->_length[dim] / this->_size[dim];
   }
 }

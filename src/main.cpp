@@ -26,6 +26,8 @@
 #include "vtk.hpp"
 
 int main(int argc, char *argv[]) {
+  // Delete old VTK files, prevents bugs in paraview
+  system("exec rm -r ./VTK/*");
   // Create communicator, parameter and geometry instances and load values
   Communicator comm(&argc, &argv);
   Parameter param;
@@ -97,6 +99,8 @@ int main(int argc, char *argv[]) {
       vtk.AddScalar("Pressure", comp.GetP());
       vtk.AddScalar("x-Velocity", comp.GetU());
       vtk.AddScalar("y-Velocity", comp.GetV());
+      vtk.AddScalar("Vorticity", comp.GetVorticity());
+      vtk.AddScalar("Streamlines", comp.GetStreamline());
       vtk.Finish();
       nextTimeVTK += param.VtkDt();
     }

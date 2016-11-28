@@ -43,13 +43,17 @@ public:
   inline const Grid *GetP() const { return this->_p; };
   /// Returns the pointer to RHS
   inline const Grid *GetRHS() const { return this->_rhs; };
+  /// Returns the pointer to the Streamline
+	inline const Grid *GetStreamline() const { return this->_streamline; };
+  /// Returns the pointer to the Vorticity
+	inline const Grid *GetVorticity() const { return this->_vorticity; };
 
   /// Computes and returns the absolute velocity
   const Grid *GetVelocity();
-  /// Computes and returns the vorticity
-  const Grid *GetVorticity();
-  /// Computes and returns the stream line values
-  const Grid *GetStream();
+  /// Computes the vorticity
+  void Vort();
+  /// Computes the stream line values
+  void Stream();
 
 private:
   real_t _t; ///< current timestep
@@ -65,6 +69,8 @@ private:
   Grid *_rhs; ///< right-hand side of the pressure (poisson) equation
 
   Grid *_velocities; ///< grid for absolute velocities
+  Grid *_streamline; ///< container for streamfunktion
+  Grid *_vorticity; ///< container for the vorticity
   Grid *_tmp; ///< container for interpolating whichever values
 
   RedOrBlackSOR *_solver; ///< solver for the pressure (poisson) equation
