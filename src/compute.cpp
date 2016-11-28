@@ -66,6 +66,10 @@ Compute::~Compute() {
 // @ param printInfo print information about current solver state (residual
 // etc.)
 void Compute::TimeStep(bool printInfo) {
+  // set boundary values for u, v
+  this->_geom.Update_U(*(this->_u));
+  this->_geom.Update_V(*(this->_v));
+
   // compute local dt
   // Test CFL and Pr condition
   const multi_real_t &h = this->_geom.Mesh();
@@ -76,22 +80,18 @@ void Compute::TimeStep(bool printInfo) {
   // gather global dt
   dt = this->_comm.gatherMin(dt);
 
-  // set boundary values for u, v
-  this->_geom.Update_U(*(this->_u));
-  this->_geom.Update_V(*(this->_v));
-
   // compute the momentum equations
   this->MomentumEqu(dt);
 
   // compute right-hand-side of the poisson equation
   this->RHS(dt);
 
+  // set boundary values for p
+  this->_geom.Update_P(*(this->_p));
   // solve the poisson equation for the pressure
-  real_t res = 1000000;
+  real_t res = 2 * this->_param.Eps() * this->_param.Eps();
   index_t i;
   for(i = 0; (i < this->_param.IterMax()) && (res > this->_param.Eps() * this->_param.Eps()) ; i++) {
-    // set boundary values for p
-    this->_geom.Update_P(*(this->_p));
     // first half-step
     if(this->_comm.EvenOdd()) {
       res = this->_solver->RedCycle(*(this->_p), *(this->_rhs));
@@ -106,11 +106,13 @@ void Compute::TimeStep(bool printInfo) {
     } else {
       res += this->_solver->RedCycle(*(this->_p), *(this->_rhs));
     }
+    // set boundary values for p
+    this->_geom.Update_P(*(this->_p));
 
     // gather global residual
     res = this->_comm.gatherSum(res);
   }
-  if((i == this->_param.IterMax()) && (this->_comm.ThreadNum() == 0)) {
+  if((i == this->_param.IterMax()) && printInfo) {
     std::cerr << "Warning: SOR did not converge! res = " << std::sqrt(res) << std::endl;
   }
 

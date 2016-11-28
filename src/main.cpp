@@ -66,13 +66,15 @@ int main(int argc, char *argv[]) {
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
 #ifdef USE_DEBUG_VISU
-    // compute global min and max
+/*    // compute global min and max
     real_t min, max;
     visugrid->MinMax(min, max);
     min = comm.gatherMin(min);
     max = comm.gatherMax(max);
     // Render and check if window is closed
     switch (visu.Render(visugrid, min, max)) {
+*/
+    switch (visu.Render(visugrid)) {
     case -1:
       run = false;
       break;

@@ -106,6 +106,7 @@ void Geometry::Update_U(Grid &u) const {
     // homogenous Dirichlet condition right
     it.SetBoundary(BoundaryIterator::boundary::right);
     for(it.First(); it.Valid(); it.Next()) {
+      u.Cell(it.Left()) = 0;
       u.Cell(it) = 0;
     }
   }
@@ -149,6 +150,7 @@ void Geometry::Update_V(Grid &v) const {
     it.SetBoundary(BoundaryIterator::boundary::top);
     for(it.First(); it.Valid(); it.Next()) {
       v.Cell(it) = this->_velocity[1];
+      v.Cell(it.Down()) = this->_velocity[1];
     }
   }
 }
@@ -197,8 +199,8 @@ void Geometry::computeSizes() {
     // TODO: fix last grid size
 
     this->_sizeVar[dim] = this->_size[dim] + 1;
-    this->_sizeU[dim] = this->_size[dim] + ((dim == 0)? 1 : 2);
-    this->_sizeV[dim] = this->_size[dim] + ((dim == 1)? 1 : 2);
+    this->_sizeU[dim] = this->_size[dim] + 2;
+    this->_sizeV[dim] = this->_size[dim] + 2;
     this->_sizeP[dim] = this->_size[dim] + 2;
     this->_sizeS[dim] = this->_size[dim] + 1;
     this->_h[dim] = this->_length[dim] / this->_size[dim];

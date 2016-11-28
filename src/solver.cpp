@@ -29,7 +29,13 @@ real_t Solver::localRes(const Iterator &it, const Grid &grid, const Grid &rhs) c
 // concrete SOR solver
 
 // Constructs an actual SOR solver
-SOR::SOR(const Geometry &geom, const real_t &omega) : Solver(geom), _omega(omega) {}
+SOR::SOR(const Geometry &geom, const real_t &omega) : Solver(geom), _omega(omega) {
+  if(this->_omega < 0.0 || this->_omega > 2.0) {
+    real_t h = std::fmax(this->_geom.Mesh()[0], this->_geom.Mesh()[1]);
+    this->_omega = 2.0 / (1.0 + std::sin(M_PI * h));
+    std::cout << "SOR: New omega = " << this->_omega << std::endl;
+  }
+}
 
 // Returns the total residual and executes a solver cycle
 // @param grid current pressure values
@@ -38,13 +44,13 @@ real_t SOR::Cycle(Grid &grid, const Grid &rhs) const {
   const multi_real_t &h = this->_geom.Mesh();
   const real_t prefactor = this->_omega * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]);
 
-  real_t residuum = 0;
+  real_t residual = 0;
   for(InteriorIterator it(grid); it.Valid(); it.Next()) {
     real_t localRes = Solver::localRes(it, grid, rhs);
-    residuum += localRes * localRes;
+    residual += localRes * localRes;
     grid.Cell(it) = grid.Cell(it) - prefactor * localRes;
   }
-  return residuum / (h[0] * h[1]);
+  return residual / (h[0] * h[1]);
 }
 
 //------------------------------------------------------------------------------
@@ -54,35 +60,31 @@ real_t RedOrBlackSOR::RedCycle(Grid &grid, const Grid &rhs) const {
   const multi_real_t &h = this->_geom.Mesh();
   const real_t prefactor = this->_omega * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]);
 
-  real_t residuum = 0;
+  real_t residual = 0;
 
-  // TODO: red or Black ?
-  // TODO: Red/Black Iterators?
   for(InteriorIterator it(grid); it.Valid(); it.Next()) {
     real_t localRes = Solver::localRes(it, grid, rhs);
-    residuum += localRes * localRes;
+    residual += localRes * localRes;
     grid.Cell(it) = grid.Cell(it) - prefactor * localRes;
     it.Next();
   }
 
-  return residuum / (h[0] * h[1]);
+  return residual / (h[0] * h[1]);
 }
 
 real_t RedOrBlackSOR::BlackCycle(Grid &grid, const Grid &rhs) const {
   const multi_real_t &h = this->_geom.Mesh();
   const real_t prefactor = this->_omega * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]);
 
-  real_t residuum = 0;
+  real_t residual = 0;
 
-  // TODO: red or Black ?
-  // TODO: Red/Black Iterators?
   InteriorIterator it(grid);
   for(it.Next(); it.Valid(); it.Next()) {
     real_t localRes = Solver::localRes(it, grid, rhs);
-    residuum += localRes * localRes;
+    residual += localRes * localRes;
     grid.Cell(it) = grid.Cell(it) - prefactor * localRes;
     it.Next();
   }
 
-  return residuum / (h[0] * h[1]);
+  return residual / (h[0] * h[1]);
 }

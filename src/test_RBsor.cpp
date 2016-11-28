@@ -33,9 +33,10 @@ int main(int argc, char *argv[]) {
   // Create parameter and geometry instances and load values
   Parameter param;
   param.Load("param.txt");
-  Geometry geom(comm, {16,16});
+  Geometry geom(comm, {9,9});
 
-  Grid g (geom,Grid::type::p);
+  const multi_real_t &h = geom.Mesh();
+  Grid g (geom,Grid::type::p, multi_real_t{h[0]/2, h[1]/2});
   Grid rhs (geom,Grid::type::p);
   g.Initialize(0);
   rhs.Initialize(0);
@@ -53,10 +54,10 @@ int main(int argc, char *argv[]) {
     g.Cell(Iterator(g, half)) = 1000;
   }
 
+  geom.Update_P(g);
   bool run = true;
   for (int i = 0; run; i++) {
     real_t res = 0;
-    geom.Update_P(g);
     if(comm.EvenOdd()) {
       res = rbsor.RedCycle(g, rhs);
     } else {
@@ -68,6 +69,7 @@ int main(int argc, char *argv[]) {
     } else {
       res += rbsor.RedCycle(g, rhs);
     }
+    geom.Update_P(g);
 
     // compute global min and max
     real_t min, max;
