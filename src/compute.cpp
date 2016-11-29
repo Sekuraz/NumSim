@@ -150,7 +150,7 @@ const Grid *Compute::GetVelocity() {
 // Computes and returns the vorticity
 void Compute::Vort() {
   _vorticity->Initialize(0);
-  for(InteriorIterator it(*(this->_vorticity)); it.Valid(); it.Next()) {
+  for(Iterator it(*(this->_vorticity)); it.Valid(); it.Next()) {
     Iterator itU(*(this->_u), it.Pos());
     Iterator itV(*(this->_v), it.Pos());
     this->_vorticity->Cell(it) = (-this->_u->dy_r(itU) + this->_v->dx_r(itV));
@@ -163,7 +163,7 @@ void Compute::Stream() {
     Iterator itV(*(this->_v), it.Pos());
     this->_streamline->Cell(it) = this->_streamline->Cell(it.Left()) + _geom.Mesh()[0] * this->_v->Cell(itV);
   }
-  InteriorIterator it(*(this->_streamline));
+  Iterator it(*(this->_streamline));
   for(((it) + this->_geom.SizeS()[0]); it.Valid(); it.Next()) {
     Iterator itU(*(this->_u), it.Pos());
     this->_streamline->Cell(it) = this->_streamline->Cell(it.Down()) + _geom.Mesh()[1] * this->_u->Cell(itU);
