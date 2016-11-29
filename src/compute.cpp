@@ -136,7 +136,7 @@ const Grid *Compute::GetVelocity() {
 // Computes and returns the vorticity
 void Compute::Vort() {
   for(Iterator it(*(this->_vorticity)); it.Valid(); it.Next()) {
-    this->_vorticity->Cell(it) = (-this->_u->dy_r(it) + this->_v->dx_r(it));
+    this->_vorticity->Cell(it) = this->_u->dy_r(it) - this->_v->dx_r(it);
   }
 }
 // Computes the stream line values
