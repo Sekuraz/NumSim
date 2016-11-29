@@ -42,8 +42,6 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
   this->_u->Initialize(0);
   this->_v->Initialize(0);
   this->_p->Initialize(0);
-  this->_streamline->Initialize(0);
-  this->_vorticity->Initialize(0);
 }
 // Deletes all grids
 Compute::~Compute() {
@@ -109,17 +107,17 @@ void Compute::TimeStep(bool printInfo) {
   // compute new velocites
   this->NewVelocities(dt);
 
-  // print information
-  if(printInfo) {
-    std::cout.precision(4);
-    std::cout << std::fixed << "t = " << this->_t << std::scientific
-              << "\tdt = " << dt << "\titer = " << i
-              << "\tres = " << std::sqrt(res) << std::endl;
-  }
-
   // calculate streamlines and vorticity
   this->Stream();
   this->Vort();
+
+  // print information
+  if(printInfo) {
+    std::cout.precision(4);
+    std::cout << "t = " << this->_t << " \tdt = " << dt << "\titer = " << i
+              << "\tres = " << std::scientific << std::sqrt(res)
+              << std::defaultfloat << std::endl;
+  }
 
   // update the time
   this->_t += dt;
@@ -137,23 +135,19 @@ const Grid *Compute::GetVelocity() {
 
 // Computes and returns the vorticity
 void Compute::Vort() {
-  _vorticity->Initialize(0);
   for(Iterator it(*(this->_vorticity)); it.Valid(); it.Next()) {
-    Iterator itU(*(this->_u), it.Pos());
-    Iterator itV(*(this->_v), it.Pos());
-    this->_vorticity->Cell(it) = (-this->_u->dy_r(itU) + this->_v->dx_r(itV));
+    this->_vorticity->Cell(it) = (-this->_u->dy_r(it) + this->_v->dx_r(it));
   }
 }
 // Computes and returns the stream line values
 void Compute::Stream() {
-  _streamline->Initialize(0);
-  for(BoundaryIterator it(*(this->_streamline),BoundaryIterator::boundary::down); it.Valid(); it.Next()) {
-    Iterator itV(*(this->_v), it.Pos());
-    this->_streamline->Cell(it) = this->_streamline->Cell(it.Left()) + _geom.Mesh()[0] * this->_v->Cell(itV);
-  }
-  for(InteriorIterator it(*(this->_streamline)); it.Valid(); it.Next()) {
-    Iterator itU(*(this->_u), it.Pos());
-    this->_streamline->Cell(it) = this->_streamline->Cell(it.Down()) + _geom.Mesh()[1] * this->_u->Cell(itU);
+  this->_streamline->Data()[0] = 0;
+  for(Iterator it(*(this->_streamline), 1); it.Valid(); it.Next()) {
+    if(it.Pos()[1] == 0) {
+      this->_streamline->Cell(it) = this->_streamline->Cell(it.Left()) + _geom.Mesh()[0] * this->_v->Cell(it);
+    } else {
+      this->_streamline->Cell(it) = this->_streamline->Cell(it.Down()) + _geom.Mesh()[1] * this->_u->Cell(it);
+    }
   }
 }
 
