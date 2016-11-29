@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
   const multi_real_t &h = geom.Mesh();
   multi_real_t offset(h[0]/2, h[1]/2);
-  Grid g (geom, offset);
+  Grid g (geom,Grid::type::p, offset);
   g.Initialize(0);
   for (Iterator it(g); it.Valid(); it.Next()) {
     g.Cell(it) = it * 0.1 + comm.ThreadNum();

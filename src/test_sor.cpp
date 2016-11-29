@@ -34,8 +34,8 @@ int main(int argc, char *argv[]) {
   param.Load("param.txt");
   Geometry geom(comm, {16,16});
 
-  Grid g (geom);
-  Grid rhs (geom);
+  Grid g (geom,Grid::type::p);
+  Grid rhs (geom,Grid::type::p);
   g.Initialize(0);
   rhs.Initialize(0);
 

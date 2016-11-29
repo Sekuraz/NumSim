@@ -36,9 +36,9 @@ int main(int argc, char *argv[]) {
 
   const multi_real_t &h = geom.Mesh();
   multi_real_t offset(h[0]/2, 0);
-  Grid v (geom, offset);
+  Grid v (geom,Grid::type::v, offset);
   offset = {0, h[1]/2};
-  Grid u (geom, offset);
+  Grid u (geom,Grid::type::u, offset);
 
   for (Iterator it(v); it.Valid(); it.Next()) {
       v.Cell(it) = it.Value();

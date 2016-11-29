@@ -43,8 +43,18 @@ public:
 
   /// Returns the total number of cells in each dimension
   inline const multi_index_t& TotalSize () const { return this->_totalSize; }
-  /// Returns the cartesian size of the local Grids
+  /// Returns the number of cells in each dimension
   inline const multi_index_t &Size() const { return this->_size; }
+  /// Returns the number of variables for the cells in each dimension
+  inline const multi_index_t &SizeVar() const { return this->_sizeVar; }
+  /// Returns the number of u-variables in each dimension
+  inline const multi_index_t &SizeU() const { return this->_sizeU; }
+  /// Returns the number of v-variables  in each dimension
+  inline const multi_index_t &SizeV() const { return this->_sizeV; }
+  /// Returns the number of p-variables  in each dimension
+  inline const multi_index_t &SizeP() const { return this->_sizeP; }
+  /// Returns the number of streamline and vorticity variables in each dimension
+  inline const multi_index_t &SizeS() const { return this->_sizeS; }
 
   /// Returns the local length of the domain
   inline const multi_real_t &Length() const { return this->_length; }
@@ -68,7 +78,12 @@ private:
 
   const Communicator &_comm; ///< Communicator for boundary exchange and local sizes of Grids
   multi_index_t _totalSize;  ///< cartesian total number of cells
-  multi_index_t _size;       ///< cartesian size of the local Grids
+  multi_index_t _size;       ///< cartesian local number of cells
+  multi_index_t _sizeVar;    ///< cartesian size of the local Grid for the absolute velocities
+  multi_index_t _sizeU;      ///< cartesian size of the local Grid for the velocities u in x-direction
+  multi_index_t _sizeV;      ///< cartesian size of the local Grid for the velocities v in y-direction
+  multi_index_t _sizeP;      ///< cartesian size of the local Grid for the pressure p
+  multi_index_t _sizeS;      ///< cartesian size of the local Grid for the pressure streamlines and vorticity
   multi_real_t _totalLength; ///< total length of the physical domain in each dimension
   multi_real_t _length;      ///< local length of the physical domain in each dimension
   multi_real_t _h;           ///< cartesian size of Grid for velocities u in x-direction

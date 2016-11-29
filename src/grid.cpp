@@ -22,8 +22,8 @@
 #include "iterator.hpp"
 #include "geometry.hpp"
 
-// Constructs a grid based on a geometry
-Grid::Grid(const Geometry &geom) : _data(nullptr), _offset(), _geom(geom) {
+// Constructs a grid of type t based on a geometry
+Grid::Grid(const Geometry &geom, const Grid::type &t) : _data(nullptr), _offset(), _geom(geom), _type(t) {
   const multi_index_t &size = this->Size();
   this->_sizeData = 1;
   for(index_t i = 0; i < DIM; i++) {
@@ -34,9 +34,10 @@ Grid::Grid(const Geometry &geom) : _data(nullptr), _offset(), _geom(geom) {
 
 // Constructs a grid based on a geometry with an offset
 // \param geom   Geometry information
+// \param t      type of the grid (u, v, p)
 // \param offset distance of staggered grid point to cell's anchor point;
 //               (anchor point = lower left corner)
-Grid::Grid(const Geometry &geom, const multi_real_t &offset) : Grid(geom) {
+Grid::Grid(const Geometry &geom, const Grid::type &t, const multi_real_t &offset) : Grid(geom, t) {
   for(index_t dim = 0; dim < DIM; dim++) {
     this->_offset[dim] = offset[dim];
   }

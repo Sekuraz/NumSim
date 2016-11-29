@@ -23,14 +23,17 @@
 //------------------------------------------------------------------------------
 class Grid {
 public:
+  // type defining the type of the grid
+  enum type{u, v, p, s, inner};
+
   /// Constructs a grid based on a geometry
-  Grid(const Geometry &geom);
+  Grid(const Geometry &geom, const type &t);
 
   /// Constructs a grid based on a geometry with an offset
   // @param geom   Geometry information
   // @param offset distance of staggered grid point to cell's anchor point;
   //               (anchor point = lower left corner)
-  Grid(const Geometry &geom, const multi_real_t &offset);
+  Grid(const Geometry &geom, const type &t, const multi_real_t &offset);
 
   /// Deletes the grid
   ~Grid();
@@ -81,8 +84,16 @@ public:
   inline const Geometry &Geom() const { return this->_geom; }
 
   /// Returns the size of the Grid in each dimension
-  inline const multi_index_t &Size() const { return this->_geom.Size(); }
-
+  inline const multi_index_t &Size() const {
+      switch(this->_type) {
+        case type::u: return this->_geom.SizeU();
+        case type::v: return this->_geom.SizeV();
+        case type::p: return this->_geom.SizeP();
+        case type::s: return this->_geom.SizeS();
+        case type::inner: return this->_geom.SizeVar();
+        default: return this->_geom.Size();
+      }
+  }
   /// Returns the total data size of the Grid
   inline const index_t &dataSize() const { return this->_sizeData; }
 
@@ -93,6 +104,7 @@ private:
   real_t *_data;
   multi_real_t _offset;
   const Geometry &_geom;
+  const type _type;
   index_t _sizeData;
 };
 //------------------------------------------------------------------------------

@@ -39,7 +39,8 @@ int main(int argc, char *argv[]) {
 
   // TODO: for testing
   if(comm.ThreadNum() == 0) {
-    std::cout << "Gridsize: " << geom.Size() << std::endl;
+    std::cout << "Grids: " << geom.Size() << ", u " << geom.SizeU() << ", v " << geom.SizeV()
+              << ", p " << geom.SizeP() << ", vort/stream" << geom.SizeS() << std::endl;
   }
 
   // Create the fluid solver
@@ -99,19 +100,16 @@ int main(int argc, char *argv[]) {
 #endif // USE_DEBUG_VISU
 
     if(comp.GetTime() >= nextTimeVTK ) {
+      // Create a VTK File in the folder VTK (must exist)
+      vtk.Init("VTK/field");
       // TODO: get all data from the processes
-      
-      if(comm.ThreadNum() == 0) {
-        // Create a VTK File in the folder VTK (must exist)
-        vtk.Init("VTK/field");
-        vtk.AddField("Velocity", comp.GetU(), comp.GetV());
-        vtk.AddScalar("Pressure", comp.GetP());
-        vtk.AddScalar("x-Velocity", comp.GetU());
-        vtk.AddScalar("y-Velocity", comp.GetV());
-        vtk.AddScalar("Vorticity", comp.GetVorticity());
-        vtk.AddScalar("Streamlines", comp.GetStreamline());
-        vtk.Finish();
-      }
+      vtk.AddField("Velocity", comp.GetU(), comp.GetV());
+      vtk.AddScalar("Pressure", comp.GetP());
+      vtk.AddScalar("x-Velocity", comp.GetU());
+      vtk.AddScalar("y-Velocity", comp.GetV());
+      vtk.AddScalar("Vorticity", comp.GetVorticity());
+      vtk.AddScalar("Streamlines", comp.GetStreamline());
+      vtk.Finish();
       nextTimeVTK += param.VtkDt();
     }
 
