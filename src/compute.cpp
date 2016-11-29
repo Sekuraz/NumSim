@@ -150,7 +150,7 @@ void Compute::Stream() {
     }
   }
   real_t offset = this->_comm.copyOffset(*this->_streamline);
-  for(Iterator it(*(this->_streamline), 1); it.Valid(); it.Next()) {
+  for(Iterator it(*(this->_streamline)); it.Valid(); it.Next()) {
     this->_streamline->Cell(it) += offset;
   }
 }

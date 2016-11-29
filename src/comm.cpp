@@ -104,13 +104,13 @@ real_t Communicator::copyOffset(const Grid& grid) const {
     if(!this->isLeft()) {
       real_t off;
       MPI_Cart_shift(this->_mpi_cart_comm, 0, -1, &source, &dest);
-      MPI_Recv(&off, 1, MPI_REAL_TYPE, dest, 0, this->_mpi_cart_comm, MPI_STATUS_IGNORE);
+      MPI_Recv(&off, 1, MPI_REAL_TYPE, dest, 1, this->_mpi_cart_comm, MPI_STATUS_IGNORE);
       offset += off;
     }
     if(!this->isRight()) {
       real_t off = offset + grid.Cell(Iterator(grid, grid.Size()[0]-1));
       MPI_Cart_shift(this->_mpi_cart_comm, 0, 1, &source, &dest);
-      MPI_Send(&off, 1, MPI_REAL_TYPE, dest, 0, this->_mpi_cart_comm);
+      MPI_Send(&off, 1, MPI_REAL_TYPE, dest, 1, this->_mpi_cart_comm);
     }
   }
   if(!this->isBottom()) {
