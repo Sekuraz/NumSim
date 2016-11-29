@@ -75,6 +75,10 @@ public:
   /// \param [in] grid  The grid of which the values are synced
   void copyBoundary(Grid& grid) const;
 
+  /// Transfers the offset of the streamfunction and returns the own offset
+  /// \param [in] grid  The grid of the streamfunction
+  real_t copyOffset(const Grid& grid) const;
+
   /// Returns if the domain of this process is at the left boundary of the whole domain
   inline bool isLeft() const { return (this->_tidx[0] == 0); }
   /// Returns if the domain of this process is at the right boundary of the whole domain

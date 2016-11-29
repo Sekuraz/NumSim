@@ -95,6 +95,39 @@ void Communicator::copyBoundary(Grid& grid) const {
   }
 }
 
+// Transfers the offset of the streamfunction and returns the own offset
+// \param [in] grid  The grid of the streamfunction
+real_t Communicator::copyOffset(const Grid& grid) const {
+  int source, dest;
+  real_t offset = 0.0;
+  if(this->isBottom()) {
+    if(!this->isLeft()) {
+      real_t off;
+      MPI_Cart_shift(this->_mpi_cart_comm, 0, -1, &source, &dest);
+      MPI_Recv(&off, 1, MPI_REAL_TYPE, dest, 0, this->_mpi_cart_comm, MPI_STATUS_IGNORE);
+      offset += off;
+    }
+    if(!this->isRight()) {
+      real_t off = offset + grid.Cell(Iterator(grid, grid.Size()[0]-1));
+      MPI_Cart_shift(this->_mpi_cart_comm, 0, 1, &source, &dest);
+      MPI_Send(&off, 1, MPI_REAL_TYPE, dest, 0, this->_mpi_cart_comm);
+    }
+  }
+  if(!this->isBottom()) {
+    real_t off;
+    MPI_Cart_shift(this->_mpi_cart_comm, 1, -1, &source, &dest);
+    MPI_Recv(&off, 1, MPI_REAL_TYPE, dest, 1, this->_mpi_cart_comm, MPI_STATUS_IGNORE);
+    offset += off;
+  }
+  if(!this->isTop()) {
+    real_t off = offset + grid.Cell(Iterator(grid, grid.Size()[0]*(grid.Size()[1]-1)));
+    MPI_Cart_shift(this->_mpi_cart_comm, 1, 1, &source, &dest);
+    MPI_Send(&off, 1, MPI_REAL_TYPE, dest, 1, this->_mpi_cart_comm);
+  }
+
+  return offset;
+}
+
 bool Communicator::copyLeftBoundary(Grid& grid) const {
   const index_t& size = grid.Size()[1];
   real_t* buffer = new real_t[size];

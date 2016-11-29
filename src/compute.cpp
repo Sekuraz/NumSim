@@ -139,15 +139,19 @@ void Compute::Vort() {
     this->_vorticity->Cell(it) = (-this->_u->dy_r(it) + this->_v->dx_r(it));
   }
 }
-// Computes and returns the stream line values
+// Computes the stream line values
 void Compute::Stream() {
   this->_streamline->Data()[0] = 0;
   for(Iterator it(*(this->_streamline), 1); it.Valid(); it.Next()) {
     if(it.Pos()[1] == 0) {
-      this->_streamline->Cell(it) = this->_streamline->Cell(it.Left()) + _geom.Mesh()[0] * this->_v->Cell(it);
+      this->_streamline->Cell(it) = this->_streamline->Cell(it.Left()) - _geom.Mesh()[0] * this->_v->Cell(it);
     } else {
       this->_streamline->Cell(it) = this->_streamline->Cell(it.Down()) + _geom.Mesh()[1] * this->_u->Cell(it);
     }
+  }
+  real_t offset = this->_comm.copyOffset(*this->_streamline);
+  for(Iterator it(*(this->_streamline), 1); it.Valid(); it.Next()) {
+    this->_streamline->Cell(it) += offset;
   }
 }
 
