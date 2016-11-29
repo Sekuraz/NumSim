@@ -36,8 +36,8 @@ int main(int argc, char *argv[]) {
   Geometry geom(comm, {9,9});
 
   const multi_real_t &h = geom.Mesh();
-  Grid g (geom,Grid::type::p, multi_real_t{h[0]/2, h[1]/2});
-  Grid rhs (geom,Grid::type::p);
+  Grid g (geom, multi_real_t(h[0]/2, h[1]/2));
+  Grid rhs (geom);
   g.Initialize(0);
   rhs.Initialize(0);
 

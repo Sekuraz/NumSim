@@ -28,27 +28,17 @@
 
 // Creates a compute instance with given geometry, parameter and communicator
 Compute::Compute(const Geometry &geom, const Parameter &param, const Communicator &comm)
-    : _t(0), _F(new Grid(geom, Grid::type::u)), _G(new Grid(geom, Grid::type::v)),
-    _rhs(new Grid(geom, Grid::type::p)), _velocities(new Grid(geom, Grid::type::inner)), _streamline(new Grid(geom, Grid::type::s)), _vorticity(new Grid(geom, Grid::type::s)),
-    _geom(geom), _param(param), _comm(comm) {
+    : _t(0), _u(new Grid(geom, multi_real_t(0, geom.Mesh()[1]/2))),
+    _v(new Grid(geom, multi_real_t(geom.Mesh()[0]/2, 0))),
+    _p(new Grid(geom, multi_real_t(geom.Mesh()[0]/2, geom.Mesh()[1]/2))),
+    _F(new Grid(geom)), _G(new Grid(geom)), _rhs(new Grid(geom)),
+    _velocities(new Grid(geom)), _streamline(new Grid(geom)),
+    _vorticity(new Grid(geom)), _geom(geom), _param(param), _comm(comm) {
 
   // initialize the solver
   this->_solver = new RedOrBlackSOR(geom, param.Omega());
 
   // initialize u,v,p
-  const multi_real_t &h = this->_geom.Mesh();
-  multi_real_t offset(0, h[1]/2);
-  this->_u = new Grid(geom, Grid::type::u, offset);
-  offset[0] = h[0]/2;
-  offset[1] = 0;
-  this->_v = new Grid(geom, Grid::type::v, offset);
-  offset[1] = h[1]/2;
-  this->_p = new Grid(geom, Grid::type::p, offset);
-  this->_tmp = new Grid(geom, Grid::type::p, offset);
-  offset[0] = 0;
-  offset[1] = 0;
-  this->_streamline = new Grid(geom, Grid::type::s, offset);
-  this->_vorticity = new Grid(geom, Grid::type::s, offset);
   this->_u->Initialize(0);
   this->_v->Initialize(0);
   this->_p->Initialize(0);
@@ -58,7 +48,7 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
 // Deletes all grids
 Compute::~Compute() {
   delete _u; delete _v; delete _p; delete _F; delete _G;
-  delete _rhs; delete _velocities; delete _tmp; delete _solver;
+  delete _rhs; delete _velocities; delete _solver;
   delete _streamline; delete _vorticity;
 }
 
@@ -138,10 +128,8 @@ void Compute::TimeStep(bool printInfo) {
 // Computes and returns the absolute velocity
 const Grid *Compute::GetVelocity() {
   for(Iterator it(*(this->_velocities)); it.Valid(); it.Next()) {
-    Iterator itU(*(this->_u), it.Pos());
-    Iterator itV(*(this->_v), it.Pos());
-    real_t uMean = (this->_u->Cell(itU) + this->_u->Cell(itU.Top()))/2;
-    real_t vMean = (this->_v->Cell(itV) + this->_v->Cell(itV.Right()))/2;
+    real_t uMean = (this->_u->Cell(it) + this->_u->Cell(it.Top()))/2;
+    real_t vMean = (this->_v->Cell(it) + this->_v->Cell(it.Right()))/2;
     this->_velocities->Cell(it) = std::sqrt(uMean*uMean + vMean*vMean);
   }
   return _velocities;
@@ -163,8 +151,7 @@ void Compute::Stream() {
     Iterator itV(*(this->_v), it.Pos());
     this->_streamline->Cell(it) = this->_streamline->Cell(it.Left()) + _geom.Mesh()[0] * this->_v->Cell(itV);
   }
-  Iterator it(*(this->_streamline));
-  for(((it) + this->_geom.SizeS()[0]); it.Valid(); it.Next()) {
+  for(InteriorIterator it(*(this->_streamline)); it.Valid(); it.Next()) {
     Iterator itU(*(this->_u), it.Pos());
     this->_streamline->Cell(it) = this->_streamline->Cell(it.Down()) + _geom.Mesh()[1] * this->_u->Cell(itU);
   }
@@ -174,13 +161,11 @@ void Compute::Stream() {
 void Compute::NewVelocities(const real_t &dt) {
   // compute u
   for(InteriorIterator it(*(this->_u)); it.Valid(); it.Next()) {
-    Iterator itP(*(this->_p), it.Pos());
-    this->_u->Cell(it) = this->_F->Cell(it) - dt * this->_p->dx_r(itP);
+    this->_u->Cell(it) = this->_F->Cell(it) - dt * this->_p->dx_r(it);
   }
   // compute v
   for(InteriorIterator it(*(this->_v)); it.Valid(); it.Next()) {
-    Iterator itP(*(this->_p), it.Pos());
-    this->_v->Cell(it) = this->_G->Cell(it) - dt * this->_p->dy_r(itP);
+    this->_v->Cell(it) = this->_G->Cell(it) - dt * this->_p->dy_r(it);
   }
 }
 
@@ -210,9 +195,7 @@ void Compute::MomentumEqu(const real_t &dt) {
 // Compute the RHS of the poisson equation
 void Compute::RHS(const real_t &dt) {
   for(InteriorIterator it(*(this->_p)); it.Valid(); it.Next()) {
-    Iterator itF(*(this->_F), it.Pos());
-    Iterator itG(*(this->_G), it.Pos());
-    this->_rhs->Cell(it) = (this->_F->dx_l(itF) + this->_G->dy_l(itG)) / dt;
+    this->_rhs->Cell(it) = (this->_F->dx_l(it) + this->_G->dy_l(it)) / dt;
   }
 }
 

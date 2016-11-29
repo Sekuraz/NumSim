@@ -22,8 +22,8 @@
 #include "iterator.hpp"
 #include "geometry.hpp"
 
-// Constructs a grid of type t based on a geometry
-Grid::Grid(const Geometry &geom, const Grid::type &t) : _data(nullptr), _offset(), _geom(geom), _type(t) {
+// Constructs a grid based on a geometry
+Grid::Grid(const Geometry &geom) : _data(nullptr), _offset(), _geom(geom) {
   const multi_index_t &size = this->Size();
   this->_sizeData = 1;
   for(index_t i = 0; i < DIM; i++) {
@@ -34,10 +34,9 @@ Grid::Grid(const Geometry &geom, const Grid::type &t) : _data(nullptr), _offset(
 
 // Constructs a grid based on a geometry with an offset
 // \param geom   Geometry information
-// \param t      type of the grid (u, v, p)
 // \param offset distance of staggered grid point to cell's anchor point;
 //               (anchor point = lower left corner)
-Grid::Grid(const Geometry &geom, const Grid::type &t, const multi_real_t &offset) : Grid(geom, t) {
+Grid::Grid(const Geometry &geom, const multi_real_t &offset) : Grid(geom) {
   for(index_t dim = 0; dim < DIM; dim++) {
     this->_offset[dim] = offset[dim];
   }
@@ -139,9 +138,8 @@ real_t Grid::DC_udu_x(const Iterator &it, const real_t &alpha) const {
 // Computes v*du/dy with the donor cell method
 real_t Grid::DC_vdu_y(const Iterator &it, const real_t &alpha, const Grid *v) const {
   const multi_real_t &h = this->_geom.Mesh();
-  Iterator itV(*v, it.Pos());
-  real_t vMeanRight = (v->_data[itV] + v->_data[itV.Right()])/2;
-  real_t vMeanDown = (v->_data[itV.Down()] + v->_data[itV.Down().Right()])/2;
+  real_t vMeanRight = (v->_data[it] + v->_data[it.Right()])/2;
+  real_t vMeanDown = (v->_data[it.Down()] + v->_data[it.Down().Right()])/2;
 
   return ( ( vMeanRight *(this->_data[it] + this->_data[it.Top()])/2
             -vMeanDown*(this->_data[it.Down()] + this->_data[it])/2 ) / h[1]
@@ -151,9 +149,8 @@ real_t Grid::DC_vdu_y(const Iterator &it, const real_t &alpha, const Grid *v) co
 // Computes u*dv/dx with the donor cell method
 real_t Grid::DC_udv_x(const Iterator &it, const real_t &alpha, const Grid *u) const {
   const multi_real_t &h = this->_geom.Mesh();
-  Iterator itU(*u, it.Pos());
-  real_t uMeanTop = (u->_data[itU] + u->_data[itU.Top()])/2;
-  real_t uMeanLeft = (u->_data[itU.Left()] + u->_data[itU.Left().Top()])/2;
+  real_t uMeanTop = (u->_data[it] + u->_data[it.Top()])/2;
+  real_t uMeanLeft = (u->_data[it.Left()] + u->_data[it.Left().Top()])/2;
 
   return ( ( uMeanTop*(this->_data[it] + this->_data[it.Right()])/2
             -uMeanLeft *(this->_data[it.Left()] + this->_data[it])/2 ) / h[0]
