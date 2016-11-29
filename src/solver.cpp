@@ -30,7 +30,7 @@ real_t Solver::localRes(const Iterator &it, const Grid &grid, const Grid &rhs) c
 
 // Constructs an actual SOR solver
 SOR::SOR(const Geometry &geom, const real_t &omega) : Solver(geom), _omega(omega) {
-  if(this->_omega < 0.0 || this->_omega > 2.0) {
+  if(this->_omega <= 0.0 || this->_omega > 2.0) {
     real_t h = std::fmax(this->_geom.Mesh()[0], this->_geom.Mesh()[1]);
     this->_omega = 2.0 / (1.0 + std::sin(M_PI * h));
     std::cout << "SOR: New omega = " << this->_omega << std::endl;

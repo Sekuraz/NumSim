@@ -4,7 +4,7 @@ alpha = 0.9
 dt = 0.01
 tend = 51
 eps = 1e-3
-tau = 0.5
-itermax = 5000
+tau = 0.75
+itermax = 1000
 
 vtkDt = 0.5
