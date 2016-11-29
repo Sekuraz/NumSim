@@ -69,9 +69,8 @@ private:
   Grid *_rhs; ///< right-hand side of the pressure (poisson) equation
 
   Grid *_velocities; ///< grid for absolute velocities
-  Grid *_streamline; ///< container for streamfunktion
-  Grid *_vorticity; ///< container for the vorticity
-  Grid *_tmp; ///< container for interpolating whichever values
+  Grid *_streamline; ///< grid for streamfunction
+  Grid *_vorticity; ///< grid for the vorticity
 
   RedOrBlackSOR *_solver; ///< solver for the pressure (poisson) equation
 

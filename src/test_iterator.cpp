@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 
   const multi_real_t &h = geom.Mesh();
   multi_real_t offset(h[0]/2, 0);
-  Grid g (geom,Grid::type::v, offset);
+  Grid g (geom, offset);
   g.Initialize(0);
 
   // Create and initialize the visualization
