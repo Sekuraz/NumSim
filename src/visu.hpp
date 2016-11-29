@@ -43,7 +43,7 @@ public:
   ~Renderer();
 
   /// Initializes the Renderer
-  void Init(const index_t &width, const index_t &height, const int &idx = 0);
+  void Init(const index_t &width, const index_t &height, const int &idx = 0, const multi_index_t &t_idx = multi_index_t(), const multi_index_t &t_dim = multi_index_t());
 
   /// Defines visible dimensions
   void SetSlice(const index_t &xdim, const index_t &ydim,
@@ -100,8 +100,10 @@ private:
  *
  *      \param  width   The width of the window in pixels
  *      \param  height  The height of the window in pixels
- *      \param  idx             The Index of the window. If zero, no index is
+ *      \param  idx     The Index of the window. If zero, no index is
  * printed in the title.
+ *      \param  posX    The x-position of the window.
+ *      \param  posY    The y-position of the window.
  */
 /*!     \fn void Renderer::SetSlice (const index_t& xdim, const index_t& ydim,
  * const multi_real_t& origin)

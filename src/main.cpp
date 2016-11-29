@@ -43,9 +43,9 @@ int main(int argc, char *argv[]) {
 #ifdef USE_DEBUG_VISU
   // Create and initialize the visualization
   const int hRes = 600;
-  const int vRes = (int)(hRes / geom.TotalLength()[0]);
+  const int vRes = (int)(hRes * geom.TotalLength()[1] / geom.TotalLength()[0]);
   Renderer visu(geom.Length(), geom.Mesh());
-  visu.Init(hRes / comm.ThreadDim()[0], vRes / comm.ThreadDim()[1], comm.ThreadNum());
+  visu.Init(hRes / comm.ThreadDim()[0], vRes / comm.ThreadDim()[1], comm.ThreadNum(), comm.ThreadIdx(), comm.ThreadDim());
 #endif // USE_DEBUG_VISU
 
   // Create a VTK generator

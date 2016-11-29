@@ -7,8 +7,6 @@
 Communicator::Communicator (int* argc, char*** argv) : _tidx(), _tdim(), _mpi_cart_comm() {
   MPI_Init(argc, argv);
 
-  // Get the rank of the current thread
-  MPI_Comm_rank(MPI_COMM_WORLD, &this->_rank);
   // Get total number of threads
   MPI_Comm_size(MPI_COMM_WORLD, &this->_size);
 
@@ -23,7 +21,7 @@ Communicator::Communicator (int* argc, char*** argv) : _tidx(), _tdim(), _mpi_ca
     this->_tdim[dim] = dims[dim];
   }
 
-  MPI_Cart_create(MPI_COMM_WORLD, (int)DIM, dims, periodic, 0, &this->_mpi_cart_comm);
+  MPI_Cart_create(MPI_COMM_WORLD, (int)DIM, dims, periodic, 1, &this->_mpi_cart_comm);
   int coords[DIM];
   MPI_Cart_get(this->_mpi_cart_comm, (int)DIM, dims, periodic, coords);
   this->_evenodd = true;
@@ -31,6 +29,9 @@ Communicator::Communicator (int* argc, char*** argv) : _tidx(), _tdim(), _mpi_ca
     this->_tidx[dim] = coords[dim];
     this->_evenodd ^= ((coords[dim] % 2) == 1);
   }
+
+  // Get the rank of the current thread
+  MPI_Comm_rank(this->_mpi_cart_comm, &this->_rank);
 
   // TODO: for testing
   printf("Dims: %lu %lu Rank: %i Idx: %lu %lu odd: %i\n", _tdim[0], _tdim[1], _rank, _tidx[0], _tidx[1], _evenodd);
