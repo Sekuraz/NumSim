@@ -7,4 +7,5 @@ eps = 1e-3
 tau = 0.75
 itermax = 1000
 
-vtkDt = 0.5
+vtkDt = 0.2
+visuDt = 0.5

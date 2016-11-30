@@ -28,10 +28,12 @@
 int main(int argc, char *argv[]) {
   // Create communicator, parameter and geometry instances and load values
   Communicator comm(&argc, &argv);
+
   // Delete old VTK files, prevents bugs in paraview
   if(comm.ThreadNum() == 0) {
     system("exec rm -r ./VTK/*");
   }
+
   Parameter param;
   param.Load("param.txt", (comm.ThreadNum() == 0));
   Geometry geom(comm);
@@ -57,9 +59,12 @@ int main(int argc, char *argv[]) {
   visugrid = comp.GetVelocity();
 
   real_t nextTimeVTK = 0;
+  real_t nextTimeVisu = 0;
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
+
 #ifdef USE_DEBUG_VISU
+if(comp.GetTime() >= nextTimeVisu) {
     // compute global min and max
     real_t min, max;
     visugrid->MinMax(min, max);
@@ -91,6 +96,8 @@ int main(int argc, char *argv[]) {
     default:
       break;
     };
+  nextTimeVisu += param.VisuDt();
+}
 #endif // USE_DEBUG_VISU
 
     if(comp.GetTime() >= nextTimeVTK ) {

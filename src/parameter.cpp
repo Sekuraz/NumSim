@@ -76,6 +76,11 @@ void Parameter::Load(const char file[], const bool printinfo) {
       if(printinfo) {
         std::cout << "Parameter: Load vtkDt = " << this->_vtkDt << std::endl;
       }
+    } else if(!param.compare("visuDt") || !param.compare("visuDt") || !param.compare("VISUDt")) {
+      this->_visuDt = value;
+      if(printinfo) {
+        std::cout << "Parameter: Load visuDt = " << this->_visuDt << std::endl;
+      }
     } else {
       std::cerr << "Parameter: Unknown identifier " << param << std::endl;
     }

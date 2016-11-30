@@ -40,6 +40,7 @@ public:
   inline const real_t &Eps() const { return this->_eps; };
   inline const real_t &Tau() const { return this->_tau; };
   inline const real_t &VtkDt() const { return this->_vtkDt; };
+  inline const real_t &VisuDt() const { return this->_visuDt; };
 
 private:
   real_t _re;
@@ -51,6 +52,7 @@ private:
   real_t _tau;
   index_t _itermax;
   real_t _vtkDt;
+  real_t _visuDt;
 };
 //------------------------------------------------------------------------------
 #endif // __PARAMETER_HPP
