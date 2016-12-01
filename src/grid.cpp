@@ -23,23 +23,19 @@
 #include "geometry.hpp"
 
 // Constructs a grid based on a geometry
-Grid::Grid(const Geometry &geom) : _data(nullptr), _offset(), _geom(geom) {
+Grid::Grid(const Geometry &geom) : Grid(geom, multi_real_t(0)) {}
+
+// Constructs a grid based on a geometry with an offset
+// \param geom   Geometry information
+// \param offset distance of staggered grid point to cell's anchor point;
+//               (anchor point = lower left corner)
+Grid::Grid(const Geometry &geom, const multi_real_t &offset) : _data(nullptr), _offset(offset), _geom(geom) {
   const multi_index_t &size = this->Size();
   this->_sizeData = 1;
   for(index_t i = 0; i < DIM; i++) {
     this->_sizeData *= size[i];
   }
   this->_data = new real_t[_sizeData];
-}
-
-// Constructs a grid based on a geometry with an offset
-// \param geom   Geometry information
-// \param offset distance of staggered grid point to cell's anchor point;
-//               (anchor point = lower left corner)
-Grid::Grid(const Geometry &geom, const multi_real_t &offset) : Grid(geom) {
-  for(index_t dim = 0; dim < DIM; dim++) {
-    this->_offset[dim] = offset[dim];
-  }
 }
 
 // Deletes the grid
@@ -66,14 +62,14 @@ const real_t &Grid::Cell(const Iterator &it) const {
 // Interpolate the value at a arbitrary position
 real_t Grid::Interpolate(const multi_real_t &pos) const {
   const multi_index_t &size = this->Size();
-  const multi_real_t &h = this->_geom.Mesh();
+  const multi_real_t &hInv = this->_geom.invMesh();
 
   // compute index from position
   index_t multSize = 1;
   index_t i = 0;
   multi_real_t delta;
   for(index_t dim = 0; dim < DIM; dim++) {
-    delta[dim] = (pos[dim] + this->_offset[dim])/ h[dim];
+    delta[dim] = (pos[dim] + this->_offset[dim]) * hInv[dim];
     index_t iDim = (index_t)( delta[dim] );
     delta[dim] -= iDim;
     i += multSize * iDim;
@@ -101,69 +97,69 @@ real_t Grid::Interpolate(const multi_real_t &pos) const {
 
 // Computes the left-sided difference quotient in x-dim at [it]
 real_t Grid::dx_l(const Iterator &it) const {
-  return (this->_data[it]  - this->_data[it.Left()]) / this->_geom.Mesh()[0];
+  return (this->_data[it]  - this->_data[it.Left()]) * this->_geom.invMesh()[0];
 }
 // Computes the right-sided difference quotient in x-dim at [it]
 real_t Grid::dx_r(const Iterator &it) const {
-  return (this->_data[it.Right()] - this->_data[it]) / this->_geom.Mesh()[0];
+  return (this->_data[it.Right()] - this->_data[it]) * this->_geom.invMesh()[0];
 }
 // Computes the left-sided difference quotient in y-dim at [it]
 real_t Grid::dy_l(const Iterator &it) const {
-  return (this->_data[it] - this->_data[it.Down()]) / this->_geom.Mesh()[1];
+  return (this->_data[it] - this->_data[it.Down()]) * this->_geom.invMesh()[1];
 }
 // Computes the right-sided difference quotient in y-dim at [it]
 real_t Grid::dy_r(const Iterator &it) const {
-  return (this->_data[it.Top()] - this->_data[it]) / this->_geom.Mesh()[1];
+  return (this->_data[it.Top()] - this->_data[it]) * this->_geom.invMesh()[1];
 }
 // Computes the central difference quotient of 2nd order in x-dim at [it]
 real_t Grid::dxx(const Iterator &it) const {
-  const real_t &h = this->_geom.Mesh()[0];
-  return (this->_data[it.Left()] - 2*this->_data[it] + this->_data[it.Right()]) /(h*h);
+  const real_t &hInv = this->_geom.invMesh()[0];
+  return (this->_data[it.Left()] - 2*this->_data[it] + this->_data[it.Right()]) *(hInv*hInv);
 }
 // Computes the central difference quotient of 2nd order in y-dim at [it]
 real_t Grid::dyy(const Iterator &it) const {
-  const real_t &h = this->_geom.Mesh()[1];
-  return (this->_data[it.Down()] - 2*this->_data[it] + this->_data[it.Top()]) /(h*h);
+  const real_t &hInv = this->_geom.invMesh()[1];
+  return (this->_data[it.Down()] - 2*this->_data[it] + this->_data[it.Top()]) *(hInv*hInv);
 }
 
 // Computes u*du/dx with the donor cell method
 real_t Grid::DC_udu_x(const Iterator &it, const real_t &alpha) const {
-  const multi_real_t &h = this->_geom.Mesh();
+  const multi_real_t &hInv = this->_geom.invMesh();
   real_t uMeanRight = (this->_data[it] + this->_data[it.Right()])/2;
   real_t uMeanLeft = (this->_data[it.Left()] + this->_data[it])/2;
-  return ( (uMeanRight*uMeanRight - uMeanLeft*uMeanLeft) / h[0]
+  return ( (uMeanRight*uMeanRight - uMeanLeft*uMeanLeft) * hInv[0]
          + alpha * (-std::fabs(uMeanRight)*this->dx_r(it)/2
                     +std::fabs(uMeanLeft) *this->dx_l(it)/2) );
 }
 // Computes v*du/dy with the donor cell method
 real_t Grid::DC_vdu_y(const Iterator &it, const real_t &alpha, const Grid *v) const {
-  const multi_real_t &h = this->_geom.Mesh();
+  const multi_real_t &hInv = this->_geom.invMesh();
   real_t vMeanRight = (v->_data[it] + v->_data[it.Right()])/2;
   real_t vMeanDown = (v->_data[it.Down()] + v->_data[it.Down().Right()])/2;
 
   return ( ( vMeanRight *(this->_data[it] + this->_data[it.Top()])/2
-            -vMeanDown*(this->_data[it.Down()] + this->_data[it])/2 ) / h[1]
+            -vMeanDown*(this->_data[it.Down()] + this->_data[it])/2 ) * hInv[1]
           + alpha * (-std::fabs(vMeanRight) *this->dy_r(it)/2
                      +std::fabs(vMeanDown)*this->dy_l(it)/2) );
 }
 // Computes u*dv/dx with the donor cell method
 real_t Grid::DC_udv_x(const Iterator &it, const real_t &alpha, const Grid *u) const {
-  const multi_real_t &h = this->_geom.Mesh();
+  const multi_real_t &hInv = this->_geom.invMesh();
   real_t uMeanTop = (u->_data[it] + u->_data[it.Top()])/2;
   real_t uMeanLeft = (u->_data[it.Left()] + u->_data[it.Left().Top()])/2;
 
   return ( ( uMeanTop*(this->_data[it] + this->_data[it.Right()])/2
-            -uMeanLeft *(this->_data[it.Left()] + this->_data[it])/2 ) / h[0]
+            -uMeanLeft *(this->_data[it.Left()] + this->_data[it])/2 ) * hInv[0]
           + alpha * (-std::fabs(uMeanTop)*this->dx_r(it)/2
                      +std::fabs(uMeanLeft) *this->dx_l(it)/2) );
 }
 // Computes v*dv/dy with the donor cell method
 real_t Grid::DC_vdv_y(const Iterator &it, const real_t &alpha) const {
-  const multi_real_t &h = this->_geom.Mesh();
+  const multi_real_t &hInv = this->_geom.invMesh();
   real_t vMeanTop = (this->_data[it] + this->_data[it.Top()])/2;
   real_t vMeanDown = (this->_data[it.Down()] + this->_data[it])/2;
 
-  return ( (vMeanTop*vMeanTop - vMeanDown*vMeanDown) / h[0]
+  return ( (vMeanTop*vMeanTop - vMeanDown*vMeanDown) * hInv[0]
          + alpha * (-std::fabs(vMeanTop) *this->dy_r(it)/2
                     +std::fabs(vMeanDown)*this->dy_l(it)/2) );
 }
