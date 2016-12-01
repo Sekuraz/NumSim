@@ -20,6 +20,7 @@
 #ifndef __PARAMETER_HPP
 #define __PARAMETER_HPP
 //------------------------------------------------------------------------------
+/// Class for the parameters used in the simulation
 class Parameter {
 public:
   /// Constructs a new Parameter set with default values
@@ -30,16 +31,25 @@ public:
   /// Loads the parameter values from a file
   void Load(const char file[], const bool printinfo = 0);
 
-  /// Getter functions for all parameters
+  /// Returns the Reynolds-number
   inline const real_t &Re() const { return this->_re; };
+  /// Returns the over-relaxation parameter for SOR and RedBlackSOR
   inline const real_t &Omega() const { return this->_omega; };
+  /// Returns the weighting between Donor-Cell and central differences
   inline const real_t &Alpha() const { return this->_alpha; };
+  /// Returns the maximal time-step
   inline const real_t &Dt() const { return this->_dt; };
+  /// Returns the final time
   inline const real_t &Tend() const { return this->_tend; };
+  /// Returns the maximal number of iterations done by the iterative solver
   inline const index_t &IterMax() const { return this->_itermax; };
+  /// Returns the maximal error allowed in the iterative solver
   inline const real_t &Eps() const { return this->_eps; };
+  /// Returns the savety-factor for the time-step restriction
   inline const real_t &Tau() const { return this->_tau; };
+  /// Returns the time-step after which a vtk-output is written
   inline const real_t &VtkDt() const { return this->_vtkDt; };
+  /// Returns the time-step after which the visualization is updated
   inline const real_t &VisuDt() const { return this->_visuDt; };
 
 private:

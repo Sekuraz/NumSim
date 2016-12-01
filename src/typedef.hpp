@@ -42,46 +42,46 @@ typedef INDEX_TYPE index_t;
 
 /// Template for array/vector types
 template <typename _type, index_t _dim> struct array_t {
-  // Constructors
-  // Empty; initialize array_t to 0
+  /// Constructor initializes the array to 0.
   array_t() {
     for (index_t i = 0; i < _dim; ++i)
       x[i] = 0;
   }
 
-  // Value; initialize array_to to val
+  /// Constructor initializes the array to v1
   array_t(const _type &v1) {
     for (index_t i = 0; i < _dim; ++i)
       x[i] = v1;
   }
 
-  // Value 2: initialize first value to v1, all others to v2
+  /// Constructor initializes first value to v1, all others to v2
   array_t(const _type &v1, const _type &v2) {
     x[0] = v1;
     for (index_t i = 1; i < _dim; ++i)
       x[i] = v2;
   }
 
-  // Copy-constructor: field of values
+  /// Copy-constructor from field of values
   array_t(const _type(&cp)[_dim]) {
     for (index_t i = 0; i < _dim; ++i)
       x[i] = cp[i];
   }
-  // Copy-constructor: array_t
+  /// Copy-constructor from other array_t
   array_t(const array_t<_type, _dim> &cp) {
     for (index_t i = 0; i < _dim; ++i)
       x[i] = cp.x[i];
   }
 
-  // access operator
+  /// Writing access operator
   _type &operator[](index_t i) { return x[i]; }
+  /// Reading access operator
   const _type &operator[](index_t i) const { return x[i]; }
 
-  // store values and size
-  _type x[_dim];
-  static const index_t dim = _dim;
+  _type x[_dim]; ///< values of the array
+  static const index_t dim = _dim; ///< size of the array
 };
 
+/// output of the array_t in readable form
 template <typename _type, index_t _dim> std::ostream& operator<<(std::ostream& os, const array_t<_type, _dim> value) {
   os << "[" << value.x[0];
   for (index_t i = 1; i < value.dim; i++) {
@@ -97,7 +97,7 @@ typedef array_t<index_t, DIM> multi_index_t;
 
 //------------------------------------------------------------------------------
 
-/// Forward declaration of classes used
+// Forward declaration of classes used
 class Communicator;
 class Compute;
 class Geometry;

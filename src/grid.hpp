@@ -21,15 +21,16 @@
 #ifndef __GRID_HPP
 #define __GRID_HPP
 //------------------------------------------------------------------------------
+/// Class describing a grid of a variable for the computation
 class Grid {
 public:
   /// Constructs a grid based on a geometry
   Grid(const Geometry &geom);
 
   /// Constructs a grid based on a geometry with an offset
-  // @param geom   Geometry information
-  // @param offset distance of staggered grid point to cell's anchor point;
-  //               (anchor point = lower left corner)
+  /// \param geom   Geometry information
+  /// \param offset distance of staggered grid point to cell's anchor point;
+  ///               (anchor point = lower left corner)
   Grid(const Geometry &geom, const multi_real_t &offset);
 
   /// Deletes the grid

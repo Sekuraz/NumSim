@@ -33,8 +33,7 @@
 /// Class for all data exchange between the processes (via MPI).
 class Communicator {
 public:
-  /// Communicator constructor. Initializes MPI Environment.
-  ///
+  /// \brief Communicator constructor. Initializes MPI Environment.
   /// \param [in] argc Number of arguments program was started with
   /// \param [in] argv Arguments passed to the program on start
   Communicator(int* argc, char*** argv);
@@ -54,28 +53,28 @@ public:
   /// Returns whether this process is a red or a black field.
   inline const bool& EvenOdd() const { return this->_evenodd; };
 
-  /// Returns if the values of all processes are true.
+  /// \brief Returns if the values of all processes are true.
   /// \param [in] val The data over which the logical operation is to be calculated
   /// \return Whether the values of all processes are true.
   bool gatherAnd(const bool& val) const;
-  /// Gets the sum of all values and distributes the result among all processes.
+  /// \brief Gets the sum of all values and distributes the result among all processes.
   /// \param [in] val The data over which the sum is to be calculated
   /// \return The sum of the values of all processes
   real_t gatherSum(const real_t& val) const;
-  /// Gets the minimum of all values and distributes the result among all processes.
+  /// \brief Gets the minimum of all values and distributes the result among all processes.
   /// \param [in] val The data over which the minimum is to be calculated
   /// \return The minimum of the values of all processes
   real_t gatherMin(const real_t& val) const;
-  /// Gets the maximum of all values and distributes the result among all processes.
+  /// \brief Gets the maximum of all values and distributes the result among all processes.
   /// \param [in] val The data over which the maximum is to be calculated
   /// \return The maximum of the values of all processes
   real_t gatherMax(const real_t& val) const;
 
-  /// Synchronizes the ghost layers of the grid
+  /// \brief Synchronizes the ghost layers of the grid
   /// \param [in] grid  The grid of which the values are synced
   void copyBoundary(Grid& grid) const;
 
-  /// Transfers the offset of the streamfunction and returns the own offset
+  /// \brief Transfers the offset of the streamfunction and returns the own offset
   /// \param [in] grid  The grid of the streamfunction
   real_t copyOffset(const Grid& grid) const;
 

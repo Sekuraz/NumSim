@@ -20,21 +20,22 @@
 #ifndef __GEOMETRY_HPP
 #define __GEOMETRY_HPP
 //------------------------------------------------------------------------------
+/// The geometry of the underlying physical domain.
 class Geometry {
 public:
   /// Constructs a default geometry:
   /// driven cavity with 128 x 128 grid, no-slip boundary conditions
   /// as shown below
-  ///
-  ///      u=1, v=0
-  ///    -------------
-  ///    |           |
-  /// u=0|           |u=0
-  /// v=0|           |v=0
-  ///    |           |
-  ///    |           |
-  ///    -------------
-  ///      u=0, v=0
+  /// <pre>
+  ///       u=1, v=0
+  ///     -------------
+  ///     |           |
+  /// u=0 |           | u=0
+  /// v=0 |           | v=0
+  ///     |           |
+  ///     -------------
+  ///       u=0, v=0
+  /// </pre>
   Geometry(const Communicator &comm);
   Geometry(const Communicator &comm, const multi_index_t& size);
 

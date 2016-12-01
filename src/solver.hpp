@@ -21,8 +21,7 @@
 #define __SOLVER_HPP
 //------------------------------------------------------------------------------
 
-/** abstract base class for an iterative solver
-*/
+/// abstract base class for an iterative solver
 class Solver {
 public:
   /// Constructor of the abstract Solver class
@@ -45,8 +44,7 @@ protected:
 
 //------------------------------------------------------------------------------
 
-/** concrete SOR solver
-*/
+/// concrete SOR solver
 class SOR : public Solver {
 public:
   /// Constructs an actual SOR solver
@@ -55,32 +53,30 @@ public:
   ~SOR() {};
 
   /// Returns the total residual and executes a solver cycle
-  // @param[in][out] grid current pressure values
-  // @param[in] rhs right hand side
+  /// \param[in][out] grid current pressure values
+  /// \param[in] rhs right hand side
   real_t Cycle(Grid &grid, const Grid &rhs) const;
 
 protected:
-  real_t _omega;
-  real_t _correction;
+  real_t _correction; ///< The correction factor computed from over-relaxation parameter
 };
 //------------------------------------------------------------------------------
 
-/** concrete Red or Balck SOR solver
- */
+/// concrete RedBlackSOR solver
 class RedOrBlackSOR : public SOR {
 public:
-  /// Constructs an actual Red or Black SOR solver
+  /// Constructs an RedBlackSOR solver
   RedOrBlackSOR(const Geometry &geom, const real_t &omega) : SOR(geom,omega) {};
   /// Destructor
   ~RedOrBlackSOR() {};
 
   /// Returns the total residual and executes a red solver cycle
-  // @param[in][out] grid current pressure values
-  // @param[in] rhs right hand side
+  /// \param[in][out] grid current pressure values
+  /// \param[in] rhs right hand side
   real_t RedCycle(Grid &grid, const Grid &rhs) const;
   /// Returns the total residual and executes a black solver cycle
-  // @param[in][out] grid current pressure values
-  // @param[in] rhs right hand side
+  /// \param[in][out] grid current pressure values
+  /// \param[in] rhs right hand side
   real_t BlackCycle(Grid &grid, const Grid &rhs) const;
 };
 //------------------------------------------------------------------------------

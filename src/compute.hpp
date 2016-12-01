@@ -20,16 +20,16 @@
 #ifndef __COMPUTE_HPP
 #define __COMPUTE_HPP
 //------------------------------------------------------------------------------
+/// Class for all computations done within one timestep.
 class Compute {
 public:
-  /// Creates a compute instance with given geometry, parameter and Communicator
+  /// Creates a compute instance with given geometry, parameter and communicator
   Compute(const Geometry &geom, const Parameter &param, const Communicator &comm);
   /// Deletes all grids
   ~Compute();
 
   /// Execute one time step of the fluid simulation (with or without debug info)
-  // @ param printInfo print information about current solver state (residual
-  // etc.)
+  /// \param printInfo print information about current solver state (residual etc.)
   void TimeStep(bool printInfo);
 
   /// Returns the simulated time in total

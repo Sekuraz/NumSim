@@ -106,7 +106,6 @@ int main(int argc, char *argv[]) {
 #endif // USE_DEBUG_VISU
 
     if(comp.GetTime() >= nextTimeVTK ) {
-      // TODO: extend vtk for several processes
       // Create a VTK File in the folder VTK (must exist)
       vtk.Init("VTK/field");
       vtk.AddField("Velocity", comp.GetU(), comp.GetV());

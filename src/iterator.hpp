@@ -22,8 +22,7 @@
 #define __ITERATOR_HPP
 //------------------------------------------------------------------------------
 
-/** Iterator base class
-*/
+/// Iterator base class
 class Iterator {
 public:
   /// Constructs a new Iterator depending on a grid
@@ -49,15 +48,15 @@ public:
   virtual bool Valid() const;
 
   /// Returns an Iterator that is located left from this one.
-  // if we are at the left boundary, the cell sees itself
+  // If we are at the left boundary, the cell sees itself.
   virtual Iterator Left() const;
 
-  /// Returns an Iterator that is located right from this one
-  // If we are at the right boundary, the cell sees itself
+  /// Returns an Iterator that is located right from this one.
+  // If we are at the right boundary, the cell sees itself.
   virtual Iterator Right() const;
 
-  /// Returns an Iterator that is located above this one
-  // If we are at the upper domain boundary, the cell sees itself
+  /// Returns an Iterator that is located above this one.
+  // If we are at the upper domain boundary, the cell sees itself.
   virtual Iterator Top() const;
 
   /// Returns an Iterator that is located below this one
@@ -65,14 +64,13 @@ public:
   virtual Iterator Down() const;
 
 protected:
-  const Grid &_grid;
-  index_t _value;
-  bool _valid;
+  const Grid &_grid; ///< The Grid on which the iterator operates.
+  index_t _value;    ///< The (linear) index, of the current Grid cell.
+  bool _valid;       ///< Whether the index is inside the Grid's data array.
 };
 
 //------------------------------------------------------------------------------
-/** Iterator for interior cells
-*/
+///Iterator for interior cells
 class InteriorIterator : public Iterator {
 public:
   /// Construct a new InteriorIterator
@@ -85,14 +83,13 @@ public:
 };
 
 //------------------------------------------------------------------------------
-/** Iterator for domain boundary cells.
-*/
+/// Iterator for domain boundary cells.
 class BoundaryIterator : public Iterator {
 public:
-  /// enum for the boundaries
+  /// Enum to easy set the boundaries.
   enum boundary{left, down, right, top};
 
-  /// Constructs a new BoundaryIterator
+  /// Constructs a new BoundaryIterator.
   BoundaryIterator(const Grid &grid, BoundaryIterator::boundary b = BoundaryIterator::boundary::down)
       : Iterator(grid), _boundary(b) { this->First(); }
 

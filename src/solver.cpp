@@ -29,20 +29,18 @@ real_t Solver::localRes(const Iterator &it, const Grid &grid, const Grid &rhs) c
 // concrete SOR solver
 
 // Constructs an actual SOR solver
-SOR::SOR(const Geometry &geom, const real_t &omega) : Solver(geom), _omega(omega) {
-  if(this->_omega <= 0.0 || this->_omega > 2.0) {
+SOR::SOR(const Geometry &geom, const real_t &omega) : Solver(geom), _correction(omega) {
+  if(this->_correction <= 0.0 || this->_correction > 2.0) {
     real_t h = std::fmax(this->_geom.Mesh()[0], this->_geom.Mesh()[1]);
-    this->_omega = 2.0 / (1.0 + std::sin(M_PI * h));
-    std::cout << "SOR: New omega = " << this->_omega << std::endl;
+    this->_correction = 2.0 / (1.0 + std::sin(M_PI * h));
+    std::cout << "SOR: New omega = " << this->_correction << std::endl;
   }
 
   const multi_real_t &h = this->_geom.Mesh();
-  this->_correction = this->_omega * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]);
+  this->_correction *= 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]);
 }
 
 // Returns the total residual and executes a solver cycle
-// @param grid current pressure values
-// @param rhs right hand side
 real_t SOR::Cycle(Grid &grid, const Grid &rhs) const {
   const multi_real_t &hInv = this->_geom.invMesh();
   real_t residual = 0;

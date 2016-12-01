@@ -1,4 +1,4 @@
-# Copyright (C) 2015   Michael Lahnert
+# Copyright (C) 2015   Michael Lahnert, Markus Baur, Jonas Harsch, Stephan Lunowa
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
