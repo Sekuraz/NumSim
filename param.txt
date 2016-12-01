@@ -1,5 +1,5 @@
 re = 1000
-omega = 1.9
+omega = 1.95
 alpha = 0.9
 dt = 0.01
 tend = 51
@@ -8,4 +8,4 @@ tau = 0.75
 itermax = 1000
 
 vtkDt = 0.2
-visuDt = 0.5
+visuDt = 0.1

@@ -25,7 +25,7 @@
 Geometry::Geometry(const Communicator &comm) : Geometry(comm, multi_index_t {128, 128}) {}
 
 Geometry::Geometry(const Communicator &comm, const multi_index_t& size)
-    : _comm(comm), _totalSize(size), _size(), _sizeP(), _totalLength(1,1) {
+    : _comm(comm), _totalSize(size), _totalLength(1,1) {
   this->computeSizes();
 }
 
@@ -201,5 +201,6 @@ void Geometry::computeSizes() {
 
     this->_sizeP[dim] = this->_size[dim] + 2;
     this->_h[dim] = this->_length[dim] / this->_size[dim];
+    this->_hInv[dim] = 1.0 / this->_h[dim];
   }
 }

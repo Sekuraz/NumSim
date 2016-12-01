@@ -56,6 +56,8 @@ public:
   inline const multi_real_t &Velocity() const { return this->_velocity; }
   /// Returns the meshwidth
   inline const multi_real_t &Mesh() const { return this->_h; }
+  /// Returns the invers meshwidth
+  inline const multi_real_t &invMesh() const { return this->_hInv; }
 
   /// Updates the velocity field u
   void Update_U(Grid &u) const;
@@ -74,7 +76,8 @@ private:
   multi_index_t _sizeP;      ///< cartesian size of the local Grid
   multi_real_t _totalLength; ///< total length of the physical domain in each dimension
   multi_real_t _length;      ///< local length of the physical domain in each dimension
-  multi_real_t _h;           ///< cartesian size of Grid for velocities u in x-direction
+  multi_real_t _h;           ///< mesh width of the Grids
+  multi_real_t _hInv;        ///< the invers of the mesh width
   multi_real_t _velocity;    ///< constant boundary velocities (u,v) at upper boundary
   real_t _pressure;          ///< constant pressure p at ?
 };

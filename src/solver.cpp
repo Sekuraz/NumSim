@@ -35,56 +35,55 @@ SOR::SOR(const Geometry &geom, const real_t &omega) : Solver(geom), _omega(omega
     this->_omega = 2.0 / (1.0 + std::sin(M_PI * h));
     std::cout << "SOR: New omega = " << this->_omega << std::endl;
   }
+
+  const multi_real_t &h = this->_geom.Mesh();
+  this->_correction = this->_omega * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]);
 }
 
 // Returns the total residual and executes a solver cycle
 // @param grid current pressure values
 // @param rhs right hand side
 real_t SOR::Cycle(Grid &grid, const Grid &rhs) const {
-  const multi_real_t &h = this->_geom.Mesh();
-  const real_t prefactor = this->_omega * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]);
-
+  const multi_real_t &hInv = this->_geom.invMesh();
   real_t residual = 0;
+
   for(InteriorIterator it(grid); it.Valid(); it.Next()) {
     real_t localRes = Solver::localRes(it, grid, rhs);
     residual += localRes * localRes;
-    grid.Cell(it) = grid.Cell(it) - prefactor * localRes;
+    grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
   }
-  return residual / (h[0] * h[1]);
+
+  return residual * hInv[0] * hInv[1];
 }
 
 //------------------------------------------------------------------------------
 // concrete Red or Black SOR solver
 
 real_t RedOrBlackSOR::RedCycle(Grid &grid, const Grid &rhs) const {
-  const multi_real_t &h = this->_geom.Mesh();
-  const real_t prefactor = this->_omega * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]);
-
+  const multi_real_t &hInv = this->_geom.invMesh();
   real_t residual = 0;
 
   for(InteriorIterator it(grid); it.Valid(); it.Next()) {
     real_t localRes = Solver::localRes(it, grid, rhs);
     residual += localRes * localRes;
-    grid.Cell(it) = grid.Cell(it) - prefactor * localRes;
+    grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
     it.Next();
   }
 
-  return residual / (h[0] * h[1]);
+  return residual * hInv[0] * hInv[1];
 }
 
 real_t RedOrBlackSOR::BlackCycle(Grid &grid, const Grid &rhs) const {
-  const multi_real_t &h = this->_geom.Mesh();
-  const real_t prefactor = this->_omega * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]);
-
+  const multi_real_t &hInv = this->_geom.invMesh();
   real_t residual = 0;
 
   InteriorIterator it(grid);
   for(it.Next(); it.Valid(); it.Next()) {
     real_t localRes = Solver::localRes(it, grid, rhs);
     residual += localRes * localRes;
-    grid.Cell(it) = grid.Cell(it) - prefactor * localRes;
+    grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
     it.Next();
   }
 
-  return residual / (h[0] * h[1]);
+  return residual * hInv[0] * hInv[1];
 }
