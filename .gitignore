@@ -41,3 +41,4 @@ Makefile
 # Output
 VTK/
 doc/
+profiler.svg

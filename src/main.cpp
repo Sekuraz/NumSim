@@ -69,40 +69,40 @@ int main(int argc, char *argv[]) {
   while (comp.GetTime() < param.Tend() && run) {
 
 #ifdef USE_DEBUG_VISU
-if(comp.GetTime() >= nextTimeVisu) {
-    // compute global min and max
-    real_t min, max;
-    visugrid->MinMax(min, max);
-    min = comm.gatherMin(min);
-    max = comm.gatherMax(max);
-    // Render and check if window is closed
-    switch (visu.Render(visugrid, min, max)) {
-    case -1:
-      run = false;
-      break;
-    case 0:
-      visugrid = comp.GetVelocity();
-      break;
-    case 1:
-      visugrid = comp.GetU();
-      break;
-    case 2:
-      visugrid = comp.GetV();
-      break;
-    case 3:
-      visugrid = comp.GetP();
-      break;
-    case 4:
-      visugrid = comp.GetVorticity();
-      break;
-    case 5:
-      visugrid = comp.GetStreamline();
-      break;
-    default:
-      break;
-    };
-  nextTimeVisu += param.VisuDt();
-}
+    if(comp.GetTime() >= nextTimeVisu) {
+      // compute global min and max
+      real_t min, max;
+      visugrid->MinMax(min, max);
+      min = comm.gatherMin(min);
+      max = comm.gatherMax(max);
+      // Render and check if window is closed
+      switch (visu.Render(visugrid, min, max)) {
+      case -1:
+        run = false;
+        break;
+      case 0:
+        visugrid = comp.GetVelocity();
+        break;
+      case 1:
+        visugrid = comp.GetU();
+        break;
+      case 2:
+        visugrid = comp.GetV();
+        break;
+      case 3:
+        visugrid = comp.GetP();
+        break;
+      case 4:
+        visugrid = comp.GetVorticity();
+        break;
+      case 5:
+        visugrid = comp.GetStreamline();
+        break;
+      default:
+        break;
+      };
+    nextTimeVisu += param.VisuDt();
+    }
 #endif // USE_DEBUG_VISU
 
     if(comp.GetTime() >= nextTimeVTK ) {
@@ -110,8 +110,6 @@ if(comp.GetTime() >= nextTimeVisu) {
       // Create a VTK File in the folder VTK (must exist)
       vtk.Init("VTK/field");
       vtk.AddField("Velocity", comp.GetU(), comp.GetV());
-      vtk.AddScalar("x-Velocity", comp.GetU());
-      vtk.AddScalar("y-Velocity", comp.GetV());
       vtk.AddScalar("Pressure", comp.GetP());
       vtk.AddScalar("Vorticity", comp.GetVorticity());
       vtk.AddScalar("Streamlines", comp.GetStreamline());
