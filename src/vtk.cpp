@@ -19,147 +19,225 @@
 #include <cstring>
 #include <cstdio>
 //------------------------------------------------------------------------------
-uint32_t VTK::_cnt = 0;
+index_t VTK::_cnt = 0;
 //------------------------------------------------------------------------------
 VTK::VTK(const multi_real_t &h, const multi_index_t &size)
-    : _h(h), _size(size) {
-  _offset = multi_real_t(0.0);
-  _handle = NULL;
-}
+    : VTK(h, size, multi_real_t(0.0)) {}
 //------------------------------------------------------------------------------
 VTK::VTK(const multi_real_t &h, const multi_index_t &size,
          const multi_real_t &offset)
-    : _h(h), _size(size), _offset(offset) {
-  _handle = NULL;
-}
+    : VTK(h, size, offset, size, 0, multi_index_t(0), multi_index_t(1)) {}
+//------------------------------------------------------------------------------
+VTK::VTK(const multi_real_t &h, const multi_index_t &size,
+      const multi_real_t &offset, const multi_index_t &globalSize, const int &rank,
+      const multi_index_t &tidx, const multi_index_t &tdim)
+    : _h(h), _size(size), _offset(offset), _globalSize(globalSize), _rank(rank),
+    _tidx(tidx), _tdim(tdim), _handle(nullptr), _phandle(nullptr) {}
 //------------------------------------------------------------------------------
 void VTK::Init(const char *path) {
-  if (_handle)
+  if(this->_handle) {
     return;
-  int flength = strlen(path) + 20;
+  }
+  int flength = strlen(path) + 30;
   char *filename;
   filename = new char[flength];
-  if (strlen(path))
-    sprintf(filename, "%s_%i.vts", path, _cnt);
-  else
-    sprintf(filename, "%s_%i.vts", "field", _cnt);
-  _handle = fopen(filename, "w");
+  sprintf(filename, "%s_r%02lu-%02lu-%02lu_%05lu.vts", (strlen(path) > 0)? path : "field",
+          this->_tidx[0], this->_tidx[1], (DIM == 3? this->_tidx[2] : 0), this->_cnt);
+  this->_handle = fopen(filename, "w");
+  
+  if(this->_rank == 0) {
+    sprintf(filename, "%s_%05lu.pvts",  (strlen(path) > 0)? path : "field", this->_cnt);
+    this->_phandle = fopen(filename, "w");
+  }
   delete[] filename;
 
-  fprintf(_handle, "<?xml version=\"1.0\"?>\n");
-  fprintf(_handle, "<VTKFile type=\"StructuredGrid\">\n");
-  fprintf(_handle, "<StructuredGrid WholeExtent=\"0 %lu 0 %lu 0 %lu \">\n",
-          _size[0] - 1, _size[1] - 1, (DIM == 3 ? _size[2] - 1 : 0));
-  fprintf(_handle, "<Piece Extent=\"0 %lu 0 %lu 0 %lu \">\n",
-          _size[0] - 1, _size[1] - 1, (DIM == 3 ? _size[2] - 1 : 0));
-  fprintf(_handle, "<Points>\n");
-  fprintf(_handle, "<DataArray type=\"Float64\" format=\"ascii\" "
+  fprintf(this->_handle, "<?xml version=\"1.0\"?>\n");
+  fprintf(this->_handle, "<VTKFile type=\"StructuredGrid\">\n");
+  fprintf(this->_handle, "<StructuredGrid WholeExtent=\"%lu %lu %lu %lu %lu %lu\" GhostLevel=\"0\">\n",
+          this->_tidx[0] * (this->_size[0] - 2), (this->_tidx[0] + 1) * (this->_size[0] - 2),
+          this->_tidx[1] * (this->_size[1] - 2), (this->_tidx[1] + 1) * (this->_size[1] - 2),
+          (DIM == 3 ? (this->_tidx[2] * (this->_size[2] - 2)) : 0),
+          (DIM == 3 ? ((this->_tidx[2] + 1) * (this->_size[2] - 2)) : 0));
+  fprintf(this->_handle, "<Piece Extent=\"%lu %lu %lu %lu %lu %lu \">\n",
+          this->_tidx[0] * (this->_size[0] - 2), (this->_tidx[0] + 1) * (this->_size[0] - 2),
+          this->_tidx[1] * (this->_size[1] - 2), (this->_tidx[1] + 1) * (this->_size[1] - 2),
+          (DIM == 3 ? (this->_tidx[2] * (this->_size[2] - 2)) : 0),
+          (DIM == 3 ? ((this->_tidx[2] + 1) * (this->_size[2] - 2)) : 0));
+  fprintf(this->_handle, "<Points>\n");
+  fprintf(this->_handle, "<DataArray type=\"Float64\" format=\"ascii\" "
                    "NumberOfComponents=\"3\">\n");
 
-  for (index_t z = 0; z < (DIM == 3 ? _size[2] : 1); ++z)
-    for (index_t y = 0; y < _size[1]; ++y)
-      for (index_t x = 0; x < _size[0]; ++x)
-        fprintf(_handle, "%le %le %le\n", (double)x * _h[0] + _offset[0],
-                (double)y * _h[1] + _offset[1],
-                (DIM == 3 ? (double)z * _h[2] + _offset[2] : 0));
+  for(index_t z = 0; z < (DIM == 3 ? this->_size[2]-1 : 1); ++z) {
+    for (index_t y = 0; y < this->_size[1]-1; ++y) {
+      for (index_t x = 0; x < this->_size[0]-1; ++x) {
+        fprintf(this->_handle, "%le %le %le\n",
+                (double)x * this->_h[0] + this->_offset[0],
+                (double)y * this->_h[1] + this->_offset[1],
+                (DIM == 3 ? (double)z * this->_h[2] + this->_offset[2] : 0));
+      }
+    }
+  }
 
-  fprintf(_handle, "</DataArray>\n");
-  fprintf(_handle, "</Points>\n");
-  fprintf(_handle, "<PointData>\n");
+  fprintf(this->_handle, "</DataArray>\n");
+  fprintf(this->_handle, "</Points>\n");
+  fprintf(this->_handle, "<PointData>\n");
+
+  // write header information in master file
+  if(this->_rank == 0) {
+    fprintf(this->_phandle, "<?xml version=\"1.0\"?>\n");
+    fprintf(this->_phandle, "<VTKFile type=\"PStructuredGrid\">\n");
+
+    // define whole domain extent
+    fprintf(this->_phandle,
+        "<PStructuredGrid WholeExtent=\"0 %lu 0 %lu 0 %lu\" GhostLevel=\"0\">\n",
+        this->_globalSize[0], this->_globalSize[1], (DIM == 3 ? this->_globalSize[2] : 0));
+
+    // announce arrays in 3 dimensions
+    fprintf(this->_phandle, "<PPoints>\n");
+    fprintf(this->_phandle, "<PDataArray type=\"Float64\" NumberOfComponents=\"3\"/>\n");
+    fprintf(this->_phandle, "</PPoints>\n");
+
+    // announce pieces and their respective extents
+    for(index_t z = 0; z < ((DIM == 3)? this->_tdim[2] : 1); ++z) {
+      for(index_t y = 0; y < this->_tdim[1]; ++y) {
+        for (index_t x = 0; x < this->_tdim[0]; ++x) {
+          // create filename string and build file handle from this.
+          filename = new char[flength];
+          sprintf(filename, "%s_r%02lu-%02lu-%02lu_%05lu.vts", (strlen(path) > 0)? path : "field",
+                  x, y, z, this->_cnt);
+          fprintf(this->_phandle, "<Piece Extent=\"%lu %lu %lu %lu %lu %lu\" Source=\"%s\"/>\n",
+                  x * (this->_size[0] - 2), (x + 1) * (this->_size[0] - 2),
+                  y * (this->_size[1] - 2), (y + 1) * (this->_size[1] - 2),
+                  (DIM == 3 ? (z * (this->_size[2] - 2)) : 0),
+                  (DIM == 3 ? ((z + 1) * (this->_size[2] - 2)) : 0),
+                  &filename[4]);
+          delete[] filename;
+        }
+      }
+    }
+
+    // begin announcing payload
+    fprintf(this->_phandle, "<PPointData>\n");
+  }
 }
 //------------------------------------------------------------------------------
 void VTK::Finish() {
-  if (!_handle)
+  if(!this->_handle) {
     return;
+  }
 
-  fprintf(_handle, "</PointData>\n");
-  fprintf(_handle, "</Piece>\n");
-  fprintf(_handle, "</StructuredGrid>\n");
-  fprintf(_handle, "</VTKFile>\n");
+  fprintf(this->_handle, "</PointData>\n");
+  fprintf(this->_handle, "</Piece>\n");
+  fprintf(this->_handle, "</StructuredGrid>\n");
+  fprintf(this->_handle, "</VTKFile>\n");
 
-  fclose(_handle);
+  fclose(this->_handle);
+  this->_handle = nullptr;
+  this->_cnt++;
 
-  _handle = NULL;
+  if(this->_rank == 0) {
+    fprintf(this->_phandle, "</PPointData>\n");
+    fprintf(this->_phandle, "</PStructuredGrid>\n");
+    fprintf(this->_phandle, "</VTKFile>\n");
 
-  _cnt++;
+    fclose(this->_phandle);
+    this->_phandle = nullptr;
+  }
 }
 //------------------------------------------------------------------------------
 void VTK::AddScalar(const char *title, const Grid *grid) {
-  if (!_handle)
+  if (!this->_handle || (this->_rank == 0 && !this->_phandle)) {
     return;
+  }
 
-  fprintf(_handle,
-          "<DataArray Name=\"%s\" type=\"Float64\" format=\"ascii\">\n", title);
+  fprintf(this->_handle, "<DataArray Name=\"%s\" type=\"Float64\" format=\"ascii\">\n", title);
 
   multi_real_t pos;
-  for (index_t z = 0; z < (DIM == 3 ? _size[2] : 1); ++z) {
+  for (index_t z = 0; z < (DIM == 3 ? this->_size[2]-1 : 1); ++z) {
 #if DIM == 3
-    pos[2] = (double)z * _h[2] + _offset[2];
+    pos[2] = (double)z * _h[2];
 #endif // DIM
-    for (index_t y = 0; y < _size[1]; ++y) {
-      pos[1] = (double)y * _h[1] + _offset[1];
-      for (index_t x = 0; x < _size[0]; ++x) {
-        pos[0] = (double)x * _h[0] + _offset[0];
-        fprintf(_handle, "%le ", (double)grid->Interpolate(pos));
+    for (index_t y = 0; y < this->_size[1]-1; ++y) {
+      pos[1] = (double)y * this->_h[1];
+      for (index_t x = 0; x < this->_size[0]-1; ++x) {
+        pos[0] = (double)x * this->_h[0];
+        fprintf(this->_handle, "%le ", (double)grid->Interpolate(pos));
 #if DIM == 3
-        fprintf(_handle, "\n");
+        fprintf(this->_handle, "\n");
 #endif // DIM
       }
 #if DIM == 2
-      fprintf(_handle, "\n");
+      fprintf(this->_handle, "\n");
 #endif // DIM
     }
   }
 
-  fprintf(_handle, "</DataArray>\n");
+  fprintf(this->_handle, "</DataArray>\n");
+
+  // print info about data-segment into parallel master file
+  if(this->_rank == 0) {
+    fprintf(this->_phandle, "<PDataArray type=\"Float64\" Name=\"%s\" format=\"ascii\"/>\n", title);
+  }
 }
 //------------------------------------------------------------------------------
 void VTK::AddField(const char *title, const Grid *v1, const Grid *v2) {
-  if (!_handle)
+  if (!this->_handle || (this->_rank == 0 && !this->_phandle)) {
     return;
+  }
 
-  fprintf(_handle, "<DataArray Name=\"%s\" type=\"Float64\" format=\"ascii\" "
-                   "NumberOfComponents=\"3\">\n",
-          title);
+  fprintf(this->_handle, "<DataArray Name=\"%s\" type=\"Float64\" format=\"ascii\" "
+                         "NumberOfComponents=\"3\">\n", title);
 
   multi_real_t pos;
 #if DIM == 3
   pos[2] = 0;
 #endif // DIM
-  for (index_t y = 0; y < _size[1]; ++y) {
-    pos[1] = (double)y * _h[1] + _offset[1];
-    for (index_t x = 0; x < _size[0]; ++x) {
-      pos[0] = (double)x * _h[0] + _offset[0];
-      fprintf(_handle, "%le %le 0\n", (double)v1->Interpolate(pos),
+  for (index_t y = 0; y < this->_size[1]-1; ++y) {
+    pos[1] = (double)y * this->_h[1];
+    for (index_t x = 0; x < this->_size[0]-1; ++x) {
+      pos[0] = (double)x * _h[0];
+      fprintf(this->_handle, "%le %le 0\n", (double)v1->Interpolate(pos),
               (double)v2->Interpolate(pos));
     }
   }
 
-  fprintf(_handle, "</DataArray>\n");
+  fprintf(this->_handle, "</DataArray>\n");
+
+  // print info about data-segment into parallel master file
+  if(this->_rank == 0) {
+    fprintf(this->_phandle, "<PDataArray type=\"Float64\" Name=\"%s\" "
+            "format=\"ascii\" NumberOfComponents=\"3\"/>\n", title);
+  }
 }
 //------------------------------------------------------------------------------
 void VTK::AddField(const char *title, const Grid *v1, const Grid *v2,
                    const Grid *v3) {
-  if (!_handle)
+  if (!this->_handle || (this->_rank == 0 && !this->_phandle)) {
     return;
+  }
 
   fprintf(_handle, "<DataArray Name=\"%s\" type=\"Float64\" format=\"ascii\" "
-                   "NumberOfComponents=\"3\">\n",
-          title);
+                   "NumberOfComponents=\"3\">\n", title);
 
   multi_real_t pos;
 #if DIM == 3
   pos[2] = 0;
 #endif // DIM
-  for (index_t y = 0; y < _size[1]; ++y) {
-    pos[1] = (double)y * _h[1] + _offset[1];
-    for (index_t x = 0; x < _size[0]; ++x) {
-      pos[0] = (double)x * _h[0] + _offset[0];
-      fprintf(_handle, "%le %le %le\n", (double)v1->Interpolate(pos),
+  for (index_t y = 0; y < this->_size[1]-1; ++y) {
+    pos[1] = (double)y * _h[1];
+    for (index_t x = 0; x < this->_size[0]-1; ++x) {
+      pos[0] = (double)x * _h[0];
+      fprintf(this->_handle, "%le %le %le\n", (double)v1->Interpolate(pos),
               (double)v2->Interpolate(pos), (double)v3->Interpolate(pos));
     }
   }
 
-  fprintf(_handle, "</DataArray>\n");
+  fprintf(this->_handle, "</DataArray>\n");
+
+  // print info about data-segment into parallel master file
+  if(this->_rank == 0) {
+    fprintf(this->_phandle, "<PDataArray type=\"Float64\" Name=\"%s\" "
+            "format=\"ascii\" NumberOfComponents=\"3\"/>\n", title);
+  }
 }
 //------------------------------------------------------------------------------

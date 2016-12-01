@@ -33,7 +33,9 @@ public:
   VTK(const multi_real_t &h, const multi_index_t &size);
   VTK(const multi_real_t &h, const multi_index_t &size,
       const multi_real_t &offset);
-
+  VTK(const multi_real_t &h, const multi_index_t &size,
+      const multi_real_t &offset, const multi_index_t &globalSize, const int &rank,
+      const multi_index_t &tidx, const multi_index_t &tdim);
   /// Initializes the file
   void Init(const char *path);
   /// Closes the file
@@ -51,9 +53,14 @@ private:
   const multi_real_t &_h;
   const multi_index_t &_size;
   multi_real_t _offset;
+  const multi_index_t &_globalSize;
+  const int &_rank;
+  const multi_index_t &_tidx;
+  const multi_index_t &_tdim;
   FILE *_handle;
+  FILE *_phandle;
 
-  static uint32_t _cnt;
+  static index_t _cnt;
 };
 //------------------------------------------------------------------------------
 /*!     \class VTK
@@ -71,7 +78,22 @@ private:
  * const multi_real_t& offset)
  *      \param h                The mesh width of the data grids to visualize
  *      \param size             The overall size of the data domain
- *      \param offset   The position of the first grid point
+ *      \param offset           The position of the first grid point
+ *
+ *      Constructs an instance of the VTK class. It initializes the underlining
+ *      domains grid points depending on \p h and \p size. All grid nodes are
+ *      shifted by \p offset.
+ */
+ /*!     \fn     VTK::VTK (const multi_real_t& h, const multi_index_t& size,
+ * const multi_real_t& offset, const multi_index_t &globalSize, const int &rank,
+ * const multi_index_t &tidx, const multi_index_t &tdim)
+ *      \param h                The mesh width of the data grids to visualize
+ *      \param size             The size of the local data domain
+ *      \param offset           The position of the first grid point
+ *      \param globalSize       The size of the global data domain
+ *      \param rank             The rank of the process
+ *      \param tidx             The index of the process in each dimension
+ *      \param tdim             The number of processes in each dimension
  *
  *      Constructs an instance of the VTK class. It initializes the underlining
  *      domains grid points depending on \p h and \p size. All grid nodes are

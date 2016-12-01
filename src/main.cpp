@@ -51,7 +51,12 @@ int main(int argc, char *argv[]) {
 #endif // USE_DEBUG_VISU
 
   // Create a VTK generator
-  VTK vtk(geom.Mesh(), geom.Size());
+  multi_real_t offset;
+  for(index_t dim = 0; dim < DIM; dim++) {
+    offset[dim] = comm.ThreadIdx()[dim] * geom.Size()[dim] * geom.Mesh()[dim];
+  }
+  VTK vtk(geom.Mesh(), geom.SizeP(), offset, geom.TotalSize(), comm.ThreadNum(),
+          comm.ThreadIdx(), comm.ThreadDim());
 
   const Grid *visugrid;
   bool run = true;
