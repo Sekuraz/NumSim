@@ -90,6 +90,8 @@ private:
   real_t *_data;
   multi_real_t _offset;
   const Geometry &_geom;
+  const multi_real_t &_hInv;
+  const multi_real_t _hInv2;
   index_t _sizeData;
 };
 //------------------------------------------------------------------------------

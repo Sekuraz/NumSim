@@ -119,12 +119,11 @@ int main(int argc, char *argv[]) {
       nextTimeVTK += param.VtkDt();
     }
 
-#ifdef USE_DEBUG_VISU
     comp.TimeStep(comm.ThreadNum() == 0);
+
+#ifdef USE_DEBUG_VISU
     // Gather if one process stopped
     run = comm.gatherAnd(run);
-#else
-    comp.TimeStep(false);
 #endif
   }
   return 0;
