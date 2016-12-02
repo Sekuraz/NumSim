@@ -22,7 +22,9 @@
 #include "geometry.hpp"
 #include "iterator.hpp"
 #include "parameter.hpp"
-#include "visu.hpp"
+#ifdef USE_DEBUG_VISU
+  #include "visu.hpp"
+#endif
 #include "vtk.hpp"
 
 int main(int argc, char *argv[]) {
@@ -119,13 +121,10 @@ int main(int argc, char *argv[]) {
 
 #ifdef USE_DEBUG_VISU
     comp.TimeStep(comm.ThreadNum() == 0);
-#else
-    comp.TimeStep(false);
-#endif
-
-#ifdef USE_DEBUG_VISU
     // Gather if one process stopped
     run = comm.gatherAnd(run);
+#else
+    comp.TimeStep(false);
 #endif
   }
   return 0;
