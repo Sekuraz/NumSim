@@ -38,16 +38,19 @@ int main(int argc, char *argv[]) {
   Grid g (geom, offset);
   g.Initialize(0);
 
+#ifdef USE_DEBUG_VISU
   // Create and initialize the visualization
   Renderer visu(geom.Length(), geom.Mesh());
   visu.Init(600,600);//(800, 800);
+#endif
 
   for (InteriorIterator it (g); it.Valid(); it.Next()) {
 
     g.Cell(it) = 1;
     geom.Update_V(g);
+#ifdef USE_DEBUG_VISU
     visu.Render(&g);
-
+#endif
     for (Iterator it(g); it.Valid(); it.Next()) {
         if (it.Pos()[0] == 0) {
             std::cout << std::endl;
