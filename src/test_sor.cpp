@@ -18,12 +18,12 @@
 #include <iostream>
 #include "typedef.hpp"
 #include "comm.hpp"
-#include "compute.hpp"
 #include "geometry.hpp"
 #include "iterator.hpp"
 #include "parameter.hpp"
-#include "visu.hpp"
-#include "vtk.hpp"
+#ifdef USE_DEBUG_VISU
+  #include "visu.hpp"
+#endif
 #include "grid.hpp"
 #include "solver.hpp"
 
@@ -40,21 +40,26 @@ int main(int argc, char *argv[]) {
   rhs.Initialize(0);
 
   SOR sor(geom, param.Omega());
+
+#ifdef USE_DEBUG_VISU
   // Create and initialize the visualization
   Renderer visu(geom.Length(), geom.Mesh());
   visu.Init(600,600);//(800, 800);
-    multi_index_t half = {geom.Size()[0]/2, geom.Size()[1]/2};
+#endif
+
+  multi_index_t half = {geom.Size()[0]/2, geom.Size()[1]/2};
   g.Cell(Iterator(g, half)) = 1000;
 
   bool run = true;
-  for (int i = 0; run; i++) {
+  for (index_t i = 0; run; i++) {
     std::cout << "step = " << i << " " << std::endl;
 
     geom.Update_P(g);
 
     sor.Cycle(g, rhs);
+#ifdef USE_DEBUG_VISU
     visu.Render(&g);
-
+#endif
     for (Iterator it(g); it.Valid(); it.Next()) {
         if (it.Pos()[0] == 0) {
             std::cout << std::endl;

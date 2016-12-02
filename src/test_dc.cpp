@@ -18,14 +18,10 @@
 #include <iostream>
 #include "typedef.hpp"
 #include "comm.hpp"
-#include "compute.hpp"
 #include "geometry.hpp"
 #include "iterator.hpp"
 #include "parameter.hpp"
-#include "visu.hpp"
-#include "vtk.hpp"
 #include "grid.hpp"
-#include "solver.hpp"
 
 int main(int argc, char *argv[]) {
   Communicator comm(&argc, &argv);

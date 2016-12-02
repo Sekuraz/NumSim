@@ -19,12 +19,12 @@
 #include <cmath>
 #include "typedef.hpp"
 #include "comm.hpp"
-#include "compute.hpp"
 #include "geometry.hpp"
 #include "iterator.hpp"
 #include "parameter.hpp"
-#include "visu.hpp"
-#include "vtk.hpp"
+#ifdef USE_DEBUG_VISU
+  #include "visu.hpp"
+#endif
 #include "grid.hpp"
 #include "solver.hpp"
 
@@ -42,12 +42,15 @@ int main(int argc, char *argv[]) {
   rhs.Initialize(0);
 
   RedOrBlackSOR rbsor(geom, param.Omega());
+
+#ifdef USE_DEBUG_VISU
   // Create and initialize the visualization
   const int hRes = 600;
   const int vRes = (int)(hRes / geom.TotalLength()[0]);
   Renderer visu(geom.Length(), geom.Mesh());
   visu.Init(hRes / comm.ThreadDim()[0], vRes / comm.ThreadDim()[1], comm.ThreadNum());
-  
+#endif
+
   // insert pertubation
   if(comm.ThreadNum() == 0) {
     multi_index_t half = {geom.Size()[0]/2, geom.Size()[1]/2};
@@ -78,7 +81,9 @@ int main(int argc, char *argv[]) {
     max = comm.gatherMax(max);
     res = comm.gatherSum(res);
     
+#ifdef USE_DEBUG_VISU
     visu.Render(&g, min, max);
+#endif
     if(comm.ThreadNum() == 0) {
       std::cout << "step = " << i << "\tmax-min = " << (max-min)
                 << "\tres = " << std::sqrt(res) << std::endl;
