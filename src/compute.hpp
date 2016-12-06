@@ -76,7 +76,7 @@ private:
   Grid *_vorticity; ///< grid for the vorticity
   Grid *_particle; ///< grid for the particle tracing
 
-  Solver* _solver; ///< solver for the pressure (poisson) equation
+  Solver *_solver; ///< solver for the pressure (poisson) equation
 
   const Geometry &_geom; ///< geometry of the problem
   const Parameter &_param; ///< parameters for the computation

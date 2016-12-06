@@ -90,6 +90,10 @@ public:
 
   bool noslip(const Iterator &it) const;
 
+  /// \brief Creates a coarsed Geometry for multigrid solver.
+  /// The returned Geometry must be deleted after use.
+  Geometry* coarse(void) const;
+
 private:
   /// Computes the sizes of the grids.
   void computeSizes();

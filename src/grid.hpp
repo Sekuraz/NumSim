@@ -87,6 +87,8 @@ public:
 
   /// Returns a pointer to the raw data
   inline real_t *Data() { return _data; };
+  /// Returns a pointer to the raw data
+  inline const real_t *cData() const { return _data; };
 
   /// Prints the data of the grid
   void print() const;

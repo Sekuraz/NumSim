@@ -55,6 +55,7 @@ void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geo
          << "\t-s <type>\tUse the specified solver for the poisson equation" << std::endl
          << "\t\t\t\tSOR: Successive OverRelaxation (lexicographic order)" << std::endl
          << "\t\t\t\tRB: RedBlack SOR (checkerboard order)" << std::endl
+         << "\t\t\t\tMG: Multigrid Method" << std::endl
          << "\t\t\t\tCG: Conjugated Gradient Method (Default)" << std::endl
          << std::endl;
       exit(0);
@@ -176,7 +177,7 @@ int main(int argc, char *argv[]) {
     real_t h = std::fmax(geom.Mesh()[0], geom.Mesh()[1]);
     param.Omega() = 2.0 / (1.0 + std::sin(M_PI * h));
     #ifndef BLATT4
-      std::cout << "Set new omega = " << param.Omega() << std::endl;
+      std::cerr << "Parameter: Set new omega = " << param.Omega() << std::endl;
     #endif
   }
 
@@ -253,15 +254,6 @@ int main(int argc, char *argv[]) {
     }
 #endif // WRITE_VTK
 
-/*
-    std::cout << std::endl << "U: " << comp.GetU()->Size();
-    comp.GetU()->print();
-    std::cout << std::endl << "V: " << comp.GetV()->Size();
-    comp.GetV()->print();
-    std::cout << std::endl << "P: " << comp.GetP()->Size();
-    comp.GetP()->print();
-    std::cin.get();
-*/
     comp.TimeStep(printInfo);
 #ifdef DEBUG_VISU
     // Gather if one process stopped

@@ -55,7 +55,7 @@ public:
   /// Constructs an actual SOR solver
   SOR(const Geometry &geom, const real_t &omega, const Communicator &comm);
   /// Destructor
-  ~SOR() {};
+  virtual ~SOR() {};
 
   /// Returns the total residual and executes a solver cycle
   /// \param[in][out] grid current pressure values
@@ -122,6 +122,42 @@ protected:
   mutable Grid _direction;
   mutable Grid _Ad;
   mutable real_t old_residual;
+};
+//------------------------------------------------------------------------------
+
+/// concrete Multigrid solver
+class MG : public Solver {
+public:
+  /// Constructs an Multigrid solver
+  MG(const Geometry &geom, const Communicator &comm, const index_t level, const index_t& nu = 4);
+  /// Destructor
+  ~MG();
+
+  /// Returns the total residual and executes a solver cycle (V-Cycle)
+  // @param grid current pressure values
+  // @param rhs right hand side
+  real_t Cycle(Grid &grid, const Grid &rhs) const;
+
+protected:
+  /// Restricts the residuals of the solution to the next coarser Grid
+  /// \param p          The current pressure grid
+  /// \param rhs        The current right-hand-side
+  void Restrict(const Grid &p, const Grid &rhs) const;
+  /// Interpolates and adds from the coarser solution to this one
+  /// \param p          The current pressure grid
+  void Interpolate(Grid &p) const;
+  /// Smoothing cycle
+  /// \param p     The pressure grid
+  /// \param rhs   The right-hand-side
+  real_t Smooth(Grid &p, const Grid &rhs) const;
+
+  const Communicator &_comm;
+  const index_t _level;
+  const index_t _nu;
+  const SOR _smoother;
+  MG *_coarse;
+  Grid *_e;
+  Grid *_res;
 };
 //------------------------------------------------------------------------------
 #endif // __SOLVER_HPP

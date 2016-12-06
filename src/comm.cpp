@@ -118,8 +118,7 @@ real_t Communicator::copyOffset(const Grid& grid) const {
       MPI_Cart_shift(this->_mpi_cart_comm, 0, 1, &source, &dest);
       MPI_Send(&off, 1, REAL_TYPE_FOR_MPI, dest, 1, this->_mpi_cart_comm);
     }
-  }
-  if(!this->isBottom()) {
+  } else {
     real_t off;
     MPI_Cart_shift(this->_mpi_cart_comm, 1, -1, &source, &dest);
     MPI_Recv(&off, 1, REAL_TYPE_FOR_MPI, dest, 1, this->_mpi_cart_comm, MPI_STATUS_IGNORE);

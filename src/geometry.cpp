@@ -415,3 +415,85 @@ real_t Geometry::parabolic(const Iterator &it) const {
   const real_t y = (this->_offset[1] + it.Pos()[1] - .5) * this->_h[1];
   return this->_velocity[0] * y * (this->_totalSize[1] * this->_h[1] - y);
 }
+
+// Creates a coarsed Geometry for multigrid solver
+Geometry* Geometry::coarse(void) const {
+  // TODO: correct geom->_velocity, geom->_pressure?
+
+  const multi_index_t& numProc = this->_comm.ThreadDim();
+  const multi_index_t& tIdx = this->_comm.ThreadIdx();
+
+  Geometry* geom = new Geometry(this->_comm);
+  geom->_free = this->_free;
+
+  geom->_sizeData = 1;
+  for(index_t dim = 0; dim < DIM; dim++) {
+    geom->_totalSize[dim] = this->_totalSize[dim] / 2; // TODO: correct ?
+    geom->_size[dim] = geom->_totalSize[dim] / numProc[dim];
+    geom->_offset[dim] = tIdx[dim] * geom->_size[dim];
+
+    // fix last grid size
+    if(geom->_totalSize[dim] != geom->_size[dim] * numProc[dim]) {
+      if(tIdx[dim] == numProc[dim]-1) {
+        geom->_size[dim] += geom->_totalSize[dim] % numProc[dim];
+        std::cerr << "Coarse grid not divisible without remainder for "
+                  << this->_comm.ThreadCnt() << " Threads!" << std::endl;
+      }
+    }
+
+    geom->_length[dim] = this->_totalLength[dim] * geom->_size[dim] / (real_t)geom->_totalSize[dim];
+    geom->_sizeP[dim] = geom->_size[dim]+2;
+    geom->_sizeData *= geom->_sizeP[dim];
+    geom->_h[dim] = geom->_totalLength[dim] / geom->_totalSize[dim];
+    geom->_hInv[dim] = 1.0 / geom->_h[dim];
+  }
+
+  // only use local flag field
+  geom->_flags = new char[geom->_sizeData];
+  for(index_t j = 0; j < geom->_sizeP[1]; ++j) {
+    for(index_t i = 0; i < geom->_sizeP[0]; ++i) {
+      // TODO: correct
+      geom->_flags[j * geom->_sizeP[0] + i] =
+          this->_flags[(this->_offset[1] + 2*j)*this->_sizeP[0] + 2*i+this->_offset[0]];
+    }
+  }
+
+  // update eXchange boundaries in local flag field
+  BoundaryIterator bit(*geom, BoundaryIterator::boundary::left);
+  for(bit.First(); bit.Valid(); bit.Next()) {
+    if(geom->isFluid(bit)) {
+      geom->_flags[bit] = 'X';
+    }
+  }
+  bit.SetBoundary(BoundaryIterator::boundary::down);
+  for(bit.First(); bit.Valid(); bit.Next()) {
+    if(geom->isFluid(bit)) {
+      geom->_flags[bit] = 'X';
+    }
+  }
+  bit.SetBoundary(BoundaryIterator::boundary::right);
+  for(bit.First(); bit.Valid(); bit.Next()) {
+    if(geom->isFluid(bit)) {
+      geom->_flags[bit] = 'X';
+    }
+  }
+  bit.SetBoundary(BoundaryIterator::boundary::top);
+  for(bit.First(); bit.Valid(); bit.Next()) {
+    if(geom->isFluid(bit)) {
+      geom->_flags[bit] = 'X';
+    }
+  }
+
+  geom->_N = 0;
+  // compute local number of fluid cells
+  for(InteriorIterator it(*geom); it.Valid(); it.Next()) {
+    geom->_N++;
+  }
+
+  // TODO: output for testing
+  std::cout << "Geom: free " << geom->_free << ", offset " << geom->_offset
+            << ", size " << geom->_size << ", h " << geom->_h << ", N " << geom->_N
+            << std::endl;
+  // output _flags;
+  return geom;
+}

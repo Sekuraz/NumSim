@@ -160,3 +160,82 @@ real_t CG::Cycle(Grid &grid, const Grid &rhs __attribute__((unused))) const {
   return residual;
 }
 
+//------------------------------------------------------------------------------
+// Constructs an actual Multigrid solver
+MG::MG(const Geometry &geom, const Communicator &comm, const index_t level, const index_t& nu)
+    : Solver(geom), _comm(comm), _level(level), _nu(nu),
+      _smoother(this->_geom, 1.0, comm),
+      _coarse(nullptr), _e(nullptr), _res(nullptr) {
+  if(this->_level > 0) {
+    Geometry* geom_coarse = geom.coarse();
+    this->_e = new Grid(*geom_coarse);
+    this->_res = new Grid(*geom_coarse);
+    this->_coarse = new MG(*geom_coarse, comm, this->_level-1);
+  }
+}
+
+MG::~MG() {
+  if(this->_level > 0) {
+    delete &this->_coarse->_geom;
+    delete this->_coarse;
+    delete this->_e;
+    delete this->_res;
+  }
+}
+
+// Returns the total residual and executes a solver cycle
+// @param grid current pressure values
+// @param rhs right hand side
+real_t MG::Cycle(Grid &p, const Grid &rhs) const {
+  this->Smooth(p, rhs);
+  if(this->_level > 0) {
+    this->Restrict(p, rhs);
+    this->_coarse->Cycle(*this->_e, *this->_res);
+    this->Interpolate(p);
+  } // TODO: else solve
+  real_t res = this->Smooth(p, rhs);
+  return this->_comm.gatherSum(res);
+}
+
+// Restricts the residuals of the solution to the next coarser Grid
+void MG::Restrict(const Grid &p, const Grid &rhs) const {
+  // compute residuals and restrict
+  for(InteriorIterator it(this->_coarse->_geom); it.Valid(); it.Next()) {
+    multi_index_t pos_fine = it.Pos();
+    for(index_t dim = 0; dim < DIM; dim++) {
+      pos_fine[dim] = 2*pos_fine[dim]-1;
+    }
+    Iterator itFine(this->_geom, pos_fine);
+    this->_e->Cell(it) = 0;
+    this->_res->Cell(it) = 0.25
+      * ( this->localRes(itFine, p, rhs) + this->localRes(itFine.Right(), p, rhs)
+        + this->localRes(itFine.Top(), p, rhs) + this->localRes(itFine.Top().Right(), p, rhs) );
+  }
+}
+
+// Interpolates and adds from the coarser solution to this one
+void MG::Interpolate(Grid &p) const {
+  // add e to p (while interpolating)
+  for(InteriorIterator it(this->_coarse->_geom); it.Valid(); it.Next()) {
+    multi_index_t pos_fine = it.Pos();
+    for(index_t dim = 0; dim < DIM; dim++) {
+      pos_fine[dim] = 2*pos_fine[dim]-1;
+    }
+    Iterator itFine(this->_geom, pos_fine);
+    p.Cell(itFine) += this->_e->Cell(it);
+    p.Cell(itFine.Right()) += this->_e->Cell(it);
+    p.Cell(itFine.Top()) += this->_e->Cell(it);
+    p.Cell(itFine.Top().Right()) += this->_e->Cell(it);
+  }
+}
+
+real_t MG::Smooth(Grid &p, const Grid &rhs) const {
+  real_t res = 1;
+  for(index_t n = 0; n < this->_nu; n++) {
+    // TODO: correct
+    //this->_geom.Update_P(p);
+    res = this->_smoother.Cycle(p, rhs);
+  }
+  //this->_geom.Update_P(p); // TODO: delete ?
+  return res;
+}

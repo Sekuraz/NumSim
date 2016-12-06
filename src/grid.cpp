@@ -42,7 +42,7 @@ Grid::Grid(const Geometry &geom, const multi_real_t &offset)
   for(index_t i = 0; i < DIM; i++) {
     this->_sizeData *= size[i];
   }
-  this->_data = new real_t[_sizeData];
+  this->_data = new real_t[this->_sizeData];
 }
 
 // Deletes the grid

@@ -54,7 +54,7 @@ void Parameter::Load(const char file[], const bool printinfo) {
         std::cout << "Parameter: Load alpha = " << this->_alpha << std::endl;
       }
     } else if(!param.compare("Dt") || !param.compare("dt")) {
-      if(value == 0) {
+      if(value <= 0) {
         value = std::numeric_limits<real_t>::infinity();
       }
       this->_dt = value;
