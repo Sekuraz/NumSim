@@ -29,7 +29,7 @@ const char States[][42] = {
     "P",           // 3
     "Vorticity",   // 4
     "Streamlines", // 5
-    "",            // 6
+    "Particle Tracing",            // 6
     "",            // 7
     "",            // 8
     ""             // 9

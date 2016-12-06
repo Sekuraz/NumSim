@@ -16,6 +16,7 @@
  */
 #include <iostream>
 #include <algorithm>
+#include <list>
 #include <cmath>
 #include "typedef.hpp"
 #include "comm.hpp"
@@ -33,21 +34,27 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
     _p(new Grid(geom, multi_real_t(geom.Mesh()[0]/2, geom.Mesh()[1]/2))),
     _F(new Grid(geom)), _G(new Grid(geom)), _rhs(new Grid(geom)),
     _velocities(new Grid(geom)), _streamline(new Grid(geom)),
-    _vorticity(new Grid(geom)), _geom(geom), _param(param), _comm(comm) {
+    _vorticity(new Grid(geom)), _geom(geom), _param(param), _comm(comm),
+    _particle(new Grid(geom, multi_real_t(geom.Mesh()[0]/2, geom.Mesh()[1]/2))) {
 
   // initialize the solver
   this->_solver = new RedOrBlackSOR(geom, param.Omega());
 
-  // initialize u,v,p
+  // initialize u,v,p,particle
   this->_u->Initialize(0);
   this->_v->Initialize(0);
   this->_p->Initialize(0);
+  this->_particle->Initialize(0);
+
+  // write first particle pos in list
+  _particelTracing.push_back(param.ParticleInitPos());
+  
 }
 // Deletes all grids
 Compute::~Compute() {
   delete _u; delete _v; delete _p; delete _F; delete _G;
   delete _rhs; delete _velocities; delete _solver;
-  delete _streamline; delete _vorticity;
+  delete _streamline; delete _vorticity; delete _particle;
 }
 
 // Execute one time step of the fluid simulation (with or without debug info)
@@ -111,6 +118,12 @@ void Compute::TimeStep(bool printInfo) {
   this->Stream();
   this->Vort();
 
+  // calculate new particle postitions
+  // TODO: rewrite for parallelization
+  if (_comm.ThreadCnt() == 1) {
+    this->Particle();
+  }
+  
   // print information
   if(printInfo) {
     std::cout.precision(4);
@@ -152,6 +165,37 @@ void Compute::Stream() {
   real_t offset = this->_comm.copyOffset(*this->_streamline);
   for(Iterator it(*(this->_streamline)); it.Valid(); it.Next()) {
     this->_streamline->Cell(it) += offset;
+  }
+}
+
+void Compute::Particle() {
+  // TODO: Rewrite for n-particle and parallelization
+  // returns last particlePosition of the list
+  multi_real_t _particlePos = _particelTracing.back();
+
+  if((_particlePos[0]<=_geom.Length()[0]) && (_particlePos[1]<=_geom.Length()[1])) {
+  // get cell of the particle
+  _particleIndx[0] = (index_t)(_particlePos[0]/_geom.Mesh()[0] + 1);
+  _particleIndx[1] = (index_t)(_particlePos[1]/_geom.Mesh()[1] + 1);
+  // set old position to 0 for debug visualization
+  Iterator it1(*(this->_particle), _particleIndx);
+  this->_particle->Cell(it1) = 0;
+
+  // calculate new position
+  _particlePos[0] += _dtlimit * this->_u->Interpolate(_particlePos);
+  _particlePos[1] += _dtlimit * this->_v->Interpolate(_particlePos);
+  // write new position in the list
+  _particelTracing.push_back(_particlePos);
+  // get cell of the particle
+  _particleIndx[0] = (index_t)(_particlePos[0]/_geom.Mesh()[0] + 1);
+  _particleIndx[1] = (index_t)(_particlePos[1]/_geom.Mesh()[1] + 1);
+  //TODO: Debug
+  //std::cout<<"Particle pos x: "<<_particlePos[0]<<", Particle pos y: "<<_particlePos[1]<<std::endl;
+  //std::cout<<"Particle index x: "<<_particleIndx[0]<<", Particle index y: "<<_particleIndx[1]<<std::endl;
+
+  // set new position to 1 for debug visualization
+  Iterator it2(*(this->_particle), _particleIndx);
+  this->_particle->Cell(it2) = 1;
   }
 }
 

@@ -5,7 +5,9 @@ dt = 0.01
 tend = 51
 eps = 1e-3
 tau = 0.75
-itermax = 1000
+itermax = 5000
 
 vtkDt = 0.2
 visuDt = 0.1
+particlePosX = 0.1
+particlePosY = 0.95

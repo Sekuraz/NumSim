@@ -100,6 +100,9 @@ int main(int argc, char *argv[]) {
       case 5:
         visugrid = comp.GetStreamline();
         break;
+      case 6:
+        visugrid = comp.GetParticle();
+        break; 
       default:
         break;
       };
@@ -114,6 +117,7 @@ int main(int argc, char *argv[]) {
       vtk.AddScalar("Pressure", comp.GetP());
       vtk.AddScalar("Vorticity", comp.GetVorticity());
       vtk.AddScalar("Streamlines", comp.GetStreamline());
+      vtk.AddScalar("Particle Tracing", comp.GetParticle());
       vtk.Finish();
 
       nextTimeVTK += param.VtkDt();

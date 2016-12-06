@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <list>
 #include "typedef.hpp"
 //------------------------------------------------------------------------------
 #ifndef __COMPUTE_HPP
@@ -47,6 +48,8 @@ public:
 	inline const Grid *GetStreamline() const { return this->_streamline; };
   /// Returns the pointer to the Vorticity
 	inline const Grid *GetVorticity() const { return this->_vorticity; };
+  /// Returns the pointer to the Particle Tracing grid
+	inline const Grid *GetParticle() const { return this->_particle; };
 
   /// Computes and returns the absolute velocity
   const Grid *GetVelocity();
@@ -54,10 +57,18 @@ public:
   void Vort();
   /// Computes the stream line values
   void Stream();
+  /// Computes the new particle grid
+  void Particle();
 
 private:
   real_t _t; ///< current timestep
   real_t _dtlimit; ///< donor-cell diffusion condition (p. 27)
+
+  multi_real_t _particlePos; ///< position of the traced particle
+  multi_index_t _particleIndx; ///< cell of the traced particle
+  std::list<multi_real_t> _particelTracing;
+  //multi_real_t _particlePosU; 
+  //multi_real_t _particlePosV;
 
   Grid *_u; ///< velocities in x-direction
   Grid *_v; ///< velocities in y-direction
@@ -70,6 +81,7 @@ private:
   Grid *_velocities; ///< grid for absolute velocities
   Grid *_streamline; ///< grid for streamfunction
   Grid *_vorticity; ///< grid for the vorticity
+  Grid *_particle; ///< grid for the particle tracing
 
   RedOrBlackSOR *_solver; ///< solver for the pressure (poisson) equation
 

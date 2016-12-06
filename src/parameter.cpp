@@ -76,10 +76,20 @@ void Parameter::Load(const char file[], const bool printinfo) {
       if(printinfo) {
         std::cout << "Parameter: Load vtkDt = " << this->_vtkDt << std::endl;
       }
-    } else if(!param.compare("visuDt") || !param.compare("visuDt") || !param.compare("VISUDt")) {
+    } else if(!param.compare("visudt") || !param.compare("visuDt") || !param.compare("VISUDt")) {
       this->_visuDt = value;
       if(printinfo) {
         std::cout << "Parameter: Load visuDt = " << this->_visuDt << std::endl;
+      }
+    } else if(!param.compare("particleposx") || !param.compare("particlePosX") || !param.compare("PARTICLEPOSX")) {
+      this->_particleInitPos[0] = value;
+      if(printinfo) {
+        std::cout << "Parameter: Load particlePosX = " << this->_particleInitPos[0] << std::endl;
+      }
+    } else if(!param.compare("particleposy") || !param.compare("particlePosY") || !param.compare("PARTICLEPOSY")) {
+      this->_particleInitPos[1] = value;
+      if(printinfo) {
+        std::cout << "Parameter: Load particlePosY = " << this->_particleInitPos[1] << std::endl;
       }
     } else {
       std::cerr << "Parameter: Unknown identifier " << param << std::endl;

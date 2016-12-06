@@ -51,6 +51,8 @@ public:
   inline const real_t &VtkDt() const { return this->_vtkDt; };
   /// Returns the time-step after which the visualization is updated
   inline const real_t &VisuDt() const { return this->_visuDt; };
+  /// Returns the initial position of the particle
+  inline const multi_real_t &ParticleInitPos() const { return this->_particleInitPos; };
 
 private:
   real_t _re;
@@ -63,6 +65,7 @@ private:
   index_t _itermax;
   real_t _vtkDt;
   real_t _visuDt;
+  multi_real_t _particleInitPos;
 };
 //------------------------------------------------------------------------------
 #endif // __PARAMETER_HPP
