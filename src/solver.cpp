@@ -29,16 +29,9 @@ real_t Solver::localRes(const Iterator &it, const Grid &grid, const Grid &rhs) c
 // concrete SOR solver
 
 // Constructs an actual SOR solver
-SOR::SOR(const Geometry &geom, const real_t &omega) : Solver(geom), _correction(omega) {
-  if(this->_correction <= 0.0 || this->_correction > 2.0) {
-    real_t h = std::fmax(this->_geom.Mesh()[0], this->_geom.Mesh()[1]);
-    this->_correction = 2.0 / (1.0 + std::sin(M_PI * h));
-    std::cout << "SOR: New omega = " << this->_correction << std::endl;
-  }
-
-  const multi_real_t &h = this->_geom.Mesh();
-  this->_correction *= 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]);
-}
+SOR::SOR(const Geometry &geom, const real_t &omega) : Solver(geom),
+    _correction(omega * 0.5 * (geom.Mesh()[0]*geom.Mesh()[0]*geom.Mesh()[1]*geom.Mesh()[1])
+                / (geom.Mesh()[0]*geom.Mesh()[0]+geom.Mesh()[1]*geom.Mesh()[1])) {}
 
 // Returns the total residual and executes a solver cycle
 real_t SOR::Cycle(Grid &grid, const Grid &rhs) const {

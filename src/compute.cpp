@@ -34,8 +34,9 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
     _p(new Grid(geom, multi_real_t(geom.Mesh()[0]/2, geom.Mesh()[1]/2))),
     _F(new Grid(geom)), _G(new Grid(geom)), _rhs(new Grid(geom)),
     _velocities(new Grid(geom)), _streamline(new Grid(geom)),
-    _vorticity(new Grid(geom)), _geom(geom), _param(param), _comm(comm),
-    _particle(new Grid(geom, multi_real_t(geom.Mesh()[0]/2, geom.Mesh()[1]/2))) {
+    _vorticity(new Grid(geom)), _particle(new Grid(geom, multi_real_t(geom.Mesh()[0]/2, geom.Mesh()[1]/2))),
+    _firstRed(((this->_geom.Size()[0] % 2  + this->_geom.Size()[1] % 2) % 2 == 0)), // TODO one size even other odd
+    _geom(geom), _param(param), _comm(comm) {
 
   // initialize the solver
   this->_solver = new RedOrBlackSOR(geom, param.Omega());
@@ -88,7 +89,7 @@ void Compute::TimeStep(bool printInfo) {
   index_t i;
   for(i = 0; (i < this->_param.IterMax()) && (res > this->_param.Eps() * this->_param.Eps()) ; i++) {
     // first half-step
-    if(this->_comm.EvenOdd()) {
+    if(this->_firstRed) {
       res = this->_solver->RedCycle(*(this->_p), *(this->_rhs));
     } else {
       res = this->_solver->BlackCycle(*(this->_p), *(this->_rhs));
@@ -96,7 +97,7 @@ void Compute::TimeStep(bool printInfo) {
     // set boundary values for p
     this->_geom.Update_P(*(this->_p));
     // second half-step
-    if(this->_comm.EvenOdd()) {
+    if(this->_firstRed) {
       res += this->_solver->BlackCycle(*(this->_p), *(this->_rhs));
     } else {
       res += this->_solver->RedCycle(*(this->_p), *(this->_rhs));

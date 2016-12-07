@@ -35,6 +35,8 @@ public:
   inline const real_t &Re() const { return this->_re; };
   /// Returns the over-relaxation parameter for SOR and RedBlackSOR
   inline const real_t &Omega() const { return this->_omega; };
+  /// Returns the over-relaxation parameter for SOR and RedBlackSOR (write access)
+  inline real_t &Omega() { return this->_omega; };
   /// Returns the weighting between Donor-Cell and central differences
   inline const real_t &Alpha() const { return this->_alpha; };
   /// Returns the maximal time-step

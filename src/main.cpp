@@ -16,6 +16,7 @@
  */
 
 #include <iostream>
+#include <cmath>
 #include "typedef.hpp"
 #include "comm.hpp"
 #include "compute.hpp"
@@ -40,6 +41,11 @@ int main(int argc, char *argv[]) {
   param.Load("param.txt", (comm.ThreadNum() == 0));
   Geometry geom(comm);
   geom.Load("geometry.txt");
+  if(param.Omega() <= 0.0 || param.Omega() > 2.0) {
+    real_t h = std::fmax(geom.Mesh()[0], geom.Mesh()[1]);
+    param.Omega() = 2.0 / (1.0 + std::sin(M_PI * h));
+    std::cout << "Set new omega = " << param.Omega() << std::endl;
+  }
 
   // Create the fluid solver
   Compute comp(geom, param, comm);

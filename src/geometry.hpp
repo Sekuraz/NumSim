@@ -80,7 +80,7 @@ private:
   multi_real_t _h;           ///< mesh width of the Grids
   multi_real_t _hInv;        ///< the invers of the mesh width
   multi_real_t _velocity;    ///< constant boundary velocities (u,v) at upper boundary
-  real_t _pressure;          ///< constant pressure p at ?
+  real_t _pressure;          ///< constant pressure difference between left and right
 };
 //------------------------------------------------------------------------------
 #endif // __GEOMETRY_HPP

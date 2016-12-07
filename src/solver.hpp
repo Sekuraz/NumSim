@@ -58,7 +58,7 @@ public:
   real_t Cycle(Grid &grid, const Grid &rhs) const;
 
 protected:
-  real_t _correction; ///< The correction factor computed from over-relaxation parameter
+  const real_t _correction; ///< The correction factor computed from over-relaxation parameter
 };
 //------------------------------------------------------------------------------
 

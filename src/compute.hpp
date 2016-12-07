@@ -84,6 +84,7 @@ private:
   Grid *_particle; ///< grid for the particle tracing
 
   RedOrBlackSOR *_solver; ///< solver for the pressure (poisson) equation
+  const bool _firstRed; ///< Whether first Red of Black Cycle is done
 
   const Geometry &_geom; ///< geometry of the problem
   const Parameter &_param; ///< parameters for the computation
