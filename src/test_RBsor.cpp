@@ -48,12 +48,12 @@ int main(int argc, char *argv[]) {
   const int hRes = 600;
   const int vRes = (int)(hRes / geom.TotalLength()[0]);
   Renderer visu(geom.Length(), geom.Mesh());
-  visu.Init(hRes / comm.ThreadDim()[0], vRes / comm.ThreadDim()[1], comm.ThreadNum());
+  visu.Init(hRes, vRes, comm.ThreadNum(), comm.ThreadIdx(), comm.ThreadDim());
 #endif
 
   // insert pertubation
   if(comm.ThreadNum() == 0) {
-    multi_index_t half = {geom.Size()[0]/2, geom.Size()[1]/2};
+    multi_index_t half = {geom.SizeP()[0]/2, geom.SizeP()[1]/2};
     g.Cell(Iterator(g, half)) = 1000;
   }
 
@@ -61,13 +61,13 @@ int main(int argc, char *argv[]) {
   bool run = true;
   for (int i = 0; run; i++) {
     real_t res = 0;
-    if(comm.EvenOdd()) {
+    if(comm.EvenOdd() && (geom.Size()[0] % 2 == 0)) {
       res = rbsor.RedCycle(g, rhs);
     } else {
       res = rbsor.BlackCycle(g, rhs);
     }
-    geom.Update_P(g);
-    if(comm.EvenOdd()) {
+    comm.copyBoundary(g);
+    if(comm.EvenOdd() && (geom.Size()[0] % 2 == 0)) {
       res += rbsor.BlackCycle(g, rhs);
     } else {
       res += rbsor.RedCycle(g, rhs);
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
     min = comm.gatherMin(min);
     max = comm.gatherMax(max);
     res = comm.gatherSum(res);
-    
+
 #ifdef USE_DEBUG_VISU
     visu.Render(&g, min, max);
 #endif

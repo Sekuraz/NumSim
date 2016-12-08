@@ -93,8 +93,8 @@ Renderer::~Renderer () {
 //------------------------------------------------------------------------------
 void Renderer::Init(const index_t& width, const index_t& height, const int& idx, const multi_index_t &t_idx, const multi_index_t &t_dim) {
 	//SDL_WM_SetCaption("Grid Renderer","Grid Renderer");
-	_width = width;
-	_height = height;
+	_width = width / t_dim[0];
+	_height = height / t_dim[1];
 	_idx = idx;
 	_window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _width, _height, 0);
 	_screen = SDL_GetWindowSurface(_window);//SDL_SetVideoMode(_width,_height, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);

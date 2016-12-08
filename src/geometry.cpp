@@ -192,6 +192,7 @@ void Geometry::computeSizes() {
   for(index_t dim = 0; dim < DIM; dim++) {
     this->_size[dim] = this->_totalSize[dim] / numProc[dim];
     this->_length[dim] = this->_totalLength[dim] / numProc[dim];
+
     // TODO: fix last grid size
     // until then fix total size
     this->_totalSize[dim] = this->_size[dim] * numProc[dim];

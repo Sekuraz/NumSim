@@ -35,7 +35,7 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
     _F(new Grid(geom)), _G(new Grid(geom)), _rhs(new Grid(geom)),
     _velocities(new Grid(geom)), _streamline(new Grid(geom)),
     _vorticity(new Grid(geom)), _particle(new Grid(geom, multi_real_t(geom.Mesh()[0]/2, geom.Mesh()[1]/2))),
-    _firstRed(((this->_geom.Size()[0] % 2  + this->_geom.Size()[1] % 2) % 2 == 0)), // TODO one size even other odd
+    _firstRed(comm.EvenOdd() && (this->_geom.Size()[0] % 2 == 0)), // TODO one size even other odd
     _geom(geom), _param(param), _comm(comm) {
 
   // initialize the solver
@@ -95,7 +95,7 @@ void Compute::TimeStep(bool printInfo) {
       res = this->_solver->BlackCycle(*(this->_p), *(this->_rhs));
     }
     // set boundary values for p
-    this->_geom.Update_P(*(this->_p));
+    this->_comm.copyBoundary(*(this->_p));
     // second half-step
     if(this->_firstRed) {
       res += this->_solver->BlackCycle(*(this->_p), *(this->_rhs));
