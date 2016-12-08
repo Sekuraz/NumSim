@@ -25,7 +25,7 @@
 Geometry::Geometry(const Communicator &comm) : Geometry(comm, multi_index_t {128, 128}) {}
 
 Geometry::Geometry(const Communicator &comm, const multi_index_t& size)
-    : _comm(comm), _totalSize(size), _totalLength(1,1) {
+    : _comm(comm), _free(false), _flags(nullptr), _totalSize(size), _totalLength(1,1) {
   this->computeSizes();
 }
 
@@ -71,6 +71,22 @@ void Geometry::Load(const char file[]) {
       this->_pressure = value;
       if(this->_comm.ThreadNum() == 0) {
         std::cout << "Geometry: Load pressure = " << this->_pressure << std::endl;
+      }
+    } else if(!param.compare("Geometry") || !param.compare("geometry")) {
+      this->_free = true;
+      in.ignore(10000, '\n');  // removes remaining line
+      this->_flags = new char[this->_totalSize[0] * this->_totalSize[1]];
+      for(index_t j = 0; j < this->_totalSize[1]; j++) {
+        in.read(&this->_flags[this->_totalSize[0] * j], this->_totalSize[0]);
+        in >> std::ws; // removes newline between lines
+      }
+      if(this->_comm.ThreadNum() == 0) {
+        std::cout << "Geometry: Load free geometry." << std::endl;
+        // TODO: output for testing
+        for(index_t j = 0; j < this->_totalSize[1]; j++) {
+          std::cout.write(&this->_flags[this->_totalSize[0] * j], this->_totalSize[0]);
+          std::cout << std::endl;
+        }
       }
     } else {
       std::cerr << "Geometry: unknown identifier " << param << std::endl;

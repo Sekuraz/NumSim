@@ -38,6 +38,7 @@ public:
   /// </pre>
   Geometry(const Communicator &comm);
   Geometry(const Communicator &comm, const multi_index_t& size);
+  ~Geometry() { if(this->_flags != nullptr) delete[] this->_flags; }
 
   /// Loads a geometry from a file
   void Load(const char file[]);
@@ -72,6 +73,8 @@ private:
   void computeSizes();
 
   const Communicator &_comm; ///< Communicator for boundary exchange and local sizes of Grids
+  bool _free;                ///< Whether use free geometry given in loaded file or driven cavity
+  char *_flags;              ///< flag field indicating the type of the cells
   multi_index_t _totalSize;  ///< cartesian total number of cells
   multi_index_t _size;       ///< cartesian local number of cells
   multi_index_t _sizeP;      ///< cartesian size of the local Grid

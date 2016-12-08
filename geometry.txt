@@ -3,4 +3,13 @@ length = 1 1
 velocity = 1 0
 pressure = 0
 
-size = 32 32
+size = 8 8
+geometry = 1//free
+########
+I      O
+I      O
+I      O
+I      O
+I      O
+I      O
+--------
