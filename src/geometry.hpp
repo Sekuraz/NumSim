@@ -40,7 +40,16 @@ public:
   Geometry(const Communicator &comm, const multi_index_t& size);
   ~Geometry() { if(this->_flags != nullptr) delete[] this->_flags; }
 
-  /// Loads a geometry from a file
+  /// \brief Loads a geometry from a file
+  /// Expects free geometry in the following character coded format
+  /// * ' ' Fluid (interior cell)
+  /// * '#' Wall/Obstacle/NoSlip boundary (u = v = 0)
+  /// * 'I' General Inflow boundary (u = u_0, v = v_0)
+  /// * 'H' Horizontal Inflow boundary (u = u_0, v = ?)
+  /// * 'V' Vertical Inflow boundary (u = ?, v = v_0)
+  /// * 'O' Outflow boundary (du/dx = 0 resp. dv/dy = 0)
+  /// * '|' Vertical Slip-boundary (u = 0, dv/dx = 0, dp determined by parameter pressure)
+  /// * '-' Horizontal Slip-boundary (du/dy = 0, v = 0, dp determined by parameter pressure)
   void Load(const char file[]);
 
   /// Returns the total number of cells in each dimension
@@ -60,6 +69,11 @@ public:
   inline const multi_real_t &Mesh() const { return this->_h; }
   /// Returns the invers meshwidth
   inline const multi_real_t &invMesh() const { return this->_hInv; }
+  /// Returns whether the geometry is free.
+  inline bool isFree() const { return this->_free; }
+
+  /// Returns whether the cell at the position of the iterator is fluid cell.
+  inline bool isFluid(const multi_index_t &pos) const { return ( this->flag(pos) == ' ' ); }
 
   /// Updates the velocity field u
   void Update_U(Grid &u) const;
@@ -67,15 +81,36 @@ public:
   void Update_V(Grid &v) const;
   /// Updates the pressure field p
   void Update_P(Grid &p) const;
+  /// Updates the velocity fields u,v and p for a free geometry
+  void Update(Grid &u, Grid &v, Grid &p) const;
 
 private:
   /// Computes the sizes of the grids.
   void computeSizes();
-
+  /// Returns the grid flag of the cell at the position.
+  inline const char& flag(const multi_index_t &pos) const {
+      return this->_flags[pos[0] + pos[1] * this->_totalSize[0]];
+  }
+/*
+  /// Returns whether the cell at the position of the iterator is NoSlip cell.
+  inline bool isNoSlip(const multi_index_t &pos) const { return ( this->flag(pos) == '#' ); };
+  /// Returns whether the cell at the position of the iterator is general Inflow cell.
+  inline bool isGInflow(const multi_index_t &pos) const { return ( this->flag(pos) == 'I' ); };
+  /// Returns whether the cell at the position of the iterator is horizontal Inflow cell.
+  inline bool isHInflow(const multi_index_t &pos) const { return ( this->flag(pos) == 'H' ); };
+  /// Returns whether the cell at the position of the iterator is vertical Inflow cell.
+  inline bool isVInflow(const multi_index_t &pos) const { return ( this->flag(pos) == 'V' ); };
+  /// Returns whether the cell at the position of the iterator is Outflow cell.
+  inline bool isOutflow(const multi_index_t &pos) const { return ( this->flag(pos) == 'O' ); };
+  /// Returns whether the cell at the position of the iterator is vertical Slip cell.
+  inline bool isVSlip(const multi_index_t &pos) const { return ( this->flag(pos) == '|' ); };
+  /// Returns whether the cell at the position of the iterator is horizontal Slip cell.
+  inline bool isHSlip(const multi_index_t &pos) const { return ( this->flag(pos) == '-' ); };
+*/
   const Communicator &_comm; ///< Communicator for boundary exchange and local sizes of Grids
   bool _free;                ///< Whether use free geometry given in loaded file or driven cavity
   char *_flags;              ///< flag field indicating the type of the cells
-  multi_index_t _totalSize;  ///< cartesian total number of cells
+  multi_index_t _totalSize;  ///< cartesian total number of inner cells
   multi_index_t _size;       ///< cartesian local number of cells
   multi_index_t _sizeP;      ///< cartesian size of the local Grid
   multi_real_t _totalLength; ///< total length of the physical domain in each dimension
