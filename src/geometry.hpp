@@ -73,7 +73,7 @@ public:
   inline bool isFree() const { return this->_free; }
 
   /// Returns whether the cell at the position of the iterator is fluid cell.
-  inline bool isFluid(const multi_index_t &pos) const { return ( this->flag(pos) == ' ' ); }
+  inline bool isFluid(const Iterator &it) const { return ( this->flag(it) == ' ' ); }
 
   /// Updates the velocity field u
   void Update_U(Grid &u) const;
@@ -88,9 +88,7 @@ private:
   /// Computes the sizes of the grids.
   void computeSizes();
   /// Returns the grid flag of the cell at the position.
-  inline const char& flag(const multi_index_t &pos) const {
-      return this->_flags[pos[0] + pos[1] * this->_totalSize[0]];
-  }
+  const char& flag(const Iterator &it) const;
 /*
   /// Returns whether the cell at the position of the iterator is NoSlip cell.
   inline bool isNoSlip(const multi_index_t &pos) const { return ( this->flag(pos) == '#' ); };

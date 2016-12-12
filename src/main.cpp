@@ -129,8 +129,16 @@ int main(int argc, char *argv[]) {
       nextTimeVTK += param.VtkDt();
     }
 
+/*
+    std::cout << std::endl << "U: " << comp.GetU()->Size();
+    comp.GetU()->print();
+    std::cout << std::endl << "V: " << comp.GetV()->Size();
+    comp.GetV()->print();
+    std::cout << std::endl << "P: " << comp.GetP()->Size();
+    comp.GetP()->print();
+    std::cin.get();
+*/
     comp.TimeStep(comm.ThreadNum() == 0);
-
 #ifdef USE_DEBUG_VISU
     // Gather if one process stopped
     run = comm.gatherAnd(run);

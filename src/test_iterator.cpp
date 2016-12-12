@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
   // Create parameter and geometry instances and load values
   Parameter param;
   param.Load("param.txt");
-  Geometry geom (comm, {4, 4});
+  Geometry geom (comm, {6, 6});
 
   const multi_real_t &h = geom.Mesh();
   multi_real_t offset(h[0]/2, 0);
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 #ifdef USE_DEBUG_VISU
   // Create and initialize the visualization
   Renderer visu(geom.Length(), geom.Mesh());
-  visu.Init(600,600);//(800, 800);
+  visu.Init(600,600);
 #endif
 
   for (InteriorIterator it (g); it.Valid(); it.Next()) {

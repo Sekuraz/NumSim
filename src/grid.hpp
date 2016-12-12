@@ -78,6 +78,8 @@ public:
   /// Sets min, max to the minimal and maximal value of the grid
   void MinMax(real_t &min, real_t &max) const;
 
+  /// Returns the Geometry of the grid
+  inline const Geometry &Geom() const { return this->_geom; }
   /// Returns the size of the Grid in each dimension
   inline const multi_index_t &Size() const { return this->_geom.SizeP(); }
   /// Returns the total data size of the Grid
@@ -85,6 +87,9 @@ public:
 
   /// Returns a pointer to the raw data
   inline real_t *Data() { return _data; };
+
+  /// Prints the data of the grid
+  void print() const;
 
 private:
   real_t *_data;

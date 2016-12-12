@@ -108,18 +108,17 @@ Iterator Iterator::Down() const {
 
 // Sets the iterator to the first element
 void InteriorIterator::First() {
-  this->_value = this->_grid.Size()[0] + 1;
-  this->_valid = true;
+  Iterator::First();
+  while( !this->_grid.Geom().isFluid(*this) ) {
+    Iterator::Next();
+  }
 }
+
 // Goes to the next element of the iterator, disables it if position is end
 void InteriorIterator::Next() {
   Iterator::Next();
-  if (this->_value >= this->_grid.Size()[0]*(this->_grid.Size()[1]-1)) {
-    this->_valid = false;
-  } else if (this->_value % this->_grid.Size()[0] == 0) {
-    this->Next();
-  } else if ((this->_value + 1) % this->_grid.Size()[0] == 0) {
-    this->Next();
+  while( !this->_grid.Geom().isFluid(*this) ) {
+    Iterator::Next();
   }
 }
 

@@ -62,9 +62,8 @@ Compute::~Compute() {
 // @ param printInfo print information about current solver state (residual
 // etc.)
 void Compute::TimeStep(bool printInfo) {
-  // set boundary values for u, v
-  this->_geom.Update_U(*(this->_u));
-  this->_geom.Update_V(*(this->_v));
+  // set boundary values for u, v, p
+  this->_geom.Update(*(this->_u), *(this->_v), *(this->_p));
 
   // compute local dt
   // Test CFL and Pr condition
@@ -82,8 +81,6 @@ void Compute::TimeStep(bool printInfo) {
   // compute right-hand-side of the poisson equation
   this->RHS(dt);
 
-  // set boundary values for p
-  this->_geom.Update_P(*(this->_p));
   // solve the poisson equation for the pressure
   real_t res = 2 * this->_param.Eps() * this->_param.Eps();
   index_t i;
@@ -103,7 +100,8 @@ void Compute::TimeStep(bool printInfo) {
       res += this->_solver->RedCycle(*(this->_p), *(this->_rhs));
     }
     // set boundary values for p
-    this->_geom.Update_P(*(this->_p));
+    // TODO: only update p
+    this->_geom.Update(*(this->_u), *(this->_v), *(this->_p));
 
     // gather global residual
     res = this->_comm.gatherSum(res);
@@ -214,25 +212,22 @@ void Compute::NewVelocities(const real_t &dt) {
 
 // Compute the temporary velocites F,G
 void Compute::MomentumEqu(const real_t &dt) {
-  // compute F
-  for(InteriorIterator it(*(this->_F)); it.Valid(); it.Next()) {
-    this->_F->Cell(it) = this->_u->Cell(it) + dt * (
-        ( this->_u->dxx(it) + this->_u->dyy(it) )/this->_param.Re()
-        - this->_u->DC_udu_x(it, this->_param.Alpha())
-        - this->_u->DC_vdu_y(it, this->_param.Alpha(), this->_v) );
+  for(Iterator it(*(this->_F)); it.Valid(); it.Next()) {
+    if(this->_geom.isFluid(it)) {
+      this->_F->Cell(it) = this->_u->Cell(it) + dt * (
+          ( this->_u->dxx(it) + this->_u->dyy(it) )/this->_param.Re()
+          - this->_u->DC_udu_x(it, this->_param.Alpha())
+          - this->_u->DC_vdu_y(it, this->_param.Alpha(), this->_v) );
+      this->_G->Cell(it) = this->_v->Cell(it) + dt * (
+          ( this->_v->dxx(it) + this->_v->dyy(it) )/this->_param.Re()
+          - this->_v->DC_vdv_y(it, this->_param.Alpha())
+          - this->_v->DC_udv_x(it, this->_param.Alpha(), this->_u) );
+    } else { // boundary values of F and G
+      // TODO: right ?
+      this->_F->Cell(it) = this->_u->Cell(it);
+      this->_G->Cell(it) = this->_v->Cell(it);
+    }
   }
-  // boundary of F
-  this->_geom.Update_U(*(this->_F));
-
-  // compute G
-  for(InteriorIterator it(*(this->_G)); it.Valid(); it.Next()) {
-    this->_G->Cell(it) = this->_v->Cell(it) + dt * (
-        ( this->_v->dxx(it) + this->_v->dyy(it) )/this->_param.Re()
-        - this->_v->DC_vdv_y(it, this->_param.Alpha())
-        - this->_v->DC_udv_x(it, this->_param.Alpha(), this->_u) );
-  }
-  // boundary of G
-  this->_geom.Update_V(*(this->_G));
 }
 
 // Compute the RHS of the poisson equation

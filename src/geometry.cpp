@@ -75,8 +75,11 @@ void Geometry::Load(const char file[]) {
     } else if(!param.compare("Geometry") || !param.compare("geometry")) {
       this->_free = true;
       in.ignore(10000, '\n');  // removes remaining line
+      if(this->_flags != nullptr) {
+        delete[] this->_flags;
+      }
       this->_flags = new char[this->_totalSize[0] * this->_totalSize[1]];
-      for(index_t j = 0; j < this->_totalSize[1]; j++) {
+      for(index_t j = this->_totalSize[1]; j-- > 0;) {
         in.read(&this->_flags[this->_totalSize[0] * j], this->_totalSize[0]);
         in >> std::ws; // removes newline between lines
       }
@@ -201,39 +204,43 @@ void Geometry::Update_P(Grid &p) const {
 }
 
 void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
+  this->_comm.copyBoundary(u);
+  this->_comm.copyBoundary(v);
+  this->_comm.copyBoundary(p);
+
   for(Iterator it(u); it.Valid(); it.Next()) {
-    switch(this->flag(it.Pos())) {
+    switch(this->flag(it)) {
       case '#': // '#' Wall/Obstacle/NoSlip boundary (u = v = 0, dp/dn = 0)
-        if(this->isFluid(it.Left().Pos())) {
+        if(this->isFluid(it.Left())) {
           u.Cell(it.Left()) = 0;
-          if(this->isFluid(it.Top().Pos())) {
+          if(this->isFluid(it.Top())) {
             v.Cell(it) = 0;
             p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()));
           } else {
             v.Cell(it) = -v.Cell(it.Left());
             p.Cell(it) = p.Cell(it.Left());
           }
-        } else if(this->isFluid(it.Top().Pos())) {
+        } else if(this->isFluid(it.Top())) {
           v.Cell(it) = 0;
-          if(this->isFluid(it.Right().Pos())) {
+          if(this->isFluid(it.Right())) {
             u.Cell(it) = 0;
             p.Cell(it) = 0.5 * (p.Cell(it.Top()) + p.Cell(it.Right()));
           } else {
             u.Cell(it) = -u.Cell(it.Top());
             p.Cell(it) = p.Cell(it.Top());
           }
-        } else if(this->isFluid(it.Right().Pos())) {
+        } else if(this->isFluid(it.Right())) {
           u.Cell(it) = 0;
-          if(this->isFluid(it.Down().Pos())) {
+          if(this->isFluid(it.Down())) {
             v.Cell(it.Down()) = 0;
             p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()));
           } else {
             v.Cell(it) = -v.Cell(it.Right());
             p.Cell(it) = p.Cell(it.Down());
           }
-        } else if(this->isFluid(it.Down().Pos())) {
+        } else if(this->isFluid(it.Down())) {
           v.Cell(it.Down()) = 0;
-          if(this->isFluid(it.Left().Pos())) {
+          if(this->isFluid(it.Left())) {
             u.Cell(it.Left()) = 0;
             p.Cell(it) = 0.5 * (p.Cell(it.Down()) + p.Cell(it.Left()));
           } else {
@@ -244,36 +251,36 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
         break;
       case 'I': // General Inflow boundary (u = u_0, v = v_0, dp/dn = 0)
         // TODO: other than const velocities
-        if(this->isFluid(it.Left().Pos())) {
+        if(this->isFluid(it.Left())) {
           u.Cell(it.Left()) = this->_velocity[0];
-          if(this->isFluid(it.Top().Pos())) {
+          if(this->isFluid(it.Top())) {
             v.Cell(it) = this->_velocity[1];
             p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()));
           } else {
             v.Cell(it) = 2*this->_velocity[1] - v.Cell(it.Left());
             p.Cell(it) = p.Cell(it.Left());
           }
-        } else if(this->isFluid(it.Top().Pos())) {
+        } else if(this->isFluid(it.Top())) {
           v.Cell(it) = this->_velocity[1];
-          if(this->isFluid(it.Right().Pos())) {
+          if(this->isFluid(it.Right())) {
             u.Cell(it) = this->_velocity[0];
             p.Cell(it) = 0.5 * (p.Cell(it.Top()) + p.Cell(it.Right()));
           } else {
             u.Cell(it) = 2*this->_velocity[0]-u.Cell(it.Top());
             p.Cell(it) = p.Cell(it.Top());
           }
-        } else if(this->isFluid(it.Right().Pos())) {
+        } else if(this->isFluid(it.Right())) {
           u.Cell(it) = this->_velocity[0];
-          if(this->isFluid(it.Down().Pos())) {
+          if(this->isFluid(it.Down())) {
             v.Cell(it.Down()) = this->_velocity[1];
             p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()));
           } else {
             v.Cell(it) = 2*this->_velocity[1] - v.Cell(it.Right());
             p.Cell(it) = p.Cell(it.Down());
           }
-        } else if(this->isFluid(it.Down().Pos())) {
+        } else if(this->isFluid(it.Down())) {
           v.Cell(it.Down()) = this->_velocity[1];
-          if(this->isFluid(it.Left().Pos())) {
+          if(this->isFluid(it.Left())) {
             u.Cell(it.Left()) = this->_velocity[0];
             p.Cell(it) = 0.5 * (p.Cell(it.Down()) + p.Cell(it.Left()));
           } else {
@@ -284,36 +291,36 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
         break;
       case 'H': // Horizontal Inflow boundary (u = u_0, v = ?)
         // TODO: other than const velocities
-        if(this->isFluid(it.Left().Pos())) {
+        if(this->isFluid(it.Left())) {
           u.Cell(it) = this->_velocity[0];
-          if(this->isFluid(it.Top().Pos())) {
+          if(this->isFluid(it.Top())) {
             v.Cell(it) = 0;
             p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()));
           } else {
             v.Cell(it) = -v.Cell(it.Left());
             p.Cell(it) = p.Cell(it.Left());
           }
-        } else if(this->isFluid(it.Top().Pos())) {
+        } else if(this->isFluid(it.Top())) {
           v.Cell(it) = 0;
-          if(this->isFluid(it.Right().Pos())) {
+          if(this->isFluid(it.Right())) {
             u.Cell(it) = this->_velocity[0];
             p.Cell(it) = 0.5 * (p.Cell(it.Top()) + p.Cell(it.Right()));
           } else {
             u.Cell(it) = 2*this->_velocity[0]-u.Cell(it.Top());
             p.Cell(it) = p.Cell(it.Top());
           }
-        } else if(this->isFluid(it.Right().Pos())) {
+        } else if(this->isFluid(it.Right())) {
           u.Cell(it) = this->_velocity[0];
-          if(this->isFluid(it.Down().Pos())) {
+          if(this->isFluid(it.Down())) {
             v.Cell(it.Down()) = 0;
             p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()));
           } else {
             v.Cell(it) = -v.Cell(it.Right());
             p.Cell(it) = p.Cell(it.Down());
           }
-        } else if(this->isFluid(it.Down().Pos())) {
+        } else if(this->isFluid(it.Down())) {
           v.Cell(it.Down()) = 0;
-          if(this->isFluid(it.Left().Pos())) {
+          if(this->isFluid(it.Left())) {
             u.Cell(it.Left()) = this->_velocity[0];
             p.Cell(it) = 0.5 * (p.Cell(it.Down()) + p.Cell(it.Left()));
           } else {
@@ -324,36 +331,36 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
         break;
       case 'V': // Vertical Inflow boundary (u = ?, v = v_0)
         // TODO: other than const velocities
-        if(this->isFluid(it.Left().Pos())) {
+        if(this->isFluid(it.Left())) {
           u.Cell(it) = 0;
-          if(this->isFluid(it.Top().Pos())) {
+          if(this->isFluid(it.Top())) {
             v.Cell(it) = this->_velocity[1];
             p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()));
           } else {
             v.Cell(it) = 2*this->_velocity[1]-v.Cell(it.Left());
             p.Cell(it) = p.Cell(it.Left());
           }
-        } else if(this->isFluid(it.Top().Pos())) {
+        } else if(this->isFluid(it.Top())) {
           v.Cell(it) = this->_velocity[1];
-          if(this->isFluid(it.Right().Pos())) {
+          if(this->isFluid(it.Right())) {
             u.Cell(it) = 0;
             p.Cell(it) = 0.5 * (p.Cell(it.Top()) + p.Cell(it.Right()));
           } else {
             u.Cell(it) = -u.Cell(it.Top());
             p.Cell(it) = p.Cell(it.Top());
           }
-        } else if(this->isFluid(it.Right().Pos())) {
+        } else if(this->isFluid(it.Right())) {
           u.Cell(it) = 0;
-          if(this->isFluid(it.Down().Pos())) {
+          if(this->isFluid(it.Down())) {
             v.Cell(it.Down()) = this->_velocity[1];
             p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()));
           } else {
             v.Cell(it) = 2*this->_velocity[1] - v.Cell(it.Right());
             p.Cell(it) = p.Cell(it.Down());
           }
-        } else if(this->isFluid(it.Down().Pos())) {
+        } else if(this->isFluid(it.Down())) {
           v.Cell(it.Down()) = this->_velocity[1];
-          if(this->isFluid(it.Left().Pos())) {
+          if(this->isFluid(it.Left())) {
             u.Cell(it.Left()) = 0;
             p.Cell(it) = 0.5 * (p.Cell(it.Down()) + p.Cell(it.Left()));
           } else {
@@ -363,36 +370,36 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
         }
         break;
       case 'O': // Outflow boundary (du/dx = 0 resp. dv/dy = 0)
-        if(this->isFluid(it.Left().Pos())) {
+        if(this->isFluid(it.Left())) {
           u.Cell(it) = u.Cell(it.Left());
-          if(this->isFluid(it.Top().Pos())) {
+          if(this->isFluid(it.Top())) {
             v.Cell(it) = v.Cell(it.Top());
             p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()));
           } else {
             v.Cell(it) = v.Cell(it.Top());
             p.Cell(it) = p.Cell(it.Left());
           }
-        } else if(this->isFluid(it.Top().Pos())) {
+        } else if(this->isFluid(it.Top())) {
           v.Cell(it) = v.Cell(it.Top());
-          if(this->isFluid(it.Right().Pos())) {
+          if(this->isFluid(it.Right())) {
             u.Cell(it.Left()) = u.Cell(it);
             p.Cell(it) = 0.5 * (p.Cell(it.Top()) + p.Cell(it.Right()));
           } else {
             u.Cell(it.Left()) = u.Cell(it);
             p.Cell(it) = p.Cell(it.Top());
           }
-        } else if(this->isFluid(it.Right().Pos())) {
+        } else if(this->isFluid(it.Right())) {
           u.Cell(it.Left()) = u.Cell(it);
-          if(this->isFluid(it.Down().Pos())) {
+          if(this->isFluid(it.Down())) {
             v.Cell(it) = v.Cell(it.Down());
             p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()));
           } else {
             v.Cell(it) = v.Cell(it.Down());
             p.Cell(it) = p.Cell(it.Down());
           }
-        } else if(this->isFluid(it.Down().Pos())) {
+        } else if(this->isFluid(it.Down())) {
           v.Cell(it) = v.Cell(it.Down());
-          if(this->isFluid(it.Left().Pos())) {
+          if(this->isFluid(it.Left())) {
             u.Cell(it) = u.Cell(it.Left());
             p.Cell(it) = 0.5 * (p.Cell(it.Down()) + p.Cell(it.Left()));
           } else {
@@ -402,22 +409,22 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
         }
         break;
       case '|': // Vertical Slip-boundary (u = 0, dv/dx = 0, dp determined by parameter pressure)
-        if(this->isFluid(it.Left().Pos())) {
+        if(this->isFluid(it.Left())) {
           u.Cell(it) = 0;
           v.Cell(it) = v.Cell(it.Left());
           p.Cell(it) = this->_pressure;
-        } else if(this->isFluid(it.Right().Pos())) {
+        } else if(this->isFluid(it.Right())) {
           u.Cell(it.Left()) = 0;
           v.Cell(it.Left()) = v.Cell(it);
           p.Cell(it) = this->_pressure;
         }
         break;
       case '-': // Horizontal Slip-boundary (du/dy = 0, v = 0, dp determined by parameter pressure)
-        if(this->isFluid(it.Top().Pos())) {
+        if(this->isFluid(it.Top())) {
           u.Cell(it) = u.Cell(it.Down());
           v.Cell(it) = 0;
           p.Cell(it) = this->_pressure;
-        } else if(this->isFluid(it.Down().Pos())) {
+        } else if(this->isFluid(it.Down())) {
           u.Cell(it) = 0;
           v.Cell(it.Down()) = v.Cell(it);
           p.Cell(it) = this->_pressure;
@@ -431,19 +438,48 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
 void Geometry::computeSizes() {
   const multi_index_t& numProc = this->_comm.ThreadDim();
   //const multi_index_t& idx = this->_comm.ThreadIdx();
-  for(index_t dim = 0; dim < DIM; dim++) {
-    if(this->_free) {
-      this->_totalSize[dim] -= 2;
+
+  if(! this->_free) { // initialize Driven Cavity
+    this->_flags = new char[this->_totalSize[0] * this->_totalSize[1]];
+    for(index_t j = 0; j < this->_totalSize[1]; j++) {
+      this->_flags[this->_totalSize[0] * j] = (j == this->_totalSize[1]-1? 'I' : '#');
+      for(index_t i = 1; i < this->_totalSize[0]-1; i++) {
+        this->_flags[i + this->_totalSize[0] * j] = (j == 0? '#' : (j == this->_totalSize[1]-1? 'I' : ' ') );
+      }
+      this->_flags[this->_totalSize[0] * (j+1)-1] = (j == this->_totalSize[1]-1? 'I' : '#');
     }
+    if(this->_comm.ThreadNum() == 0) {
+      std::cout << "Geometry: Load Driven Cavity." << std::endl;
+      // TODO: output for testing
+      for(index_t j = 0; j < this->_totalSize[1]; j++) {
+        std::cout.write(&this->_flags[this->_totalSize[0] * j], this->_totalSize[0]);
+        std::cout << std::endl;
+      }
+    }
+  }
+
+  for(index_t dim = 0; dim < DIM; dim++) {
+    this->_totalSize[dim] -= 2;
     this->_size[dim] = this->_totalSize[dim] / numProc[dim];
     this->_length[dim] = this->_totalLength[dim] / numProc[dim];
 
     // TODO: fix last grid size
-    // until then fix total size
-    this->_totalSize[dim] = this->_size[dim] * numProc[dim];
+    if(this->_totalSize[dim] != this->_size[dim] * numProc[dim]) {
+      std::cerr << "Grid not separable for " << this->_comm.ThreadCnt() << " Threads!" << std::endl;
+      exit(1);
+    }
 
-    this->_sizeP[dim] = this->_size[dim] + 2;
+    this->_sizeP[dim] = this->_size[dim]+2;
     this->_h[dim] = this->_length[dim] / this->_size[dim];
     this->_hInv[dim] = 1.0 / this->_h[dim];
+
   }
+
+  // TODO: testing
+  std::cout << "Size: " << _totalSize << " Length: " << _totalLength << " h: " << _h
+            << " GSize: " << _sizeP << std::endl;
+}
+
+const char& Geometry::flag(const Iterator &it) const {
+  return this->_flags[it];
 }

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <iostream>
+#include <cstdio>
 #include <cmath>
 #include <algorithm>
 #include "typedef.hpp"
@@ -197,5 +198,15 @@ void Grid::MinMax(real_t &min, real_t &max) const {
       max = this->_data[i];
     }
   }
+}
+
+void Grid::print() const {
+  for(Iterator it(*this); it.Valid(); it.Next()) {
+    if(it.Pos()[0] == 0) {
+      std::cout << std::endl;
+    }
+    printf("%+.2f, ", this->Cell(it));
+  }
+  std::cout << std::endl;
 }
 

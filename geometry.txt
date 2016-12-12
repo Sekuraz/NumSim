@@ -5,11 +5,11 @@ pressure = 0
 
 size = 8 8
 geometry = 1//free
+IIIIIIII
+#      #
+#      #
+#      #
+#      #
+#      #
+#      #
 ########
-I      O
-I      O
-I      O
-I      O
-I      O
-I      O
---------
