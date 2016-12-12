@@ -50,7 +50,7 @@ public:
   /// * 'O' Outflow boundary (du/dx = 0 resp. dv/dy = 0)
   /// * '|' Vertical Slip-boundary (u = 0, dv/dx = 0, dp determined by parameter pressure)
   /// * '-' Horizontal Slip-boundary (du/dy = 0, v = 0, dp determined by parameter pressure)
-  void Load(const char file[]);
+  void Load(const char file[], const bool printinfo = false);
 
   /// Returns the total number of cells in each dimension
   inline const multi_index_t& TotalSize () const { return this->_totalSize; }

@@ -17,6 +17,8 @@
 
 #include <iostream>
 #include <cmath>
+#include <cstring>
+#include <cstdlib>
 #include "typedef.hpp"
 #include "comm.hpp"
 #include "compute.hpp"
@@ -28,7 +30,53 @@
 #endif
 #include "vtk.hpp"
 
+/// reads arguments from command line
+void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geomPath) {
+  for(int i = 1; i < argc; i++) {
+    if(strncmp(argv[i], "-G",2)==0) { // geometry path
+      // test whether path at flag or afterwards
+      if (strlen(argv[i])>2) {
+        geomPath = &argv[i][2];
+      } else {
+        geomPath = argv[++i];
+      }
+    } else if(strncmp(argv[i], "-g",2)==0) { // geometry standard
+      // test whether number at flag or afterwards
+      int number;
+      if (strlen(argv[i])>2) {
+        number = atoi(&argv[i][2]);
+      } else {
+        number = atoi(argv[++i]);
+      }
+      geomPath = new char[20];
+      switch(number) {
+        case 1:
+          strcpy(geomPath, "data/pressure.geom");
+          break;
+        case 2:
+          strcpy(geomPath, "data/step.geom");
+          break;
+        case 3:
+          strcpy(geomPath, "data/karman.geom");
+          break;
+        default:
+          strcpy(geomPath, "data/channel.geom");
+          break;
+      }
+    } else if(strncmp(argv[i], "-P",2)==0) { // parameter path
+      // test whether path at flag or afterwards
+      if (strlen(argv[i])>2) {
+        paramPath = &argv[i][2];
+      } else {
+        paramPath = argv[++i];
+      }
+    }
+  }
+}
+
 int main(int argc, char *argv[]) {
+  char *paramPath = nullptr, *geomPath = nullptr;
+
   // Create communicator, parameter and geometry instances and load values
   Communicator comm(&argc, &argv);
 
@@ -37,10 +85,12 @@ int main(int argc, char *argv[]) {
     system("exec rm -r ./VTK/*");
   }
 
+  parseCommandLine(argc, argv, paramPath, geomPath);
+
   Parameter param;
-  param.Load("param.txt", (comm.ThreadNum() == 0));
+  param.Load((paramPath != nullptr? paramPath : "param.txt"), (comm.ThreadNum() == 0));
   Geometry geom(comm);
-  geom.Load("geometry.txt");
+  geom.Load((geomPath != nullptr? geomPath : "geometry.txt"), (comm.ThreadNum() == 0));
   if(param.Omega() <= 0.0 || param.Omega() > 2.0) {
     real_t h = std::fmax(geom.Mesh()[0], geom.Mesh()[1]);
     param.Omega() = 2.0 / (1.0 + std::sin(M_PI * h));

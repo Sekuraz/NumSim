@@ -30,10 +30,13 @@ Geometry::Geometry(const Communicator &comm, const multi_index_t& size)
 }
 
 /// Loads a geometry from a file
-void Geometry::Load(const char file[]) {
+void Geometry::Load(const char file[], const bool printinfo) {
   std::string param;
   real_t value;
   std::ifstream in(file);
+  if(printinfo) {
+    std::cout << "Geometry: Loading from file " << file << std::endl;
+  }
   while(in.good()) {
     in >> param >> std::ws;
     if(!std::isdigit(in.peek())) {
@@ -46,7 +49,7 @@ void Geometry::Load(const char file[]) {
         in >> value;
         this->_totalSize[dim] = (index_t)value;
       }
-      if(this->_comm.ThreadNum() == 0) {
+      if(printinfo) {
         std::cout << "Geometry: Load size = " << this->_totalSize << std::endl;
       }
     } else if(!param.compare("Length") || !param.compare("length")) {
@@ -55,7 +58,7 @@ void Geometry::Load(const char file[]) {
         in >> value;
         this->_totalLength[dim] = value;
       }
-      if(this->_comm.ThreadNum() == 0) {
+      if(printinfo) {
         std::cout << "Geometry: Load length = " << this->_totalLength << std::endl;
       }
     } else if(!param.compare("Velocity") || !param.compare("velocity")) {
@@ -64,12 +67,12 @@ void Geometry::Load(const char file[]) {
         in >> value;
         this->_velocity[dim] = value;
       }
-      if(this->_comm.ThreadNum() == 0) {
+      if(printinfo) {
         std::cout << "Geometry: Load velocity = " << this->_velocity << std::endl;
       }
     } else if(!param.compare("Pressure") || !param.compare("pressure")) {
       this->_pressure = value;
-      if(this->_comm.ThreadNum() == 0) {
+      if(printinfo) {
         std::cout << "Geometry: Load pressure = " << this->_pressure << std::endl;
       }
     } else if(!param.compare("Geometry") || !param.compare("geometry")) {
@@ -83,7 +86,7 @@ void Geometry::Load(const char file[]) {
         in.read(&this->_flags[this->_totalSize[0] * j], this->_totalSize[0]);
         in >> std::ws; // removes newline between lines
       }
-      if(this->_comm.ThreadNum() == 0) {
+      if(printinfo) {
         std::cout << "Geometry: Load free geometry." << std::endl;
         // TODO: output for testing
         for(index_t j = 0; j < this->_totalSize[1]; j++) {
@@ -214,6 +217,7 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
         if(this->isFluid(it.Left())) {
           u.Cell(it.Left()) = 0;
           if(this->isFluid(it.Top())) {
+            //u.Cell(it) = -u.Cell(it.Top()); ?
             v.Cell(it) = 0;
             p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()));
           } else {
@@ -289,7 +293,7 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
           }
         }
         break;
-      case 'H': // Horizontal Inflow boundary (u = u_0, v = ?)
+      case 'H': // Horizontal Inflow boundary (u = u_0, v = 0 ?)
         // TODO: other than const velocities
         if(this->isFluid(it.Left())) {
           u.Cell(it) = this->_velocity[0];
@@ -329,7 +333,7 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
           }
         }
         break;
-      case 'V': // Vertical Inflow boundary (u = ?, v = v_0)
+      case 'V': // Vertical Inflow boundary (u = 0 ?, v = v_0)
         // TODO: other than const velocities
         if(this->isFluid(it.Left())) {
           u.Cell(it) = 0;
@@ -450,11 +454,6 @@ void Geometry::computeSizes() {
     }
     if(this->_comm.ThreadNum() == 0) {
       std::cout << "Geometry: Load Driven Cavity." << std::endl;
-      // TODO: output for testing
-      for(index_t j = 0; j < this->_totalSize[1]; j++) {
-        std::cout.write(&this->_flags[this->_totalSize[0] * j], this->_totalSize[0]);
-        std::cout << std::endl;
-      }
     }
   }
 

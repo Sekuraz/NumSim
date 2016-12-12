@@ -25,6 +25,9 @@ void Parameter::Load(const char file[], const bool printinfo) {
   std::string param;
   real_t value;
   std::ifstream in(file);
+  if(printinfo) {
+    std::cout << "Parameter: Loading from file " << file << std::endl;
+  }
   while(in.good()) {
     in >> param >> std::ws;
     if(!std::isdigit(in.peek())) {
