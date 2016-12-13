@@ -82,7 +82,10 @@ int main(int argc, char *argv[]) {
 
   // Delete old VTK files, prevents bugs in paraview
   if(comm.ThreadNum() == 0) {
-    system("exec rm -r ./VTK/*");
+    int status = system("exec rm -r ./VTK/*");
+    if (status < 0) {
+      std::cerr << "Error while deleting old VTK files!" << std::endl;
+    }
   }
 
   parseCommandLine(argc, argv, paramPath, geomPath);
@@ -173,8 +176,17 @@ int main(int argc, char *argv[]) {
       vtk.AddScalar("Pressure", comp.GetP());
       vtk.AddScalar("Vorticity", comp.GetVorticity());
       vtk.AddScalar("Streamlines", comp.GetStreamline());
-      vtk.AddScalar("Particle Tracing", comp.GetParticle());
       vtk.Finish();
+
+      // Create VTK File for Particle tracing in the folder VTK (must exist)
+      //vtk.InitParticles("VTK/trace");
+      //vtk.AddParticles("Particle", comp.GetParticles());
+      //vtk.FinishParticles();
+
+      // Create VTK File for Streaklines in the folder VTK (must exist)
+      vtk.InitParticles("VTK/streak");
+      vtk.AddParticles("Streakline", comp.GetStreakline());
+      vtk.FinishParticles();
 
       nextTimeVTK += param.VtkDt();
     }
@@ -194,5 +206,6 @@ int main(int argc, char *argv[]) {
     run = comm.gatherAnd(run);
 #endif
   }
+
   return 0;
 }

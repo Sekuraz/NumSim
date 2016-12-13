@@ -29,7 +29,10 @@
 
 // Creates a compute instance with given geometry, parameter and communicator
 Compute::Compute(const Geometry &geom, const Parameter &param, const Communicator &comm)
-    : _t(0), _u(new Grid(geom, multi_real_t(0, geom.Mesh()[1]/2))),
+    : _t(0), _initPosParticle(param.ParticleInitPos()),
+    //_particleTracing(new std::list<multi_real_t>),
+    _streakline(new std::list<multi_real_t>),
+    _u(new Grid(geom, multi_real_t(0, geom.Mesh()[1]/2))),
     _v(new Grid(geom, multi_real_t(geom.Mesh()[0]/2, 0))),
     _p(new Grid(geom, multi_real_t(geom.Mesh()[0]/2, geom.Mesh()[1]/2))),
     _F(new Grid(geom)), _G(new Grid(geom)), _rhs(new Grid(geom)),
@@ -47,14 +50,17 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
   this->_p->Initialize(0);
   this->_particle->Initialize(0);
 
-  // write first particle pos in list
-  _particelTracing.push_back(param.ParticleInitPos());
-  
+  // write first particle pos in list for particle trace and streakline
+  //_particleTracing->push_back(param.ParticleInitPos());
+  _streakline->push_back(this->_initPosParticle);
+
 }
 // Deletes all grids
 Compute::~Compute() {
-  delete _u; delete _v; delete _p; delete _F; delete _G;
-  delete _rhs; delete _velocities; delete _solver;
+  //delete _particleTracing; 
+  delete _streakline;
+  delete _u; delete _v; delete _p; delete _F; 
+  delete _G; delete _rhs; delete _velocities; delete _solver;
   delete _streamline; delete _vorticity; delete _particle;
 }
 
@@ -120,9 +126,10 @@ void Compute::TimeStep(bool printInfo) {
   // calculate new particle postitions
   // TODO: rewrite for parallelization
   if (_comm.ThreadCnt() == 1) {
-    this->Particle();
+    //this->Particle();
+    this->Streaklines();
   }
-  
+
   // print information
   if(printInfo) {
     std::cout.precision(4);
@@ -167,36 +174,74 @@ void Compute::Stream() {
   }
 }
 
+/*
 void Compute::Particle() {
-  // TODO: Rewrite for n-particle and parallelization
   // returns last particlePosition of the list
-  multi_real_t _particlePos = _particelTracing.back();
+  multi_real_t lastPos = _particleTracing->back();
+  //multi_real_t lastPos = _particleTracing.back();
 
-  if((_particlePos[0]<=_geom.Length()[0]) && (_particlePos[1]<=_geom.Length()[1])) {
-  // get cell of the particle
-  _particleIndx[0] = (index_t)(_particlePos[0]/_geom.Mesh()[0] + 1);
-  _particleIndx[1] = (index_t)(_particlePos[1]/_geom.Mesh()[1] + 1);
-  // set old position to 0 for debug visualization
-  Iterator it1(*(this->_particle), _particleIndx);
-  this->_particle->Cell(it1) = 0;
+  this->ParticleStep(lastPos);
+
+  // write new position in the list
+  _particleTracing->push_back(lastPos);
+  //_particleTracing.push_back(lastPos);
+
+}
+*/
+
+void Compute::Streaklines(){  
+
+  // Cycle the list of particles
+  for (std::list<multi_real_t>::iterator it = _streakline->begin(); it != _streakline->end(); ++it) {
+    this->ParticleStep((*it));
+  }
+
+  // Add new particle at the initial position
+  std::list<multi_real_t>::iterator it = _streakline->begin();
+  _streakline->insert (_streakline->begin(), this->_initPosParticle);
+
+}	
+
+// TODO: ParticleStep() without live visualisation
+void Compute::ParticleStep(multi_real_t &lastPos) {
 
   // calculate new position
-  _particlePos[0] += _dtlimit * this->_u->Interpolate(_particlePos);
-  _particlePos[1] += _dtlimit * this->_v->Interpolate(_particlePos);
-  // write new position in the list
-  _particelTracing.push_back(_particlePos);
-  // get cell of the particle
-  _particleIndx[0] = (index_t)(_particlePos[0]/_geom.Mesh()[0] + 1);
-  _particleIndx[1] = (index_t)(_particlePos[1]/_geom.Mesh()[1] + 1);
-  //TODO: Debug
-  //std::cout<<"Particle pos x: "<<_particlePos[0]<<", Particle pos y: "<<_particlePos[1]<<std::endl;
-  //std::cout<<"Particle index x: "<<_particleIndx[0]<<", Particle index y: "<<_particleIndx[1]<<std::endl;
+  lastPos[0] += _dtlimit * this->_u->Interpolate(lastPos);
+  lastPos[1] += _dtlimit * this->_v->Interpolate(lastPos);
 
-  // set new position to 1 for debug visualization
-  Iterator it2(*(this->_particle), _particleIndx);
-  this->_particle->Cell(it2) = 1;
-  }
 }
+
+/*
+// TODO: ParticleStep() with live visualisation (only valid for particle tracing)
+void Compute::ParticleStep(multi_real_t &lastPos) {
+
+  #ifdef USE_DEBUG_VISU
+    // get cell of the particle
+    _particleIndx[0] = (index_t)(lastPos[0]/_geom.Mesh()[0] + 1);
+    _particleIndx[1] = (index_t)(lastPos[1]/_geom.Mesh()[1] + 1);
+
+    // set old position to 0 for debug visualization
+    Iterator it1(*(this->_particle), _particleIndx);
+    this->_particle->Cell(it1) = 0;
+  #endif // USE_DEBUG_VISU
+
+  // calculate new position
+  lastPos[0] += _dtlimit * this->_u->Interpolate(lastPos);
+  lastPos[1] += _dtlimit * this->_v->Interpolate(lastPos);
+  // write new position in the list
+  //_particleTracing->push_back(lastPos);
+
+  #ifdef USE_DEBUG_VISU
+    // get cell of the particle
+    _particleIndx[0] = (index_t)(lastPos[0]/_geom.Mesh()[0] + 1);
+    _particleIndx[1] = (index_t)(lastPos[1]/_geom.Mesh()[1] + 1);
+
+    // set new position to 1 for debug visualization
+    Iterator it2(*(this->_particle), _particleIndx);
+    this->_particle->Cell(it2) = 1;
+  #endif // USE_DEBUG_VISU
+}
+*/
 
 // Compute the new velocites u,v
 void Compute::NewVelocities(const real_t &dt) {

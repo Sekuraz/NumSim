@@ -18,6 +18,7 @@
 #include "typedef.hpp"
 #include "grid.hpp"
 #include <cstdio>
+#include <list>
 //------------------------------------------------------------------------------
 #ifndef __VTK_HPP
 #define __VTK_HPP
@@ -48,6 +49,13 @@ public:
   /// Add a field of 3D data
   void AddField(const char *title, const Grid *v1, const Grid *v2,
                 const Grid *v3);
+  /// Initializes a particle vtk
+  void InitParticles(const char *path);
+  /// Closes the particle vtk
+  void FinishParticles();
+
+  /// Add a particle data
+  void AddParticles(const char *title, const std::list<multi_real_t> *particles);
 
 private:
   const multi_real_t &_h;

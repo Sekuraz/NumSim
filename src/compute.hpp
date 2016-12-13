@@ -50,6 +50,11 @@ public:
 	inline const Grid *GetVorticity() const { return this->_vorticity; };
   /// Returns the pointer to the Particle Tracing grid
 	inline const Grid *GetParticle() const { return this->_particle; };
+  /// Returns the pointer to the Particle Tracing list
+	//inline const std::list<multi_real_t> *GetParticles() const { return this->_particleTracing; };
+  //inline const std::list<multi_real_t> GetParticles() const { return this->_particleTracing; };
+  /// Returns the pointer to the Particle Tracing list
+	inline const std::list<multi_real_t> *GetStreakline() const { return this->_streakline; };
 
   /// Computes and returns the absolute velocity
   const Grid *GetVelocity();
@@ -57,18 +62,21 @@ public:
   void Vort();
   /// Computes the stream line values
   void Stream();
-  /// Computes the new particle grid
-  void Particle();
+  /// Computes the new particles
+  //void Particle(); 
+  /// Computes the new Streakline
+  void Streaklines(); 
+  /// Computes new particle place
+  void ParticleStep(multi_real_t &particlePos);
 
 private:
   real_t _t; ///< current timestep
   real_t _dtlimit; ///< donor-cell diffusion condition (p. 27)
 
-  multi_real_t _particlePos; ///< position of the traced particle
-  multi_index_t _particleIndx; ///< cell of the traced particle
-  std::list<multi_real_t> _particelTracing;
-  //multi_real_t _particlePosU; 
-  //multi_real_t _particlePosV;
+  multi_real_t _initPosParticle; ///< initial position of the traced particles
+  multi_index_t _particleIndx; ///< cell of the traced particle for visu
+  //std::list<multi_real_t> *_particleTracing; ///< list for particle tracing
+  std::list<multi_real_t> *_streakline; ///< list of streakline points
 
   Grid *_u; ///< velocities in x-direction
   Grid *_v; ///< velocities in y-direction
