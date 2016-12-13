@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
 
 #ifdef USE_DEBUG_VISU
   // Create and initialize the visualization
-  const int hRes = 600;
+  const int hRes = 800;
   const int vRes = (int)(hRes * geom.TotalLength()[1] / geom.TotalLength()[0]);
   Renderer visu(geom.Length(), geom.Mesh());
   visu.Init(hRes, vRes, comm.ThreadNum(), comm.ThreadIdx(), comm.ThreadDim());

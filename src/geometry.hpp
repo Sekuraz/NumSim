@@ -87,8 +87,12 @@ public:
 private:
   /// Computes the sizes of the grids.
   void computeSizes();
-  /// Returns the grid flag of the cell at the position.
+  /// Returns the grid flag of the cell at the position of it.
   const char& flag(const Iterator &it) const;
+
+  /// Returns the parabolic velocity profile (1/2*Re*dp/L_x*y*(y-L_y)).
+  real_t parabolic(const Iterator &it) const;
+
 /*
   /// Returns whether the cell at the position of the iterator is NoSlip cell.
   inline bool isNoSlip(const multi_index_t &pos) const { return ( this->flag(pos) == '#' ); };
@@ -115,6 +119,7 @@ private:
   multi_real_t _length;      ///< local length of the physical domain in each dimension
   multi_real_t _h;           ///< mesh width of the Grids
   multi_real_t _hInv;        ///< the invers of the mesh width
+  index_t _N;                ///< local number of fluid cells
   multi_real_t _velocity;    ///< constant boundary velocities (u,v) at upper boundary
   real_t _pressure;          ///< constant pressure difference between left and right
 };

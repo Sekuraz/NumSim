@@ -25,7 +25,8 @@
 Geometry::Geometry(const Communicator &comm) : Geometry(comm, multi_index_t {128, 128}) {}
 
 Geometry::Geometry(const Communicator &comm, const multi_index_t& size)
-    : _comm(comm), _free(false), _flags(nullptr), _totalSize(size), _totalLength(1,1) {
+    : _comm(comm), _free(false), _flags(nullptr), _totalSize(size), _totalLength(1,1),
+    _N(0), _velocity(1,0), _pressure(0.1) {
   this->computeSizes();
 }
 
@@ -270,7 +271,7 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
             u.Cell(it) = this->_velocity[0];
             p.Cell(it) = 0.5 * (p.Cell(it.Top()) + p.Cell(it.Right()));
           } else {
-            u.Cell(it) = 2*this->_velocity[0]-u.Cell(it.Top());
+            u.Cell(it) = 2*this->_velocity[0] - u.Cell(it.Top());
             p.Cell(it) = p.Cell(it.Top());
           }
         } else if(this->isFluid(it.Right())) {
@@ -293,145 +294,71 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
           }
         }
         break;
-      case 'H': // Horizontal Inflow boundary (u = u_0, v = 0 ?)
+      case 'V': // Vertical Inflow boundary (u = u_0, v = v_0, but only fluid right or left)
         // TODO: other than const velocities
         if(this->isFluid(it.Left())) {
           u.Cell(it) = this->_velocity[0];
-          if(this->isFluid(it.Top())) {
-            v.Cell(it) = 0;
-            p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()));
-          } else {
-            v.Cell(it) = -v.Cell(it.Left());
-            p.Cell(it) = p.Cell(it.Left());
-          }
-        } else if(this->isFluid(it.Top())) {
-          v.Cell(it) = 0;
-          if(this->isFluid(it.Right())) {
-            u.Cell(it) = this->_velocity[0];
-            p.Cell(it) = 0.5 * (p.Cell(it.Top()) + p.Cell(it.Right()));
-          } else {
-            u.Cell(it) = 2*this->_velocity[0]-u.Cell(it.Top());
-            p.Cell(it) = p.Cell(it.Top());
-          }
+          v.Cell(it) = 2*this->_velocity[1] - v.Cell(it.Left());
+          p.Cell(it) = p.Cell(it.Left());
         } else if(this->isFluid(it.Right())) {
-          u.Cell(it) = this->_velocity[0];
-          if(this->isFluid(it.Down())) {
-            v.Cell(it.Down()) = 0;
-            p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()));
-          } else {
-            v.Cell(it) = -v.Cell(it.Right());
-            p.Cell(it) = p.Cell(it.Down());
-          }
-        } else if(this->isFluid(it.Down())) {
-          v.Cell(it.Down()) = 0;
-          if(this->isFluid(it.Left())) {
-            u.Cell(it.Left()) = this->_velocity[0];
-            p.Cell(it) = 0.5 * (p.Cell(it.Down()) + p.Cell(it.Left()));
-          } else {
-            u.Cell(it) = 2*this->_velocity[0] - u.Cell(it.Down());
-            p.Cell(it) = p.Cell(it.Down());
-          }
+          u.Cell(it) = parabolic(it);//this->_velocity[0];
+          v.Cell(it) = 2*this->_velocity[1] - v.Cell(it.Right());
+          p.Cell(it) = p.Cell(it.Down());
         }
         break;
-      case 'V': // Vertical Inflow boundary (u = 0 ?, v = v_0)
+      case 'H': // Horizontal Inflow boundary (u = u_0, v = v_0, but only fluid top or down)
         // TODO: other than const velocities
-        if(this->isFluid(it.Left())) {
-          u.Cell(it) = 0;
-          if(this->isFluid(it.Top())) {
-            v.Cell(it) = this->_velocity[1];
-            p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()));
-          } else {
-            v.Cell(it) = 2*this->_velocity[1]-v.Cell(it.Left());
-            p.Cell(it) = p.Cell(it.Left());
-          }
-        } else if(this->isFluid(it.Top())) {
+        if(this->isFluid(it.Top())) {
           v.Cell(it) = this->_velocity[1];
-          if(this->isFluid(it.Right())) {
-            u.Cell(it) = 0;
-            p.Cell(it) = 0.5 * (p.Cell(it.Top()) + p.Cell(it.Right()));
-          } else {
-            u.Cell(it) = -u.Cell(it.Top());
-            p.Cell(it) = p.Cell(it.Top());
-          }
-        } else if(this->isFluid(it.Right())) {
-          u.Cell(it) = 0;
-          if(this->isFluid(it.Down())) {
-            v.Cell(it.Down()) = this->_velocity[1];
-            p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()));
-          } else {
-            v.Cell(it) = 2*this->_velocity[1] - v.Cell(it.Right());
-            p.Cell(it) = p.Cell(it.Down());
-          }
+          u.Cell(it) = 2*this->_velocity[0] - u.Cell(it.Top());
+          p.Cell(it) = p.Cell(it.Top());
         } else if(this->isFluid(it.Down())) {
           v.Cell(it.Down()) = this->_velocity[1];
-          if(this->isFluid(it.Left())) {
-            u.Cell(it.Left()) = 0;
-            p.Cell(it) = 0.5 * (p.Cell(it.Down()) + p.Cell(it.Left()));
-          } else {
-            u.Cell(it) = -u.Cell(it.Down());
-            p.Cell(it) = p.Cell(it.Down());
-          }
+          u.Cell(it) = 2*this->_velocity[0] - u.Cell(it.Down());
+          p.Cell(it) = p.Cell(it.Down());
         }
         break;
-      case 'O': // Outflow boundary (du/dx = 0 resp. dv/dy = 0)
+      case 'O': // Outflow boundary (d/dn (u,v) = 0)
         if(this->isFluid(it.Left())) {
           u.Cell(it) = u.Cell(it.Left());
-          if(this->isFluid(it.Top())) {
-            v.Cell(it) = v.Cell(it.Top());
-            p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()));
-          } else {
-            v.Cell(it) = v.Cell(it.Top());
-            p.Cell(it) = p.Cell(it.Left());
-          }
+          v.Cell(it) = v.Cell(it.Left());
+          p.Cell(it) = 0;
         } else if(this->isFluid(it.Top())) {
           v.Cell(it) = v.Cell(it.Top());
-          if(this->isFluid(it.Right())) {
-            u.Cell(it.Left()) = u.Cell(it);
-            p.Cell(it) = 0.5 * (p.Cell(it.Top()) + p.Cell(it.Right()));
-          } else {
-            u.Cell(it.Left()) = u.Cell(it);
-            p.Cell(it) = p.Cell(it.Top());
-          }
+          u.Cell(it) = u.Cell(it.Top());
+          p.Cell(it) = 0;
         } else if(this->isFluid(it.Right())) {
-          u.Cell(it.Left()) = u.Cell(it);
-          if(this->isFluid(it.Down())) {
-            v.Cell(it) = v.Cell(it.Down());
-            p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()));
-          } else {
-            v.Cell(it) = v.Cell(it.Down());
-            p.Cell(it) = p.Cell(it.Down());
-          }
+          u.Cell(it) = u.Cell(it.Right());
+          v.Cell(it) = v.Cell(it.Right());
+          p.Cell(it) = 0;
         } else if(this->isFluid(it.Down())) {
           v.Cell(it) = v.Cell(it.Down());
-          if(this->isFluid(it.Left())) {
-            u.Cell(it) = u.Cell(it.Left());
-            p.Cell(it) = 0.5 * (p.Cell(it.Down()) + p.Cell(it.Left()));
-          } else {
-            u.Cell(it) = u.Cell(it.Left());
-            p.Cell(it) = p.Cell(it.Down());
-          }
-        }
-        break;
-      case '|': // Vertical Slip-boundary (u = 0, dv/dx = 0, dp determined by parameter pressure)
-        if(this->isFluid(it.Left())) {
-          u.Cell(it) = 0;
-          v.Cell(it) = v.Cell(it.Left());
-          p.Cell(it) = this->_pressure;
-        } else if(this->isFluid(it.Right())) {
-          u.Cell(it.Left()) = 0;
-          v.Cell(it.Left()) = v.Cell(it);
-          p.Cell(it) = this->_pressure;
-        }
-        break;
-      case '-': // Horizontal Slip-boundary (du/dy = 0, v = 0, dp determined by parameter pressure)
-        if(this->isFluid(it.Top())) {
           u.Cell(it) = u.Cell(it.Down());
+          p.Cell(it) = 0;
+        }
+        break;
+      case '|': // Vertical Slip-boundary (du/dx = 0, v = 0, dp determined by parameter pressure)
+        // TODO: correct pressure
+        if(this->isFluid(it.Left())) {
+          u.Cell(it) = u.Cell(it.Left());
           v.Cell(it) = 0;
-          p.Cell(it) = this->_pressure;
+          p.Cell(it) = 2*this->_pressure - p.Cell(it.Left());
+        } else if(this->isFluid(it.Right())) {
+          u.Cell(it) = u.Cell(it.Right());
+          v.Cell(it) = 0;
+          p.Cell(it) = 2*this->_pressure - p.Cell(it.Right());
+        }
+        break;
+      case '-': // Horizontal Slip-boundary (u = 0, dv/dy = 0, dp determined by parameter pressure)
+        // TODO: correct pressure
+        if(this->isFluid(it.Top())) {
+          u.Cell(it) = 0;
+          v.Cell(it) = v.Cell(it.Top());
+          p.Cell(it) = 2*this->_pressure - p.Cell(it.Top());
         } else if(this->isFluid(it.Down())) {
           u.Cell(it) = 0;
-          v.Cell(it.Down()) = v.Cell(it);
-          p.Cell(it) = this->_pressure;
+          v.Cell(it) = v.Cell(it.Down());
+          p.Cell(it) = 2*this->_pressure - p.Cell(it.Down());
         }
         break;
     }
@@ -441,16 +368,16 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
 // compute grid sizes
 void Geometry::computeSizes() {
   const multi_index_t& numProc = this->_comm.ThreadDim();
-  //const multi_index_t& idx = this->_comm.ThreadIdx();
+  //const multi_index_t& tIdx = this->_comm.ThreadIdx();
 
   if(! this->_free) { // initialize Driven Cavity
     this->_flags = new char[this->_totalSize[0] * this->_totalSize[1]];
     for(index_t j = 0; j < this->_totalSize[1]; j++) {
-      this->_flags[this->_totalSize[0] * j] = (j == this->_totalSize[1]-1? 'I' : '#');
+      this->_flags[this->_totalSize[0] * j] = (j == this->_totalSize[1]-1? 'H' : '#');
       for(index_t i = 1; i < this->_totalSize[0]-1; i++) {
-        this->_flags[i + this->_totalSize[0] * j] = (j == 0? '#' : (j == this->_totalSize[1]-1? 'I' : ' ') );
+        this->_flags[i + this->_totalSize[0] * j] = (j == 0? '#' : (j == this->_totalSize[1]-1? 'H' : ' ') );
       }
-      this->_flags[this->_totalSize[0] * (j+1)-1] = (j == this->_totalSize[1]-1? 'I' : '#');
+      this->_flags[this->_totalSize[0] * (j+1)-1] = (j == this->_totalSize[1]-1? 'H' : '#');
     }
     if(this->_comm.ThreadNum() == 0) {
       std::cout << "Geometry: Load Driven Cavity." << std::endl;
@@ -476,9 +403,16 @@ void Geometry::computeSizes() {
 
   // TODO: testing
   std::cout << "Size: " << _totalSize << " Length: " << _totalLength << " h: " << _h
-            << " GSize: " << _sizeP << std::endl;
+            << " GSize: " << _sizeP << " Nloc: " << _N << std::endl;
 }
 
 const char& Geometry::flag(const Iterator &it) const {
   return this->_flags[it];
+}
+
+// Returns the parabolic velocity profile (u_0*y*(y-L_y)).
+real_t Geometry::parabolic(const Iterator &it) const {
+  // TODO: rewrite efficient and use Re
+  const real_t y = (it.Pos()[1]+0.5) * this->_h[1];
+  return this->_velocity[0] * y * (this->_length[1] - y);
 }

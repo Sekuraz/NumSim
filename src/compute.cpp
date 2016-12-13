@@ -248,22 +248,19 @@ void Compute::NewVelocities(const real_t &dt) {
 
 // Compute the temporary velocites F,G
 void Compute::MomentumEqu(const real_t &dt) {
-  for(Iterator it(*(this->_F)); it.Valid(); it.Next()) {
-    if(this->_geom.isFluid(it)) {
-      this->_F->Cell(it) = this->_u->Cell(it) + dt * (
-          ( this->_u->dxx(it) + this->_u->dyy(it) )/this->_param.Re()
-          - this->_u->DC_udu_x(it, this->_param.Alpha())
-          - this->_u->DC_vdu_y(it, this->_param.Alpha(), this->_v) );
-      this->_G->Cell(it) = this->_v->Cell(it) + dt * (
+  for(InteriorIterator it(*(this->_F)); it.Valid(); it.Next()) {
+    this->_F->Cell(it) = this->_u->Cell(it) + dt * (
+        ( this->_u->dxx(it) + this->_u->dyy(it) )/this->_param.Re()
+         - this->_u->DC_udu_x(it, this->_param.Alpha())
+        - this->_u->DC_vdu_y(it, this->_param.Alpha(), this->_v) );
+    this->_G->Cell(it) = this->_v->Cell(it) + dt * (
           ( this->_v->dxx(it) + this->_v->dyy(it) )/this->_param.Re()
           - this->_v->DC_vdv_y(it, this->_param.Alpha())
           - this->_v->DC_udv_x(it, this->_param.Alpha(), this->_u) );
-    } else { // boundary values of F and G
-      // TODO: right ?
-      this->_F->Cell(it) = this->_u->Cell(it);
-      this->_G->Cell(it) = this->_v->Cell(it);
-    }
   }
+
+  // boundary values of F and G
+  this->_geom.Update(*this->_F, *this->_G, *this->_p);
 }
 
 // Compute the RHS of the poisson equation
