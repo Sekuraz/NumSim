@@ -272,18 +272,18 @@ void VTK::FinishParticles(){
 }
 //------------------------------------------------------------------------------
 
-void VTK::AddParticles(const char *title, const std::list<multi_real_t> *particles){
+void VTK::AddParticles(const char *title, const std::list<multi_real_t> particles){
   if (!_handle)  {
     return;
   }
   fprintf(_handle, "<Piece NumberOfPoints=\"%lu \" NumberOfVerts=\"0\" NumberOfLines= "
-                   "\"0\" NumberOfStrips=\"0\" NumberOfPolys=\"0\">\n", particles->size());
+                   "\"0\" NumberOfStrips=\"0\" NumberOfPolys=\"0\">\n", particles.size());
   fprintf(_handle, "<Points>\n");
   fprintf(_handle, "<DataArray Name=\"%s\" type=\"Float64\" format=\"ascii\" "
                    "NumberOfComponents=\"3\">\n",title);
   
   std::list<multi_real_t>::const_iterator it;
-  for (it = particles->begin(); it != particles->end(); ++it) {
+  for (it = particles.begin(); it != particles.end(); ++it) {
     multi_real_t data = *it;
     fprintf( _handle, "%le %le %le\n", data[0], data[1], (DIM == 3 ? data[2] : 0) );
   }

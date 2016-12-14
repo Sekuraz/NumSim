@@ -160,8 +160,8 @@ int main(int argc, char *argv[]) {
         visugrid = comp.GetStreamline();
         break;
       case 6:
-        visugrid = comp.GetParticle();
-        break; 
+        visugrid = comp.GetParticleTrace();
+        break;
       default:
         break;
       };
@@ -179,12 +179,12 @@ int main(int argc, char *argv[]) {
       vtk.Finish();
 
       // Create VTK File for Particle tracing in the folder VTK (must exist)
-      //vtk.InitParticles("VTK/trace");
-      //vtk.AddParticles("Particle", comp.GetParticles());
-      //vtk.FinishParticles();
+      vtk.InitParticles("VTK/particle");
+      vtk.AddParticles("Particle", comp.GetParticles());
+      vtk.FinishParticles();
 
       // Create VTK File for Streaklines in the folder VTK (must exist)
-      vtk.InitParticles("VTK/streak");
+      vtk.InitParticles("VTK/streakline");
       vtk.AddParticles("Streakline", comp.GetStreakline());
       vtk.FinishParticles();
 

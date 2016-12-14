@@ -49,12 +49,12 @@ public:
   /// Returns the pointer to the Vorticity
 	inline const Grid *GetVorticity() const { return this->_vorticity; };
   /// Returns the pointer to the Particle Tracing grid
-	inline const Grid *GetParticle() const { return this->_particle; };
+	inline const Grid *GetParticleTrace() const { return this->_particle; };
   /// Returns the pointer to the Particle Tracing list
-	//inline const std::list<multi_real_t> *GetParticles() const { return this->_particleTracing; };
-  //inline const std::list<multi_real_t> GetParticles() const { return this->_particleTracing; };
+  inline const std::list<multi_real_t> GetParticles() const { return this->_particleTracing; };
   /// Returns the pointer to the Particle Tracing list
-	inline const std::list<multi_real_t> *GetStreakline() const { return this->_streakline; };
+	//inline const std::list<multi_real_t> *GetStreakline() const { return this->_streakline; };
+  inline const std::list<multi_real_t> GetStreakline() const { return this->_streakline; };
 
   /// Computes and returns the absolute velocity
   const Grid *GetVelocity();
@@ -63,20 +63,17 @@ public:
   /// Computes the stream line values
   void Stream();
   /// Computes the new particles
-  //void Particle(); 
+  void Particle(); 
   /// Computes the new Streakline
   void Streaklines(); 
   /// Computes new particle place
   void ParticleStep(multi_real_t &particlePos);
+  /// Computes new particle place with live visualisation
+  void ParticleStepVisu(multi_real_t &particlePos);
 
 private:
   real_t _t; ///< current timestep
   real_t _dtlimit; ///< donor-cell diffusion condition (p. 27)
-
-  multi_real_t _initPosParticle; ///< initial position of the traced particles
-  multi_index_t _particleIndx; ///< cell of the traced particle for visu
-  //std::list<multi_real_t> *_particleTracing; ///< list for particle tracing
-  std::list<multi_real_t> *_streakline; ///< list of streakline points
 
   Grid *_u; ///< velocities in x-direction
   Grid *_v; ///< velocities in y-direction
@@ -97,6 +94,11 @@ private:
   const Geometry &_geom; ///< geometry of the problem
   const Parameter &_param; ///< parameters for the computation
   const Communicator &_comm; ///< communicator for boundary exchange
+
+  multi_real_t _initPosParticle; ///< initial position of the traced particles
+  multi_index_t _particleIndx; ///< cell of the traced particle for visu
+  std::list<multi_real_t> _particleTracing; ///< list for particle tracing
+  std::list<multi_real_t> _streakline; ///< list of streakline points
 
   /// Compute the new velocities u,v
   void NewVelocities(const real_t &dt);
