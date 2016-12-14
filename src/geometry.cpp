@@ -257,7 +257,7 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
       case 'I': // General Inflow boundary (u = u_0, v = v_0, dp/dn = 0)
         // TODO: other than const velocities
         if(this->isFluid(it.Left())) {
-          u.Cell(it.Left()) = this->_velocity[0];
+          u.Cell(it) = this->_velocity[0];
           if(this->isFluid(it.Top())) {
             v.Cell(it) = this->_velocity[1];
             p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()));
@@ -277,14 +277,14 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
         } else if(this->isFluid(it.Right())) {
           u.Cell(it) = this->_velocity[0];
           if(this->isFluid(it.Down())) {
-            v.Cell(it.Down()) = this->_velocity[1];
+            v.Cell(it) = this->_velocity[1];
             p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()));
           } else {
             v.Cell(it) = 2*this->_velocity[1] - v.Cell(it.Right());
             p.Cell(it) = p.Cell(it.Down());
           }
         } else if(this->isFluid(it.Down())) {
-          v.Cell(it.Down()) = this->_velocity[1];
+          v.Cell(it) = this->_velocity[1];
           if(this->isFluid(it.Left())) {
             u.Cell(it.Left()) = this->_velocity[0];
             p.Cell(it) = 0.5 * (p.Cell(it.Down()) + p.Cell(it.Left()));
@@ -303,7 +303,7 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
         } else if(this->isFluid(it.Right())) {
           u.Cell(it) = parabolic(it);//this->_velocity[0];
           v.Cell(it) = 2*this->_velocity[1] - v.Cell(it.Right());
-          p.Cell(it) = p.Cell(it.Down());
+          p.Cell(it) = p.Cell(it.Right());
         }
         break;
       case 'H': // Horizontal Inflow boundary (u = u_0, v = v_0, but only fluid top or down)
@@ -313,7 +313,7 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
           u.Cell(it) = 2*this->_velocity[0] - u.Cell(it.Top());
           p.Cell(it) = p.Cell(it.Top());
         } else if(this->isFluid(it.Down())) {
-          v.Cell(it.Down()) = this->_velocity[1];
+          v.Cell(it) = this->_velocity[1];
           u.Cell(it) = 2*this->_velocity[0] - u.Cell(it.Down());
           p.Cell(it) = p.Cell(it.Down());
         }
@@ -413,6 +413,6 @@ const char& Geometry::flag(const Iterator &it) const {
 // Returns the parabolic velocity profile (u_0*y*(y-L_y)).
 real_t Geometry::parabolic(const Iterator &it) const {
   // TODO: rewrite efficient and use Re
-  const real_t y = (it.Pos()[1]+0.5) * this->_h[1];
-  return this->_velocity[0] * y * (this->_length[1] - y);
+  const real_t y = (it.Pos()[1]-0.5) * this->_h[1];
+  return this->_velocity[0] * y * (this->_h[1]*this->_size[1] - y);
 }
