@@ -175,14 +175,8 @@ void Compute::Particle() {
   // returns last particlePosition of the list
   multi_real_t lastPos = _particleTracing.back();
 
-  // compute new step without live visualisation
-  //this->ParticleStep(lastPos);
-
   // compute new step with live visualisation
   this->ParticleStepVisu(lastPos);
-
-  // write new position in the list
-  _particleTracing.push_back(lastPos);
 
 }
 
@@ -206,6 +200,9 @@ void Compute::ParticleStep(multi_real_t &lastPos) {
   lastPos[0] += _dtlimit * this->_u->Interpolate(lastPos);
   lastPos[1] += _dtlimit * this->_v->Interpolate(lastPos);
 
+  if (lastPos[0] >= _geom.Length()[0] || lastPos[1] >= _geom.Length()[1]) {
+    lastPos = _initPosParticle;
+  }
 }
 
 // ParticleStepVisu() with live visualisation (only valid for particle tracing)
@@ -224,6 +221,11 @@ void Compute::ParticleStepVisu(multi_real_t &lastPos) {
   lastPos[1] += _dtlimit * this->_v->Interpolate(lastPos);
   // write new position in the list
 
+  // write new position in the list
+  if (lastPos[0] < _geom.Length()[0] && lastPos[1] < _geom.Length()[1]) {
+
+    _particleTracing.push_back(lastPos);
+
   // get cell of the particle
   _particleIndx[0] = (index_t)(lastPos[0]/_geom.Mesh()[0] + 1);
   _particleIndx[1] = (index_t)(lastPos[1]/_geom.Mesh()[1] + 1);
@@ -231,6 +233,12 @@ void Compute::ParticleStepVisu(multi_real_t &lastPos) {
   // set new position to 1 for debug visualization
   Iterator it2(*(this->_particle), _particleIndx);
   this->_particle->Cell(it2) = 1;
+
+  } else {
+    // deltes old particle path
+    // _particleTracing.clear();
+    _particleTracing.push_back(_initPosParticle);
+  }
 
 }
 

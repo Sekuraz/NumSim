@@ -9,5 +9,5 @@ itermax = 100
 
 vtkDt = 0.2
 visuDt = 0.1
-particlePosX = 0.5
-particlePosY = 0.5
+particlePosX = 0.0
+particlePosY = 0.6
