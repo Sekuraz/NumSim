@@ -412,7 +412,6 @@ const char& Geometry::flag(const Iterator &it) const {
 
 // Returns the parabolic velocity profile (u_0*y*(y-L_y)).
 real_t Geometry::parabolic(const Iterator &it) const {
-  // TODO: rewrite efficient and use Re
   const real_t y = (it.Pos()[1]-0.5) * this->_h[1];
   return this->_velocity[0] * y * (this->_h[1]*this->_size[1] - y);
 }
