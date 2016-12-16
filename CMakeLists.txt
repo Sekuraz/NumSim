@@ -88,6 +88,7 @@ endif (DEBUG_VISU)
 
 # build executable and link libs against it
 add_executable (numsim ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+add_executable (creator ${CMAKE_CURRENT_SOURCE_DIR}/src/creator.cpp)
 add_executable (test_mpi ${CMAKE_CURRENT_SOURCE_DIR}/src/test_mpi.cpp)
 add_executable (test_iter ${CMAKE_CURRENT_SOURCE_DIR}/src/test_iterator.cpp)
 add_executable (test_sor ${CMAKE_CURRENT_SOURCE_DIR}/src/test_sor.cpp)
