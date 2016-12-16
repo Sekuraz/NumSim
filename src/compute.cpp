@@ -141,7 +141,7 @@ void Compute::TimeStep(bool printInfo) {
 
 // Computes and returns the absolute velocity
 const Grid *Compute::GetVelocity() {
-  for(Iterator it(*(this->_velocities)); it.Valid(); it.Next()) {
+  for(Iterator it(this->_geom); it.Valid(); it.Next()) {
     real_t uMean = (this->_u->Cell(it) + this->_u->Cell(it.Top()))/2;
     real_t vMean = (this->_v->Cell(it) + this->_v->Cell(it.Right()))/2;
     this->_velocities->Cell(it) = std::sqrt(uMean*uMean + vMean*vMean);
@@ -151,14 +151,14 @@ const Grid *Compute::GetVelocity() {
 
 // Computes and returns the vorticity
 void Compute::Vort() {
-  for(Iterator it(*(this->_vorticity)); it.Valid(); it.Next()) {
+  for(Iterator it(this->_geom); it.Valid(); it.Next()) {
     this->_vorticity->Cell(it) = this->_u->dy_r(it) - this->_v->dx_r(it);
   }
 }
 // Computes the stream line values
 void Compute::Stream() {
   this->_streamline->Data()[0] = 0;
-  for(Iterator it(*(this->_streamline), 1); it.Valid(); it.Next()) {
+  for(Iterator it(this->_geom, 1); it.Valid(); it.Next()) {
     if(it.Pos()[1] == 0) {
       this->_streamline->Cell(it) = this->_streamline->Cell(it.Left()) - _geom.Mesh()[0] * this->_v->Cell(it);
     } else {
@@ -166,7 +166,7 @@ void Compute::Stream() {
     }
   }
   real_t offset = this->_comm.copyOffset(*this->_streamline);
-  for(Iterator it(*(this->_streamline)); it.Valid(); it.Next()) {
+  for(Iterator it(this->_geom); it.Valid(); it.Next()) {
     this->_streamline->Cell(it) += offset;
   }
 }
@@ -213,7 +213,7 @@ void Compute::ParticleStepVisu(multi_real_t &lastPos) {
   _particleIndx[1] = (index_t)(lastPos[1]/_geom.Mesh()[1] + 1);
 
   // set old position to 0 for debug visualization
-  Iterator it1(*(this->_particle), _particleIndx);
+  Iterator it1(this->_geom, _particleIndx);
   this->_particle->Cell(it1) = 0;
 
   // calculate new position
@@ -231,7 +231,7 @@ void Compute::ParticleStepVisu(multi_real_t &lastPos) {
   _particleIndx[1] = (index_t)(lastPos[1]/_geom.Mesh()[1] + 1);
 
   // set new position to 1 for debug visualization
-  Iterator it2(*(this->_particle), _particleIndx);
+  Iterator it2(this->_geom, _particleIndx);
   this->_particle->Cell(it2) = 1;
 
   } else {
@@ -245,18 +245,18 @@ void Compute::ParticleStepVisu(multi_real_t &lastPos) {
 // Compute the new velocites u,v
 void Compute::NewVelocities(const real_t &dt) {
   // compute u
-  for(InteriorIterator it(*(this->_u)); it.Valid(); it.Next()) {
+  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_u->Cell(it) = this->_F->Cell(it) - dt * this->_p->dx_r(it);
   }
   // compute v
-  for(InteriorIterator it(*(this->_v)); it.Valid(); it.Next()) {
+  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_v->Cell(it) = this->_G->Cell(it) - dt * this->_p->dy_r(it);
   }
 }
 
 // Compute the temporary velocites F,G
 void Compute::MomentumEqu(const real_t &dt) {
-  for(InteriorIterator it(*(this->_F)); it.Valid(); it.Next()) {
+  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_F->Cell(it) = this->_u->Cell(it) + dt * (
         ( this->_u->dxx(it) + this->_u->dyy(it) )/this->_param.Re()
          - this->_u->DC_udu_x(it, this->_param.Alpha())
@@ -273,7 +273,7 @@ void Compute::MomentumEqu(const real_t &dt) {
 
 // Compute the RHS of the poisson equation
 void Compute::RHS(const real_t &dt) {
-  for(InteriorIterator it(*(this->_p)); it.Valid(); it.Next()) {
+  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_rhs->Cell(it) = (this->_F->dx_l(it) + this->_G->dy_l(it)) / dt;
   }
 }

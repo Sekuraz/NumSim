@@ -38,7 +38,7 @@ real_t SOR::Cycle(Grid &grid, const Grid &rhs) const {
   const multi_real_t &hInv = this->_geom.invMesh();
   real_t residual = 0;
 
-  for(InteriorIterator it(grid); it.Valid(); it.Next()) {
+  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     real_t localRes = Solver::localRes(it, grid, rhs);
     residual += localRes * localRes;
     grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
@@ -54,7 +54,7 @@ real_t RedOrBlackSOR::RedCycle(Grid &grid, const Grid &rhs) const {
   const multi_real_t &hInv = this->_geom.invMesh();
   real_t residual = 0;
 
-  for(InteriorIterator it(grid); it.Valid(); it.Next()) {
+  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     real_t localRes = Solver::localRes(it, grid, rhs);
     residual += localRes * localRes;
     grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
@@ -68,7 +68,7 @@ real_t RedOrBlackSOR::BlackCycle(Grid &grid, const Grid &rhs) const {
   const multi_real_t &hInv = this->_geom.invMesh();
   real_t residual = 0;
 
-  InteriorIterator it(grid);
+  InteriorIterator it(this->_geom);
   for(it.Next(); it.Valid(); it.Next()) {
     real_t localRes = Solver::localRes(it, grid, rhs);
     residual += localRes * localRes;

@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 #endif
 
   multi_index_t half = {geom.Size()[0]/2, geom.Size()[1]/2};
-  g.Cell(Iterator(g, half)) = 1000;
+  g.Cell(Iterator(geom, half)) = 1000;
 
   bool run = true;
   for (index_t i = 0; run; i++) {
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 #ifdef USE_DEBUG_VISU
     visu.Render(&g);
 #endif
-    for (Iterator it(g); it.Valid(); it.Next()) {
+    for (Iterator it(geom); it.Valid(); it.Next()) {
         if (it.Pos()[0] == 0) {
             std::cout << std::endl;
         }

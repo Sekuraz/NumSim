@@ -82,7 +82,7 @@ real_t Grid::Interpolate(const multi_real_t &pos) const {
     multSize *= size[dim];
   }
 
-  Iterator it(*this, i);
+  Iterator it(this->_geom, i);
   real_t value = 0;
   if(it.Valid()) {
     // constant interpolation
@@ -201,7 +201,7 @@ void Grid::MinMax(real_t &min, real_t &max) const {
 }
 
 void Grid::print() const {
-  for(Iterator it(*this); it.Valid(); it.Next()) {
+  for(Iterator it(this->_geom); it.Valid(); it.Next()) {
     if(it.Pos()[0] == 0) {
       std::cout << std::endl;
     }

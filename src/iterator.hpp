@@ -15,22 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "typedef.hpp"
-#include "grid.hpp"
 //------------------------------------------------------------------------------
 #ifndef __ITERATOR_HPP
 #define __ITERATOR_HPP
 //------------------------------------------------------------------------------
+#include "typedef.hpp"
+#include "geometry.hpp"
 
 /// Iterator base class
 class Iterator {
 public:
-  /// Constructs a new Iterator depending on a grid
-  Iterator(const Grid &grid);
-  /// Constructs a new Iterator on a grid with a defined starting value
-  Iterator(const Grid &grid, const index_t &value);
-  /// Constructs a new Iterator on a grid with a defined starting position
-  Iterator(const Grid &grid, const multi_index_t &pos);
+  /// Constructs a new Iterator depending on a geometry
+  Iterator(const Geometry &geom);
+  /// Constructs a new Iterator on a geometry with a defined starting value
+  Iterator(const Geometry &geom, const index_t &value);
+  /// Constructs a new Iterator on a geometry with a defined starting position
+  Iterator(const Geometry &geom, const multi_index_t &pos);
 
   /// Returns the current position value
   virtual const index_t &Value() const;
@@ -64,9 +64,9 @@ public:
   virtual Iterator Down() const;
 
 protected:
-  const Grid &_grid; ///< The Grid on which the iterator operates.
-  index_t _value;    ///< The (linear) index, of the current Grid cell.
-  bool _valid;       ///< Whether the index is inside the Grid's data array.
+  const Geometry &_geom; ///< The geometry on which the iterator operates.
+  index_t _value;    ///< The (linear) index, of the current Geometry cell.
+  bool _valid;       ///< Whether the index is inside the Geometry's data array.
 };
 
 //------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ protected:
 class InteriorIterator : public Iterator {
 public:
   /// Construct a new InteriorIterator
-  InteriorIterator(const Grid &grid) : Iterator(grid, grid.Size()[0] + 1) {}
+  InteriorIterator(const Geometry &geom) : Iterator(geom, geom.SizeP()[0] + 1) {}
 
   /// Sets the iterator to the first element
   void First();
@@ -90,8 +90,8 @@ public:
   enum boundary{left, down, right, top};
 
   /// Constructs a new BoundaryIterator.
-  BoundaryIterator(const Grid &grid, BoundaryIterator::boundary b = BoundaryIterator::boundary::down)
-      : Iterator(grid), _boundary(b) { this->First(); }
+  BoundaryIterator(const Geometry &geom, BoundaryIterator::boundary b = BoundaryIterator::boundary::down)
+      : Iterator(geom), _boundary(b) { this->First(); }
 
   /// Sets the boundary to iterate
   /// \param[in] b - the boundary to iterate over.

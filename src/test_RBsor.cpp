@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
   // insert pertubation
   if(comm.ThreadNum() == 0) {
     multi_index_t half = {geom.SizeP()[0]/2, geom.SizeP()[1]/2};
-    g.Cell(Iterator(g, half)) = 1000;
+    g.Cell(Iterator(geom, half)) = 1000;
   }
 
   geom.Update_P(g);

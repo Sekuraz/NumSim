@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
   multi_real_t offset(h[0]/2, h[1]/2);
   Grid g (geom, offset);
   g.Initialize(0);
-  for (Iterator it(g); it.Valid(); it.Next()) {
+  for (Iterator it(geom); it.Valid(); it.Next()) {
     g.Cell(it) = it * 0.1 + comm.ThreadNum();
   }
 
@@ -40,12 +40,7 @@ int main(int argc, char *argv[]) {
 
   for (int i = 0; i < comm.ThreadCnt(); i++) {
     if (i == comm.ThreadNum()) {
-      for (Iterator it(g); it.Valid(); it.Next()) {
-          if (it.Pos()[0] == 0) {
-              std::cout << std::endl;
-          }
-          printf("%+.2f, ", g.Cell(it) * 1);
-      }
+      g.print();
       std::cout << std::endl;
     }
     MPI_Barrier(MPI_COMM_WORLD);

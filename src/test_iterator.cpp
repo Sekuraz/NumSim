@@ -44,14 +44,14 @@ int main(int argc, char *argv[]) {
   visu.Init(600,600);
 #endif
 
-  for (InteriorIterator it (g); it.Valid(); it.Next()) {
+  for (InteriorIterator it (geom); it.Valid(); it.Next()) {
 
     g.Cell(it) = 1;
     geom.Update_V(g);
 #ifdef USE_DEBUG_VISU
     visu.Render(&g);
 #endif
-    for (Iterator it(g); it.Valid(); it.Next()) {
+    for (Iterator it(geom); it.Valid(); it.Next()) {
         if (it.Pos()[0] == 0) {
             std::cout << std::endl;
         }
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
   }
 
 /*
-    BoundaryIterator it (g);
+    BoundaryIterator it (geom);
     for (int i = 0; i < 4; i++) {
         it.SetBoundary(i % 4 + 1);
         for(; it.Valid(); it.Next()) {
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
             g.Cell(it) = 100;
             visu.Render(&g);
 
-            for (Iterator it(g); it.Valid(); it.Next()) {
+            for (Iterator it(geom); it.Valid(); it.Next()) {
                 if (it.Pos()[0] == 0) {
                     std::cout << std::endl;
                 }

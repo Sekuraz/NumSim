@@ -109,7 +109,7 @@ real_t Communicator::copyOffset(const Grid& grid) const {
       offset += off;
     }
     if(!this->isRight()) {
-      real_t off = offset + grid.Cell(Iterator(grid, grid.Size()[0]-1));
+      real_t off = offset + grid.Cell(Iterator(grid.Geom(), grid.Size()[0]-1));
       MPI_Cart_shift(this->_mpi_cart_comm, 0, 1, &source, &dest);
       MPI_Send(&off, 1, MPI_REAL_TYPE, dest, 1, this->_mpi_cart_comm);
     }
@@ -121,7 +121,7 @@ real_t Communicator::copyOffset(const Grid& grid) const {
     offset += off;
   }
   if(!this->isTop()) {
-    real_t off = offset + grid.Cell(Iterator(grid, grid.Size()[0]*(grid.Size()[1]-1)));
+    real_t off = offset + grid.Cell(Iterator(grid.Geom(), grid.Size()[0]*(grid.Size()[1]-1)));
     MPI_Cart_shift(this->_mpi_cart_comm, 1, 1, &source, &dest);
     MPI_Send(&off, 1, MPI_REAL_TYPE, dest, 1, this->_mpi_cart_comm);
   }
@@ -134,7 +134,7 @@ bool Communicator::copyLeftBoundary(Grid& grid) const {
   real_t* buffer = new real_t[size];
 
   index_t i = 0;
-  BoundaryIterator it (grid, BoundaryIterator::boundary::left);
+  BoundaryIterator it (grid.Geom(), BoundaryIterator::boundary::left);
   for(it.First(); it.Valid(); it.Next()) {
     buffer[i] = grid.Cell(it.Right());
     i++;
@@ -160,7 +160,7 @@ bool Communicator::copyRightBoundary(Grid& grid) const {
   real_t* buffer = new real_t[size];
 
   index_t i = 0;
-  BoundaryIterator it (grid, BoundaryIterator::boundary::right);
+  BoundaryIterator it (grid.Geom(), BoundaryIterator::boundary::right);
   for(it.First(); it.Valid(); it.Next()) {
     buffer[i] = grid.Cell(it.Left());
     i++;
@@ -186,7 +186,7 @@ bool Communicator::copyTopBoundary(Grid& grid) const {
   real_t* buffer = new real_t[size];
 
   index_t i = 0;
-  BoundaryIterator it (grid, BoundaryIterator::boundary::top);
+  BoundaryIterator it (grid.Geom(), BoundaryIterator::boundary::top);
   for(it.First(); it.Valid(); it.Next()) {
     buffer[i] = grid.Cell(it.Down());
     i++;
@@ -212,7 +212,7 @@ bool Communicator::copyBottomBoundary(Grid& grid) const {
   real_t* buffer = new real_t[size];
 
   index_t i = 0;
-  BoundaryIterator it (grid, BoundaryIterator::boundary::down);
+  BoundaryIterator it (grid.Geom(), BoundaryIterator::boundary::down);
   for(it.First(); it.Valid(); it.Next()) {
     buffer[i] = grid.Cell(it.Top());
     i++;

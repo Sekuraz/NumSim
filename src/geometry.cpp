@@ -104,7 +104,7 @@ void Geometry::Load(const char file[], const bool printinfo) {
 void Geometry::Update_U(Grid &u) const {
   this->_comm.copyBoundary(u);
   // driven cavity u given at top
-  BoundaryIterator it(u, BoundaryIterator::boundary::left);
+  BoundaryIterator it(*this, BoundaryIterator::boundary::left);
   if(this->_comm.isLeft()) {
     // homogenous Dirichlet condition left
     for(it.First(); it.Valid(); it.Next()) {
@@ -140,7 +140,7 @@ void Geometry::Update_V(Grid &v) const {
   // driven cavity v given at top
   this->_comm.copyBoundary(v);
 
-  BoundaryIterator it(v, BoundaryIterator::boundary::left);
+  BoundaryIterator it(*this, BoundaryIterator::boundary::left);
   if(this->_comm.isLeft()) {
     // homogenous Dirichlet condition (mean) left
     for(it.First(); it.Valid(); it.Next()) {
@@ -176,7 +176,7 @@ void Geometry::Update_P(Grid &p) const {
   // homogenous Neumann condition at all sides
   this->_comm.copyBoundary(p);
 
-  BoundaryIterator it(p, BoundaryIterator::boundary::left);
+  BoundaryIterator it(*this, BoundaryIterator::boundary::left);
   if(this->_comm.isLeft()) {
     for(it.First(); it.Valid(); it.Next()) {
       p.Cell(it) = p.Cell(it.Right());
@@ -207,7 +207,7 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
   this->_comm.copyBoundary(v);
   this->_comm.copyBoundary(p);
 
-  for(Iterator it(u); it.Valid(); it.Next()) {
+  for(Iterator it(*this); it.Valid(); it.Next()) {
     switch(this->flag(it)) {
       case '#': // '#' Wall/Obstacle/NoSlip boundary (u = v = 0, dp/dn = 0)
         if(this->isFluid(it.Left())) {
@@ -372,7 +372,7 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
 // compute grid sizes
 void Geometry::computeSizes() {
   const multi_index_t& numProc = this->_comm.ThreadDim();
-  //const multi_index_t& tIdx = this->_comm.ThreadIdx();
+  const multi_index_t& tIdx = this->_comm.ThreadIdx();
 
   if(! this->_free) { // initialize Driven Cavity
     this->_flags = new char[this->_totalSize[0] * this->_totalSize[1]];
@@ -388,6 +388,8 @@ void Geometry::computeSizes() {
     }
   }
 
+  this->_sizeData = 1;
+  multi_index_t offset;
   for(index_t dim = 0; dim < DIM; dim++) {
     this->_totalSize[dim] -= 2;
     this->_size[dim] = this->_totalSize[dim] / numProc[dim];
@@ -400,10 +402,54 @@ void Geometry::computeSizes() {
     }
 
     this->_sizeP[dim] = this->_size[dim]+2;
+    this->_sizeData *= this->_sizeP[dim];
     this->_h[dim] = this->_length[dim] / this->_size[dim];
     this->_hInv[dim] = 1.0 / this->_h[dim];
-
+    offset[dim] = tIdx[dim] * this->_size[dim];
   }
+
+  // only use local flag field
+  char *flags = new char[this->_sizeP[0] * this->_sizeP[1]];
+  for(index_t j = 0; j < this->_sizeP[1]; ++j) {
+    strncpy(&flags[j * _sizeP[0]], &this->_flags[offset[0] + (offset[1]+j)*(_totalSize[0]+2)], _sizeP[0]);
+  }
+  // correct boundaries
+  //BoundaryIterator bit(*this, BoundaryIterator::boundary::left)
+  //for(bit.First(); bit.Valid(); bit.Next()) {
+  //  if(this->flags(it) == ' ') {
+  //    this->_flags[it] == 'I';
+  //  }
+  //}
+  //bit.SetBoundary(BoundaryIterator::boundary::down)
+  //for(bit.First(); bit.Valid(); bit.Next()) {
+  //  if(this->flags(it) == ' ') {
+  //    this->_flags[it] == 'I';
+  //  }
+  //}
+  //bit.SetBoundary(BoundaryIterator::boundary::right)
+  //for(bit.First(); bit.Valid(); bit.Next()) {
+  //  if(this->flags(it) == ' ') {
+  //    this->_flags[it] == 'I';
+  //  }
+  //}
+  //bit.SetBoundary(BoundaryIterator::boundary::top)
+  //for(bit.First(); bit.Valid(); bit.Next()) {
+  //  if(this->flags(it) == ' ') {
+  //    this->_flags[it] == 'I';
+  //  }
+  //}
+  // TODO: output for testing
+  for(index_t j = 0; j < this->_sizeP[1]; j++) {
+    std::cout.write(&flags[this->_sizeP[0] * j], this->_sizeP[0]);
+    std::cout << std::endl;
+  }
+  delete[] this->_flags;
+  this->_flags = flags;
+
+  // compute local number of fluid cells
+  //for(InteriorIterator it(*this); it.Valid(); it.Next()) {
+  //  this->_N++;
+  //}
 
   // TODO: testing
   std::cout << "Size: " << _totalSize << " Length: " << _totalLength << " h: " << _h

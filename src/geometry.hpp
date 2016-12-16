@@ -58,6 +58,8 @@ public:
   inline const multi_index_t &Size() const { return this->_size; }
   /// Returns the number of variables (grid-size) in each dimension
   inline const multi_index_t &SizeP() const { return this->_sizeP; }
+  /// Returns the total data size of the Grid
+  inline const index_t &DataSize() const { return this->_sizeData; }
 
   /// Returns the local length of the domain
   inline const multi_real_t &Length() const { return this->_length; }
@@ -115,6 +117,7 @@ private:
   multi_index_t _totalSize;  ///< cartesian total number of inner cells
   multi_index_t _size;       ///< cartesian local number of cells
   multi_index_t _sizeP;      ///< cartesian size of the local Grid
+  index_t _sizeData;         ///< number of cells in a Grid
   multi_real_t _totalLength; ///< total length of the physical domain in each dimension
   multi_real_t _length;      ///< local length of the physical domain in each dimension
   multi_real_t _h;           ///< mesh width of the Grids

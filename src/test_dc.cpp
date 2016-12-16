@@ -36,25 +36,25 @@ int main(int argc, char *argv[]) {
   offset = {0, h[1]/2};
   Grid u (geom, offset);
 
-  for (Iterator it(v); it.Valid(); it.Next()) {
+  for (Iterator it(geom); it.Valid(); it.Next()) {
       v.Cell(it) = it.Value();
   }
-  for (Iterator it(u); it.Valid(); it.Next()) {
+  for (Iterator it(geom); it.Valid(); it.Next()) {
       u.Cell(it) = it.Value();
   }
 
-  for (InteriorIterator it (u); it.Valid(); it.Next()) {
+  for (InteriorIterator it (geom); it.Valid(); it.Next()) {
 
     u.DC_vdu_y(it, 1.0, &v);
 
-    for (Iterator it(u); it.Valid(); it.Next()) {
+    for (Iterator it(geom); it.Valid(); it.Next()) {
         if (it.Pos()[0] == 0) {
             std::cout << std::endl;
         }
         printf("%+.2f, ", u.Cell(it) * 1);
     }
     std::cout << std::endl;
-    for (Iterator it(v); it.Valid(); it.Next()) {
+    for (Iterator it(geom); it.Valid(); it.Next()) {
         if (it.Pos()[0] == 0) {
             std::cout << std::endl;
         }

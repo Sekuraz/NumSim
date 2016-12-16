@@ -16,19 +16,19 @@
  */
 #include <iostream>
 #include "iterator.hpp"
-#include "grid.hpp"
+#include "geometry.hpp"
 
-Iterator::Iterator(const Grid &grid) : _grid(grid), _value(0), _valid(true) {}
-Iterator::Iterator(const Grid &grid, const index_t &value)
-    : _grid(grid), _value(value), _valid(value < grid.dataSize()) {}
-Iterator::Iterator(const Grid &grid, const multi_index_t &pos) : _grid(grid) {
+Iterator::Iterator(const Geometry &geom) : _geom(geom), _value(0), _valid(true) {}
+Iterator::Iterator(const Geometry &geom, const index_t &value)
+    : _geom(geom), _value(value), _valid(value < geom.DataSize()) {}
+Iterator::Iterator(const Geometry &geom, const multi_index_t &pos) : _geom(geom) {
   this->_value = pos[DIM-1];
-  const multi_index_t &size = this->_grid.Size();
+  const multi_index_t &size = this->_geom.SizeP();
   for(index_t dim = DIM-1; dim-- > 0; ) {
     this->_value *= size[dim];
     this->_value += pos[dim];
   }
-  this->_valid = this->_value < this->_grid.dataSize();
+  this->_valid = this->_value < this->_geom.DataSize();
 }
 
 // Returns the current position value
@@ -44,8 +44,8 @@ Iterator::operator const index_t& () const {
 // Returns the position coordinates
 multi_index_t Iterator::Pos() const {
     // TODO: rewrite for n dimensions
-    multi_index_t pos((this->_value % this->_grid.Size()[0]),
-                      (this->_value / this->_grid.Size()[0]));
+    multi_index_t pos((this->_value % this->_geom.SizeP()[0]),
+                      (this->_value / this->_geom.SizeP()[0]));
     return pos;
 }
 
@@ -57,7 +57,7 @@ void Iterator::First() {
 
 // Goes to the next element of the iterator, disables it if position is end
 void Iterator::Next() {
-    if (++this->_value >= this->_grid.dataSize()) {
+    if (++this->_value >= this->_geom.DataSize()) {
         this->_valid = false;
     }
 }
@@ -70,37 +70,37 @@ bool Iterator::Valid() const {
 // Returns an Iterator that is located left from this one.
 // if we are at the left boundary, the cell sees itself
 Iterator Iterator::Left() const {
-    if (this->_value % this->_grid.Size()[0] == 0) {
+    if (this->_value % this->_geom.SizeP()[0] == 0) {
         return *this;
     }
-    return Iterator(this->_grid, this->_value - 1);
+    return Iterator(this->_geom, this->_value - 1);
 }
 
 // Returns an Iterator that is located right from this one
 // If we are at the right boundary, the cell sees itself
 Iterator Iterator::Right() const {
-    if ((this->_value + 1) % this->_grid.Size()[0] == 0) {
+    if ((this->_value + 1) % this->_geom.SizeP()[0] == 0) {
         return *this;
     }
-    return Iterator(this->_grid, this->_value + 1);
+    return Iterator(this->_geom, this->_value + 1);
 }
 
 // Returns an Iterator that is located above this one
 // If we are at the upper domain boundary, the cell sees itself
 Iterator Iterator::Top() const {
-    if (this->_value >= this->_grid.Size()[0]*(this->_grid.Size()[1]-1)) {
+    if (this->_value >= this->_geom.SizeP()[0]*(this->_geom.SizeP()[1]-1)) {
         return *this;
     }
-    return Iterator(this->_grid, this->_value + this->_grid.Size()[0]);
+    return Iterator(this->_geom, this->_value + this->_geom.SizeP()[0]);
 }
 
 // Returns an Iterator that is located below this one
 // If we are at the lower domain boundary, the cell sees itself
 Iterator Iterator::Down() const {
-    if (this->_value < this->_grid.Size()[0]) {
+    if (this->_value < this->_geom.SizeP()[0]) {
         return *this;
     }
-    return Iterator(this->_grid, this->_value - this->_grid.Size()[0]);
+    return Iterator(this->_geom, this->_value - this->_geom.SizeP()[0]);
 }
 
 //------------------------------------------------------------------------------
@@ -109,7 +109,7 @@ Iterator Iterator::Down() const {
 // Sets the iterator to the first element
 void InteriorIterator::First() {
   Iterator::First();
-  while( !this->_grid.Geom().isFluid(*this) ) {
+  while( !this->_geom.isFluid(*this) ) {
     Iterator::Next();
   }
 }
@@ -117,7 +117,7 @@ void InteriorIterator::First() {
 // Goes to the next element of the iterator, disables it if position is end
 void InteriorIterator::Next() {
   Iterator::Next();
-  while( !this->_grid.Geom().isFluid(*this) ) {
+  while(this->_valid && !this->_geom.isFluid(*this) ) {
     Iterator::Next();
   }
 }
@@ -129,10 +129,10 @@ void InteriorIterator::Next() {
 void BoundaryIterator::First() {
   switch(this->_boundary) {
     case BoundaryIterator::boundary::top:
-      this->_value = this->_grid.Size()[0]*(this->_grid.Size()[1]-1);
+      this->_value = this->_geom.SizeP()[0]*(this->_geom.SizeP()[1]-1);
       break;
     case BoundaryIterator::boundary::right:
-      this->_value = this->_grid.Size()[0]-1;
+      this->_value = this->_geom.SizeP()[0]-1;
       break;
     default: // left, down
       this->_value = 0;
@@ -147,20 +147,20 @@ void BoundaryIterator::Next() {
       Iterator::Next();
       break;
     case BoundaryIterator::boundary::left:
-      this->_value += this->_grid.Size()[0];
-      if(this->_value >= this->_grid.dataSize()) {
+      this->_value += this->_geom.SizeP()[0];
+      if(this->_value >= this->_geom.DataSize()) {
         this->_valid = false;
       }
       break;
     case BoundaryIterator::boundary::down:
       Iterator::Next();
-      if(this->_value >= this->_grid.Size()[0]) {
+      if(this->_value >= this->_geom.SizeP()[0]) {
         this->_valid = false;
       }
       break;
     case BoundaryIterator::boundary::right:
-      this->_value += this->_grid.Size()[0];
-      if(this->_value >= this->_grid.dataSize()) {
+      this->_value += this->_geom.SizeP()[0];
+      if(this->_value >= this->_geom.DataSize()) {
         this->_valid = false;
       }
       break;
