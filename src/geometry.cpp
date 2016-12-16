@@ -89,11 +89,6 @@ void Geometry::Load(const char file[], const bool printinfo) {
       }
       if(printinfo) {
         std::cout << "Geometry: Load free geometry." << std::endl;
-        // TODO: output for testing
-        for(index_t j = 0; j < this->_totalSize[1]; j++) {
-          std::cout.write(&this->_flags[this->_totalSize[0] * j], this->_totalSize[0]);
-          std::cout << std::endl;
-        }
       }
     } else {
       std::cerr << "Geometry: unknown identifier " << param << std::endl;
@@ -216,9 +211,11 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
     switch(this->flag(it)) {
       case '#': // '#' Wall/Obstacle/NoSlip boundary (u = v = 0, dp/dn = 0)
         if(this->isFluid(it.Left())) {
+        //if(this->flag(it.Left()) != '#') {
           u.Cell(it.Left()) = 0;
           if(this->isFluid(it.Top())) {
-            //u.Cell(it) = -u.Cell(it.Top()); ?
+          //if(this->flag(it.Top()) != '#') {
+            u.Cell(it) = -u.Cell(it.Top());
             v.Cell(it) = 0;
             p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()));
           } else {
@@ -226,8 +223,10 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
             p.Cell(it) = p.Cell(it.Left());
           }
         } else if(this->isFluid(it.Top())) {
+        //} else if(this->flag(it.Top()) != '#') {
           v.Cell(it) = 0;
           if(this->isFluid(it.Right())) {
+          //if(this->flag(it.Right()) != '#') {
             u.Cell(it) = 0;
             p.Cell(it) = 0.5 * (p.Cell(it.Top()) + p.Cell(it.Right()));
           } else {
@@ -235,21 +234,26 @@ void Geometry::Update(Grid &u, Grid &v, Grid &p) const {
             p.Cell(it) = p.Cell(it.Top());
           }
         } else if(this->isFluid(it.Right())) {
+        //} else if(this->flag(it.Right()) != '#') {
           u.Cell(it) = 0;
+          v.Cell(it) = -v.Cell(it.Right());
           if(this->isFluid(it.Down())) {
+          //if(this->flag(it.Down()) != '#') {
             v.Cell(it.Down()) = 0;
             p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()));
           } else {
-            v.Cell(it) = -v.Cell(it.Right());
             p.Cell(it) = p.Cell(it.Down());
           }
         } else if(this->isFluid(it.Down())) {
+        //} else if(this->flag(it.Down()) != '#') {
           v.Cell(it.Down()) = 0;
+          u.Cell(it) = -u.Cell(it.Down());
           if(this->isFluid(it.Left())) {
+          //if(this->flag(it.Left()) != '#') {
             u.Cell(it.Left()) = 0;
+            v.Cell(it) = - v.Cell(it.Left());
             p.Cell(it) = 0.5 * (p.Cell(it.Down()) + p.Cell(it.Left()));
           } else {
-            u.Cell(it) = -u.Cell(it.Down());
             p.Cell(it) = p.Cell(it.Down());
           }
         }
