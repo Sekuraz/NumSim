@@ -60,7 +60,6 @@ struct geom_t {
 
 int main (int argc, char **argv) {
   int pos;
-  index_t count = 0;
   char filename[100] = "drivencavity";
   param_t param;
   geom_t geom;
@@ -94,7 +93,8 @@ int main (int argc, char **argv) {
          << "If some of these arguments are given, the \".geom\" file is written." << endl
          << "The default is a driven cavity. Pre-defined geometries must be set before" << endl
          << "changing other parameters." << endl
-         << "\t-pre <num>\t\tChoose among some ready-made geometries." << endl
+         << "\t-pre <num>\t\tChoose among some ready-made geometries. Default: 0" << endl
+         << "\t\t\t0: Driven Cavity" << endl
          << "\t\t\t1: Simple channel" << endl
          << "\t\t\t2: Pressure driven channel" << endl
          << "\t\t\t3: Channel with step" << endl
@@ -112,62 +112,51 @@ int main (int argc, char **argv) {
 
   pos = getOpt("-alpha",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lf",&param.alpha);
   }
   pos = getOpt("-dt",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lf",&param.dt);
   }
   pos = getOpt("-eps",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lf",&param.eps);
   }
   pos = getOpt("-iter",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lu",&param.itermax);
   }
   pos = getOpt("-omg",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lf",&param.omega);
   }
   pos = getOpt("-re",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lf",&param.re);
   }
   pos = getOpt("-tau",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lf",&param.tau);
   }
   pos = getOpt("-tend",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lf",&param.tend);
   }
   pos = getOpt("-visuDt",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lf",&param.visuDt);
   }
   pos = getOpt("-vtkDt",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lf",&param.vtkDt);
   }
   pos = getOpt("-ppos",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lfx%lf", &param.particlePosX,&param.particlePosY);
     sscanf(argv[pos+1],"%lf",&param.particlePosX);
   }
 
-  if(count > 0) {
+  {
     FILE* handle;
     char name[100];
     sprintf(name,"%s.param",filename);
@@ -185,12 +174,11 @@ int main (int argc, char **argv) {
     fprintf(handle,"particlePosX = %lf\n",param.particlePosX);
     fprintf(handle,"particlePosY = %lf\n",param.particlePosY);
     fclose(handle);
-    count = 0;
+    std::cout << "wrote " << name << std::endl;
   }
 
   pos = getOpt("-pre",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%i",&geom.type);
   }
   switch (geom.type) {
@@ -213,26 +201,22 @@ int main (int argc, char **argv) {
   };
   pos = getOpt("-length",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lfx%lf",&geom.length[0],&geom.length[1]);
   }
   pos = getOpt("-size",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lux%lu",&geom.size[0],&geom.size[1]);
   }
   pos = getOpt("-vel",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lfx%lf",&geom.velocity[0],&geom.velocity[1]);
   }
   pos = getOpt("-pressure",argc,argv);
   if (pos) {
-    count++;
     sscanf(argv[pos+1],"%lf",&geom.pressure);
   }
 
-  if(count > 0) {
+  {
     FILE* handle;
     char name[120];
     sprintf(name,"%s.geom",filename);
@@ -308,6 +292,7 @@ int main (int argc, char **argv) {
     }
     for (index_t i = 0; i < geom.size[0]; ++i) fprintf(handle,"#");
     fclose(handle);
+    std::cout << "wrote " << name << std::endl;
   }
   return 0;
 }
