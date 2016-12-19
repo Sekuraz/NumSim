@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cstdio>
 #include <iostream>
+#include <fstream>
 #include <cstring>
 #include "typedef.hpp"
 using namespace std;
@@ -44,8 +44,8 @@ struct param_t {
   real_t  particlePosY;
 
   param_t() : re(1000), omega(1.7), alpha(0.9),  dt(0), tend(50), eps(1e-3),
-              tau(0.5), itermax(100), vtkDt(0.2), visuDt(0.1), particlePosX(0.25),
-              particlePosY(0.25) {}
+              tau(0.5), itermax(100), vtkDt(0.2), visuDt(0.1), particlePosX(0.1),
+              particlePosY(0.6) {}
 };
 
 struct geom_t {
@@ -107,6 +107,50 @@ int main (int argc, char **argv) {
          << endl;
     return 0;
   }
+
+  pos = getOpt("-pre",argc,argv);
+  if (pos) {
+    sscanf(argv[pos+1],"%i",&geom.type);
+  }
+  switch (geom.type) {
+  case 1:
+    param.re = 10000;
+    geom.length[0] = 5;
+    geom.size[0] = 160;
+    geom.size[1] = 32;
+    strcpy(filename, "channel");
+    break;
+  case 2:
+    param.re = 10000;
+    geom.length[0] = 5;
+    geom.size[0] = 160;
+    geom.size[1] = 32;
+    geom.velocity[0] = 0;
+    geom.pressure = 0.1;
+    strcpy(filename, "pressure");
+    break;
+  case 3:
+    param.re = 100;
+    geom.length[0] = 5;
+    geom.size[0] = 160;
+    geom.size[1] = 32;
+    geom.velocity[0] = 0;
+    geom.pressure = 0.1;
+    strcpy(filename, "step");
+    break;
+  case 4:
+    param.re = 10000;
+    geom.length[0] = 5;
+    geom.size[0] = 160;
+    geom.size[1] = 32;
+    geom.velocity[0] = 0;
+    geom.pressure = 0.1;
+    strcpy(filename, "karman");
+    break;
+  default:
+    break;
+  };
+
   pos = getOpt("-o",argc,argv);
   if (pos) sscanf(argv[pos+1],"%s",filename);
 
@@ -156,49 +200,28 @@ int main (int argc, char **argv) {
     sscanf(argv[pos+1],"%lf",&param.particlePosX);
   }
 
-  {
-    FILE* handle;
-    char name[100];
-    sprintf(name,"%s.param",filename);
-    handle = fopen(name,"w");
-    fprintf(handle,"re = %lf\n",param.re);
-    fprintf(handle,"omega = %lf\n",param.omega);
-    fprintf(handle,"alpha = %lf\n",param.alpha);
-    fprintf(handle,"dt = %lf\n",param.dt);
-    fprintf(handle,"tend = %lf\n",param.tend);
-    fprintf(handle,"eps = %lf\n",param.eps);
-    fprintf(handle,"tau = %lf\n",param.tau);
-    fprintf(handle,"itermax = %lu\n",param.itermax);
-    fprintf(handle,"vtkDt = %lf\n",param.vtkDt);
-    fprintf(handle,"visuDt = %lf\n",param.visuDt);
-    fprintf(handle,"particlePosX = %lf\n",param.particlePosX);
-    fprintf(handle,"particlePosY = %lf\n",param.particlePosY);
-    fclose(handle);
-    std::cout << "wrote " << name << std::endl;
+  char name[100];
+  sprintf(name,"%s.param",filename);
+  std::ofstream of(name);
+  if(of.is_open()) {
+    of << "re = " << param.re << endl
+       << "omega = " << param.omega << endl
+       << "alpha = " << param.alpha << endl
+       << "dt = " << param.dt << endl
+       << "tend = " << param.tend << endl
+       << "eps = " << param.eps << endl
+       << "tau = " << param.tau << endl
+       << "itermax = " << param.itermax << endl
+       << "vtkDt = " << param.vtkDt << endl
+       << "visuDt = " << param.visuDt << endl
+       << "particlePosX = " << param.particlePosX << endl
+       << "particlePosY = " << param.particlePosY << endl;
+    of.close();
+    cout << "Wrote \"" << name << "\"."<< endl;
+  } else {
+    cerr << "Could not open \"" << name << "\"!" << endl;
   }
 
-  pos = getOpt("-pre",argc,argv);
-  if (pos) {
-    sscanf(argv[pos+1],"%i",&geom.type);
-  }
-  switch (geom.type) {
-  case 1:
-    geom.length[0] = 5;
-    geom.size[0] = 160;
-    geom.size[1] = 32;
-    break;
-  case 2:
-  case 3:
-  case 4:
-    geom.length[0] = 5;
-    geom.size[0] = 160;
-    geom.size[1] = 32;
-    geom.velocity[0] = 0;
-    geom.pressure = 0.1;
-    break;
-  default:
-    break;
-  };
   pos = getOpt("-length",argc,argv);
   if (pos) {
     sscanf(argv[pos+1],"%lfx%lf",&geom.length[0],&geom.length[1]);
@@ -216,83 +239,84 @@ int main (int argc, char **argv) {
     sscanf(argv[pos+1],"%lf",&geom.pressure);
   }
 
-  {
-    FILE* handle;
-    char name[120];
-    sprintf(name,"%s.geom",filename);
-    handle = fopen(name,"w");
-    fprintf(handle, "size = %lu %lu\n", geom.size[0], geom.size[1]);
-    fprintf(handle, "length = %lf %lf\n", geom.length[0], geom.length[1]);
-    fprintf(handle, "velocity = %lf %lf\n", geom.velocity[0], geom.velocity[1]);
-    fprintf(handle, "pressure = %lf\n", geom.pressure);
-    fprintf(handle, "geometry = %ifree\n", geom.type);
+  sprintf(name,"%s.geom",filename);
+  of.open(name);
+  if(of.is_open()) {
+    of << "size = " << geom.size[0] << " " << geom.size[1] << endl
+       << "length = " << geom.length[0] << " " << geom.length[1] << endl
+       << "velocity = " << geom.velocity[0] << " " << geom.velocity[1] << endl
+       << "pressure = " << geom.pressure << endl
+       << "geometry = " << geom.type << "free" << endl;
     // print geometry shape
-    fprintf(handle,"#");
+    of << "#";
     for (index_t i = 0; i < geom.size[0]-2; ++i) {
       switch (geom.type) {
       case 1:
       case 2:
       case 3:
       case 4:
-        fprintf(handle,"#");
+        of << "#";
         break;
       default:
-        fprintf(handle,"I");
+        of << "I";
         break;
       }
     }
-    fprintf(handle,"#\n");
+    of << "#" << endl;
     for (index_t j = 0; j < geom.size[1]-2; ++j) {
       switch (geom.type) {
       case 1:
-        fprintf(handle,"V");
-        for (index_t i = 0; i < geom.size[0]-2; ++i) fprintf(handle," ");
-        fprintf(handle,"O\n");
+        of << "V";
+        for (index_t i = 0; i < geom.size[0]-2; ++i) of << " ";
+        of << "O" << endl;
         break;
       case 2:
-        fprintf(handle,"|");
-        for (index_t i = 0; i < geom.size[0]-2; ++i) fprintf(handle," ");
-        fprintf(handle,"O\n");
+        of << "|";
+        for (index_t i = 0; i < geom.size[0]-2; ++i) of << " ";
+        of << "O" << endl;
         break;
       case 3:
         if (j+1 < geom.size[1]/2)
-          fprintf(handle,"|");
+          of << "|";
         else
-          fprintf(handle,"#");
+          of << "#";
         for (index_t i = 0; i < geom.size[0]-2; ++i) {
           if (j+1 < geom.size[1]/2 || i > geom.size[1]/2)
-            fprintf(handle," ");
+            of << " ";
           else
-            fprintf(handle,"#");
+            of << "#";
         }
-        fprintf(handle,"O\n");
+        of << "O" << endl;
         break;
       case 4:
-        fprintf(handle,"|");
+        of << "|";
         for (index_t i = 0; i < geom.size[0]-2; ++i) {
           if (j+1 < geom.size[1]/4 || j+1 > geom.size[1]*3/4)
-            fprintf(handle," ");
+            of << " ";
           else if (i == j+geom.size[1]/4 || i == j+geom.size[1]/4+1)
-            fprintf(handle,"#");
+            of << "#";
           else if (j == geom.size[1]/4 && i+1 == j+geom.size[1]/4)
-            fprintf(handle,"#");
+            of << "#";
           else if (j+2 == geom.size[1]*3/4 && i-2 == j+geom.size[1]/4)
-            fprintf(handle,"#");
+            of << "#";
           else
-            fprintf(handle," ");
+            of << " ";
         }
-        fprintf(handle,"O\n");
+        of << "O" << endl;
         break;
       default:
-        fprintf(handle,"#");
-        for (index_t i = 0; i < geom.size[0]-2; ++i) fprintf(handle," ");
-        fprintf(handle,"#\n");
+        of << "#";
+        for (index_t i = 0; i < geom.size[0]-2; ++i) of << " ";
+        of << "#" << endl;
         break;
       }
     }
-    for (index_t i = 0; i < geom.size[0]; ++i) fprintf(handle,"#");
-    fclose(handle);
-    std::cout << "wrote " << name << std::endl;
+    for (index_t i = 0; i < geom.size[0]; ++i) of << "#";
+    of.close();
+    cout << "Wrote \"" << name << "\"." << endl;
+  } else {
+    cerr << "Could not open \"" << name <<"\"!" << endl;
   }
+  
   return 0;
 }
