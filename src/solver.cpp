@@ -31,11 +31,11 @@ real_t Solver::localRes(const Iterator &it, const Grid &grid, const Grid &rhs) c
 // Constructs an actual SOR solver
 SOR::SOR(const Geometry &geom, const real_t &omega) : Solver(geom),
     _correction(omega * 0.5 * (geom.Mesh()[0]*geom.Mesh()[0]*geom.Mesh()[1]*geom.Mesh()[1])
-                / (geom.Mesh()[0]*geom.Mesh()[0]+geom.Mesh()[1]*geom.Mesh()[1])) {}
+                / (geom.Mesh()[0]*geom.Mesh()[0]+geom.Mesh()[1]*geom.Mesh()[1])),
+    _invNumFluid(1.0/geom.NumFluid()) {}
 
 // Returns the total residual and executes a solver cycle
 real_t SOR::Cycle(Grid &grid, const Grid &rhs) const {
-  const multi_real_t &hInv = this->_geom.invMesh();
   real_t residual = 0;
 
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
@@ -44,14 +44,13 @@ real_t SOR::Cycle(Grid &grid, const Grid &rhs) const {
     grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
   }
 
-  return residual * hInv[0] * hInv[1];
+  return residual * this->_invNumFluid;
 }
 
 //------------------------------------------------------------------------------
 // concrete Red or Black SOR solver
 
 real_t RedOrBlackSOR::RedCycle(Grid &grid, const Grid &rhs) const {
-  const multi_real_t &hInv = this->_geom.invMesh();
   real_t residual = 0;
 
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
@@ -61,11 +60,10 @@ real_t RedOrBlackSOR::RedCycle(Grid &grid, const Grid &rhs) const {
     it.Next();
   }
 
-  return residual * hInv[0] * hInv[1];
+  return residual * this->_invNumFluid;
 }
 
 real_t RedOrBlackSOR::BlackCycle(Grid &grid, const Grid &rhs) const {
-  const multi_real_t &hInv = this->_geom.invMesh();
   real_t residual = 0;
 
   InteriorIterator it(this->_geom);
@@ -76,5 +74,5 @@ real_t RedOrBlackSOR::BlackCycle(Grid &grid, const Grid &rhs) const {
     it.Next();
   }
 
-  return residual * hInv[0] * hInv[1];
+  return residual * this->_invNumFluid;
 }

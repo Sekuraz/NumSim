@@ -58,7 +58,8 @@ public:
   real_t Cycle(Grid &grid, const Grid &rhs) const;
 
 protected:
-  const real_t _correction; ///< The correction factor computed from over-relaxation parameter
+  const real_t _correction;  ///< The correction factor computed from over-relaxation parameter
+  const real_t _invNumFluid; ///< The invers of the number of fluid cells
 };
 //------------------------------------------------------------------------------
 

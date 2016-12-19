@@ -73,6 +73,8 @@ public:
   inline const multi_real_t &invMesh() const { return this->_hInv; }
   /// Returns whether the geometry is free.
   inline bool isFree() const { return this->_free; }
+  /// Returns the local number of fluid cells
+  inline const index_t &NumFluid() const { return this->_N; }
 
   /// Returns whether the cell at the position of the iterator is fluid cell.
   inline bool isFluid(const Iterator &it) const { return ( this->flag(it) == ' ' ); }

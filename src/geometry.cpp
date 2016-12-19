@@ -26,7 +26,7 @@ Geometry::Geometry(const Communicator &comm) : Geometry(comm, multi_index_t {128
 
 Geometry::Geometry(const Communicator &comm, const multi_index_t& size)
     : _comm(comm), _free(false), _flags(nullptr), _totalSize(size), _totalLength(1,1),
-    _N(0), _velocity(1,0), _pressure(0.1) {
+    _velocity(1,0), _pressure(0.1) {
   this->computeSizes();
 }
 
@@ -413,31 +413,7 @@ void Geometry::computeSizes() {
   for(index_t j = 0; j < this->_sizeP[1]; ++j) {
     strncpy(&flags[j * _sizeP[0]], &this->_flags[offset[0] + (offset[1]+j)*(_totalSize[0]+2)], _sizeP[0]);
   }
-  // correct boundaries
-  //BoundaryIterator bit(*this, BoundaryIterator::boundary::left)
-  //for(bit.First(); bit.Valid(); bit.Next()) {
-  //  if(this->flags(it) == ' ') {
-  //    this->_flags[it] == 'I';
-  //  }
-  //}
-  //bit.SetBoundary(BoundaryIterator::boundary::down)
-  //for(bit.First(); bit.Valid(); bit.Next()) {
-  //  if(this->flags(it) == ' ') {
-  //    this->_flags[it] == 'I';
-  //  }
-  //}
-  //bit.SetBoundary(BoundaryIterator::boundary::right)
-  //for(bit.First(); bit.Valid(); bit.Next()) {
-  //  if(this->flags(it) == ' ') {
-  //    this->_flags[it] == 'I';
-  //  }
-  //}
-  //bit.SetBoundary(BoundaryIterator::boundary::top)
-  //for(bit.First(); bit.Valid(); bit.Next()) {
-  //  if(this->flags(it) == ' ') {
-  //    this->_flags[it] == 'I';
-  //  }
-  //}
+
   // TODO: output for testing
   for(index_t j = 0; j < this->_sizeP[1]; j++) {
     std::cout.write(&flags[this->_sizeP[0] * j], this->_sizeP[0]);
@@ -446,10 +422,11 @@ void Geometry::computeSizes() {
   delete[] this->_flags;
   this->_flags = flags;
 
+  this->_N = 0;
   // compute local number of fluid cells
-  //for(InteriorIterator it(*this); it.Valid(); it.Next()) {
-  //  this->_N++;
-  //}
+  for(InteriorIterator it(*this); it.Valid(); it.Next()) {
+    this->_N++;
+  }
 
   // TODO: testing
   std::cout << "Size: " << _totalSize << " Length: " << _totalLength << " h: " << _h
