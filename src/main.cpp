@@ -49,18 +49,23 @@ void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geo
         number = atoi(argv[++i]);
       }
       geomPath = new char[20];
+      paramPath = new char[20];
       switch(number) {
         case 1:
           strcpy(geomPath, "data/pressure.geom");
+          strcpy(paramPath, "data/pressure.param");
           break;
         case 2:
           strcpy(geomPath, "data/step.geom");
+          strcpy(paramPath, "data/pressure.param");
           break;
         case 3:
           strcpy(geomPath, "data/karman.geom");
+          strcpy(paramPath, "data/pressure.param");
           break;
         default:
           strcpy(geomPath, "data/channel.geom");
+          strcpy(paramPath, "data/pressure.param");
           break;
       }
     } else if(strncmp(argv[i], "-P",2)==0) { // parameter path
@@ -69,6 +74,17 @@ void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geo
         paramPath = &argv[i][2];
       } else {
         paramPath = argv[++i];
+      }
+    } else if(strncmp(argv[i], "-I",2)==0) { // input paths
+      geomPath = new char[120];
+      paramPath = new char[120];
+      // test whether path at flag or afterwards
+      if (strlen(argv[i])>2) {
+        sprintf(paramPath, "%s.param", &argv[i][2]);
+        sprintf(geomPath, "%s.geom", &argv[i][2]);
+      } else {
+        sprintf(paramPath, "%s.param", argv[++i]);
+        sprintf(geomPath, "%s.geom", argv[i]);
       }
     }
   }
