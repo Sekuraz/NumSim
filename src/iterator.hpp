@@ -74,7 +74,7 @@ protected:
 class InteriorIterator : public Iterator {
 public:
   /// Construct a new InteriorIterator
-  InteriorIterator(const Geometry &geom) : Iterator(geom, geom.SizeP()[0] + 1) {}
+  InteriorIterator(const Geometry &geom) : Iterator(geom) { this->First(); }
 
   /// Sets the iterator to the first element
   void First();

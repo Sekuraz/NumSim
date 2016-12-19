@@ -244,27 +244,25 @@ void Compute::ParticleStepVisu(multi_real_t &lastPos) {
 
 // Compute the new velocites u,v
 void Compute::NewVelocities(const real_t &dt) {
-  // compute u
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_u->Cell(it) = this->_F->Cell(it) - dt * this->_p->dx_r(it);
   }
-  // compute v
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_v->Cell(it) = this->_G->Cell(it) - dt * this->_p->dy_r(it);
   }
 }
 
-// Compute the temporary velocites F,G
+// Compute the temporary velocities F,G
 void Compute::MomentumEqu(const real_t &dt) {
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_F->Cell(it) = this->_u->Cell(it) + dt * (
         ( this->_u->dxx(it) + this->_u->dyy(it) )/this->_param.Re()
-         - this->_u->DC_udu_x(it, this->_param.Alpha())
+        - this->_u->DC_udu_x(it, this->_param.Alpha())
         - this->_u->DC_vdu_y(it, this->_param.Alpha(), this->_v) );
     this->_G->Cell(it) = this->_v->Cell(it) + dt * (
-          ( this->_v->dxx(it) + this->_v->dyy(it) )/this->_param.Re()
-          - this->_v->DC_vdv_y(it, this->_param.Alpha())
-          - this->_v->DC_udv_x(it, this->_param.Alpha(), this->_u) );
+        ( this->_v->dxx(it) + this->_v->dyy(it) )/this->_param.Re()
+        - this->_v->DC_vdv_y(it, this->_param.Alpha())
+        - this->_v->DC_udv_x(it, this->_param.Alpha(), this->_u) );
   }
 
   // boundary values of F and G
