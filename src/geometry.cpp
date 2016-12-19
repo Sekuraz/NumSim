@@ -467,7 +467,6 @@ void Geometry::computeSizes() {
   for(index_t j = 0; j < this->_sizeP[1]; ++j) {
     strncpy(&flags[j * _sizeP[0]], &this->_flags[offset[0] + (offset[1]+j)*(_totalSize[0]+2)], _sizeP[0]);
   }
-
   // TODO: output for testing
   for(index_t j = 0; j < this->_sizeP[1]; j++) {
     std::cout.write(&flags[this->_sizeP[0] * j], this->_sizeP[0]);
@@ -475,6 +474,31 @@ void Geometry::computeSizes() {
   }
   delete[] this->_flags;
   this->_flags = flags;
+  // update eXchange boundaries in local flag field
+  BoundaryIterator bit(*this, BoundaryIterator::boundary::left);
+  for(bit.First(); bit.Valid(); bit.Next()) {
+    if(this->isFluid(bit)) {
+      this->_flags[bit] = 'X';
+    }
+  }
+  bit.SetBoundary(BoundaryIterator::boundary::down);
+  for(bit.First(); bit.Valid(); bit.Next()) {
+    if(this->isFluid(bit)) {
+      this->_flags[bit] = 'X';
+    }
+  }
+  bit.SetBoundary(BoundaryIterator::boundary::right);
+  for(bit.First(); bit.Valid(); bit.Next()) {
+    if(this->isFluid(bit)) {
+      this->_flags[bit] = 'X';
+    }
+  }
+  bit.SetBoundary(BoundaryIterator::boundary::top);
+  for(bit.First(); bit.Valid(); bit.Next()) {
+    if(this->isFluid(bit)) {
+      this->_flags[bit] = 'X';
+    }
+  }
 
   this->_N = 0;
   // compute local number of fluid cells
