@@ -80,13 +80,13 @@ public:
   inline bool isFluid(const Iterator &it) const { return ( this->flag(it) == ' ' ); }
 
   /// Updates the velocity field u
-  void Update_U(Grid &u) const;
+  //void Update_U(Grid &u) const;
   /// Updates the velocity field v
-  void Update_V(Grid &v) const;
-  /// Updates the pressure field p
+  //void Update_V(Grid &v) const;
+  /// Updates the pressure field p for a free geometry
   void Update_P(Grid &p) const;
-  /// Updates the velocity fields u,v and p for a free geometry
-  void Update(Grid &u, Grid &v, Grid &p) const;
+  /// Updates the velocity fields u and v for a free geometry
+  void Update(Grid &u, Grid &v) const;
 
 private:
   /// Computes the sizes of the grids.

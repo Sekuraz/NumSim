@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
   Geometry geom (comm, {6, 6});
 
   const multi_real_t &h = geom.Mesh();
-  multi_real_t offset(h[0]/2, 0);
+  multi_real_t offset(h[0]/2, h[1]/2);
   Grid g (geom, offset);
   g.Initialize(0);
 
@@ -47,17 +47,11 @@ int main(int argc, char *argv[]) {
   for (InteriorIterator it (geom); it.Valid(); it.Next()) {
 
     g.Cell(it) = 1;
-    geom.Update_V(g);
+    geom.Update_P(g);
 #ifdef USE_DEBUG_VISU
     visu.Render(&g);
 #endif
-    for (Iterator it(geom); it.Valid(); it.Next()) {
-        if (it.Pos()[0] == 0) {
-            std::cout << std::endl;
-        }
-        printf("%+.2f, ", g.Cell(it) * 1);
-    }
-    std::cout << std::endl;
+    g.print();
     std::cin.get();
 
     g.Cell(it) = 0;
@@ -72,13 +66,7 @@ int main(int argc, char *argv[]) {
             g.Cell(it) = 100;
             visu.Render(&g);
 
-            for (Iterator it(geom); it.Valid(); it.Next()) {
-                if (it.Pos()[0] == 0) {
-                    std::cout << std::endl;
-                }
-                printf("%+.2f, ", g.Cell(it) * 1);
-            }
-            std::cout << std::endl;
+            g.print();
             std::cin.get();
 
             g.Cell(it) = 0;

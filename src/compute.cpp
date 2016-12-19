@@ -65,8 +65,8 @@ Compute::~Compute() {
 // @ param printInfo print information about current solver state (residual
 // etc.)
 void Compute::TimeStep(bool printInfo) {
-  // set boundary values for u, v, p
-  this->_geom.Update(*(this->_u), *(this->_v), *(this->_p));
+  // set boundary values for u, v
+  this->_geom.Update(*(this->_u), *(this->_v));
 
   // compute local dt
   // Test CFL and Pr condition
@@ -84,6 +84,8 @@ void Compute::TimeStep(bool printInfo) {
   // compute right-hand-side of the poisson equation
   this->RHS(dt);
 
+  // set boundary values for p
+  this->_geom.Update_P(*(this->_p));
   // solve the poisson equation for the pressure
   real_t res = 2 * this->_param.Eps() * this->_param.Eps();
   index_t i;
@@ -94,7 +96,7 @@ void Compute::TimeStep(bool printInfo) {
     } else {
       res = this->_solver->BlackCycle(*(this->_p), *(this->_rhs));
     }
-    // set boundary values for p
+    // exchange boundary values for p
     this->_comm.copyBoundary(*(this->_p));
     // second half-step
     if(this->_firstRed) {
@@ -103,8 +105,7 @@ void Compute::TimeStep(bool printInfo) {
       res += this->_solver->RedCycle(*(this->_p), *(this->_rhs));
     }
     // set boundary values for p
-    // TODO: only update p
-    this->_geom.Update(*(this->_u), *(this->_v), *(this->_p));
+    this->_geom.Update_P(*(this->_p));
 
     // gather global residual
     res = this->_comm.gatherSum(res);
@@ -266,7 +267,7 @@ void Compute::MomentumEqu(const real_t &dt) {
   }
 
   // boundary values of F and G
-  this->_geom.Update(*this->_F, *this->_G, *this->_p);
+  this->_geom.Update(*this->_F, *this->_G);
 }
 
 // Compute the RHS of the poisson equation
