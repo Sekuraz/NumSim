@@ -52,20 +52,24 @@ void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geo
       paramPath = new char[20];
       switch(number) {
         case 1:
+          strcpy(geomPath, "data/channel.geom");
+          strcpy(paramPath, "data/channel.param");
+          break;
+        case 2:
           strcpy(geomPath, "data/pressure.geom");
           strcpy(paramPath, "data/pressure.param");
           break;
-        case 2:
-          strcpy(geomPath, "data/step.geom");
-          strcpy(paramPath, "data/pressure.param");
-          break;
         case 3:
+          strcpy(geomPath, "data/step.geom");
+          strcpy(paramPath, "data/step.param");
+          break;
+        case 4:
           strcpy(geomPath, "data/karman.geom");
-          strcpy(paramPath, "data/pressure.param");
+          strcpy(paramPath, "data/karman.param");
           break;
         default:
-          strcpy(geomPath, "data/channel.geom");
-          strcpy(paramPath, "data/pressure.param");
+          strcpy(geomPath, "data/drivencavity.geom");
+          strcpy(paramPath, "data/drivencavity.param");
           break;
       }
     } else if(strncmp(argv[i], "-P",2)==0) { // parameter path

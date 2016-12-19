@@ -1,0 +1,12 @@
+re = 100
+omega = 1.7
+alpha = 0.9
+dt = 0.1
+tend = 50
+eps = 0.001
+tau = 0.5
+itermax = 500
+vtkDt = 0.2
+visuDt = 0.1
+particlePosX = 0.1
+particlePosY = 0.6
