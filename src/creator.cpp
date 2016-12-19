@@ -82,13 +82,13 @@ int main (int argc, char **argv) {
          << "\t-alpha <float>\tDonor-Cell weighting parameter. Default: 0.9" << endl
          << "\t-dt <float>\t\tTime-step. Default: 0 (no absolute restriction)" << endl
          << "\t-eps <float>\tTolerance of the solver. Default: 0.001" << endl
-         << "\t-tau <float>\tSavety factor in time-step restriction. Default: 0.5" << endl
+         << "\t-tau <float>\tSafety factor in time-step restriction. Default: 0.5" << endl
          << "\t-tend <float>\tFinal (end) time. Default: 50.0" << endl
          << "\t-iter <int>\t\tMaximal number of solver iterations per time-step. Default: 100" << endl
          << "\t-vtkDt <float>\tTime-step for writing vtk-files. Default: 0.2" << endl
          << "\t-visuDt <float>\tTime-step for real time visualization. Default: 0.1" << endl
          << "\t-ppos <float>xfloat\tInital position of the particle for particle tracing." << endl
-         << "\t\t\tDefault: 0.25x0.25" << endl << endl
+         << "\t\t\tDefault: 0.1x0.6" << endl << endl
          << "Geometry:" << endl
          << "If some of these arguments are given, the \".geom\" file is written." << endl
          << "The default is a driven cavity. Pre-defined geometries must be set before" << endl
@@ -99,7 +99,7 @@ int main (int argc, char **argv) {
          << "\t\t\t2: Pressure driven channel" << endl
          << "\t\t\t3: Channel with step" << endl
          << "\t\t\t4: Channel with barrier" << endl
-         << "\t\t\tThese worlds might change the default values." << endl
+         << "\t\t\tThese geometries change the default values." << endl
          << "\t-length <x>x<y>\tReal real-world geometry size. Default 1.0x1.0" << endl
          << "\t-pressure <float>\tPressure at dirichlet pressure boundary. Default: 0.0" << endl
          << "\t-size <x>x<y>\tSize of the grid. Default: 128x128" << endl
