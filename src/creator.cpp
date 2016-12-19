@@ -44,7 +44,7 @@ struct param_t {
   real_t  particlePosY;
 
   param_t() : re(1000), omega(1.7), alpha(0.9),  dt(0), tend(50), eps(1e-3),
-              tau(0.5), itermax(100), vtkDt(0.2), visuDt(0.1), particlePosX(0.1),
+              tau(0.5), itermax(500), vtkDt(0.2), visuDt(0.1), particlePosX(0.1),
               particlePosY(0.6) {}
 };
 
@@ -84,7 +84,7 @@ int main (int argc, char **argv) {
          << "\t-eps <float>\tTolerance of the solver. Default: 0.001" << endl
          << "\t-tau <float>\tSafety factor in time-step restriction. Default: 0.5" << endl
          << "\t-tend <float>\tFinal (end) time. Default: 50.0" << endl
-         << "\t-iter <int>\t\tMaximal number of solver iterations per time-step. Default: 100" << endl
+         << "\t-iter <int>\t\tMaximal number of solver iterations per time-step. Default: 500" << endl
          << "\t-vtkDt <float>\tTime-step for writing vtk-files. Default: 0.2" << endl
          << "\t-visuDt <float>\tTime-step for real time visualization. Default: 0.1" << endl
          << "\t-ppos <float>xfloat\tInital position of the particle for particle tracing." << endl
