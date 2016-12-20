@@ -39,8 +39,10 @@ void Geometry::Load(const char file[], const bool printinfo) {
   std::string param;
   real_t value;
   std::ifstream in(file);
-  if(printinfo) {
-    std::cout << "Geometry: Loading from file " << file << std::endl;
+  if(!in) {
+    std::cerr << "Geometry: Could not open file \"" << file << "\"!" << std::endl;
+  } else if(printinfo) {
+    std::cout << "Geometry: Loading from file \"" << file << "\"." << std::endl;
   }
   while(in.good()) {
     in >> param >> std::ws;
@@ -455,7 +457,7 @@ void Geometry::computeSizes() {
 
     // TODO: fix last grid size
     if(this->_totalSize[dim] != this->_size[dim] * numProc[dim]) {
-      std::cerr << "Grid not separable for " << this->_comm.ThreadCnt() << " Threads!" << std::endl;
+      std::cerr << "Grid not divisible without remainder for " << this->_comm.ThreadCnt() << " Threads!" << std::endl;
       exit(1);
     }
 
@@ -512,6 +514,7 @@ const char& Geometry::flag(const Iterator &it) const {
 }
 
 // Returns the parabolic velocity profile (u_0*y*(y-L_y)).
+// TODO: rewrite for parallelization
 real_t Geometry::parabolic(const Iterator &it) const {
   const real_t y = (it.Pos()[1]-0.5) * this->_h[1];
   return this->_velocity[0] * y * (this->_h[1]*this->_size[1] - y);
