@@ -449,29 +449,31 @@ void Geometry::computeSizes() {
   }
 
   this->_sizeData = 1;
-  multi_index_t offset;
   for(index_t dim = 0; dim < DIM; dim++) {
     this->_totalSize[dim] -= 2;
     this->_size[dim] = this->_totalSize[dim] / numProc[dim];
-    this->_length[dim] = this->_totalLength[dim] / numProc[dim];
+    this->_offset[dim] = tIdx[dim] * this->_size[dim];
 
-    // TODO: fix last grid size
+    // fix last grid size
     if(this->_totalSize[dim] != this->_size[dim] * numProc[dim]) {
-      std::cerr << "Grid not divisible without remainder for " << this->_comm.ThreadCnt() << " Threads!" << std::endl;
-      exit(1);
+      if(tIdx[dim] == numProc[dim]-1) {
+        this->_size[dim] += this->_totalSize[dim] % numProc[dim];
+        std::cerr << "Grid not divisible without remainder for " << this->_comm.ThreadCnt() << " Threads!" << std::endl;
+      }
     }
 
+    this->_length[dim] = this->_totalLength[dim] * this->_size[dim] / (real_t)this->_totalSize[dim];
     this->_sizeP[dim] = this->_size[dim]+2;
     this->_sizeData *= this->_sizeP[dim];
-    this->_h[dim] = this->_length[dim] / this->_size[dim];
+    this->_h[dim] = this->_totalLength[dim] / this->_totalSize[dim];
     this->_hInv[dim] = 1.0 / this->_h[dim];
-    offset[dim] = tIdx[dim] * this->_size[dim];
   }
 
   // only use local flag field
   char *flags = new char[this->_sizeP[0] * this->_sizeP[1]];
   for(index_t j = 0; j < this->_sizeP[1]; ++j) {
-    strncpy(&flags[j * _sizeP[0]], &this->_flags[offset[0] + (offset[1]+j)*(_totalSize[0]+2)], _sizeP[0]);
+    strncpy(&flags[j * _sizeP[0]],
+            &this->_flags[this->_offset[0] + (this->_offset[1]+j)*(_totalSize[0]+2)], _sizeP[0]);
   }
   delete[] this->_flags;
   this->_flags = flags;

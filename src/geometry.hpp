@@ -54,8 +54,10 @@ public:
   /// * '-' Horizontal Slip-boundary (du/dy = 0, v = 0, dp determined by parameter pressure)
   void Load(const char file[], const bool printinfo = false);
 
+  /// Returns the global offset in each dimension
+  inline const multi_index_t& Offset() const { return this->_offset; }
   /// Returns the total number of cells in each dimension
-  inline const multi_index_t& TotalSize () const { return this->_totalSize; }
+  inline const multi_index_t& TotalSize() const { return this->_totalSize; }
   /// Returns the number of cells in each dimension
   inline const multi_index_t &Size() const { return this->_size; }
   /// Returns the number of variables (grid-size) in each dimension
@@ -118,6 +120,7 @@ private:
   const Communicator &_comm; ///< Communicator for boundary exchange and local sizes of Grids
   bool _free;                ///< Whether use free geometry given in loaded file or driven cavity
   char *_flags;              ///< flag field indicating the type of the cells
+  multi_index_t _offset;     ///< global offset of the field
   multi_index_t _totalSize;  ///< cartesian total number of inner cells
   multi_index_t _size;       ///< cartesian local number of cells
   multi_index_t _sizeP;      ///< cartesian size of the local Grid

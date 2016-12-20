@@ -32,9 +32,6 @@ Communicator::Communicator (int* argc, char*** argv) : _tidx(), _tdim(), _mpi_ca
 
   // Get the rank of the current thread
   MPI_Comm_rank(this->_mpi_cart_comm, &this->_rank);
-
-  // TODO: for testing
-  printf("Dims: %lu %lu Rank: %i Idx: %lu %lu odd: %i\n", _tdim[0], _tdim[1], _rank, _tidx[0], _tidx[1], _evenodd);
 }
 
 Communicator::~Communicator () {

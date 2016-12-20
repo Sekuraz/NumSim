@@ -22,14 +22,13 @@
 index_t VTK::_cnt = 0;
 //------------------------------------------------------------------------------
 VTK::VTK(const multi_real_t &h, const multi_index_t &size)
-    : VTK(h, size, multi_real_t(0.0)) {}
+    : VTK(h, size, multi_index_t(0.0)) {}
 //------------------------------------------------------------------------------
-VTK::VTK(const multi_real_t &h, const multi_index_t &size,
-         const multi_real_t &offset)
+VTK::VTK(const multi_real_t &h, const multi_index_t &size, const multi_index_t &offset)
     : VTK(h, size, offset, size, 0, multi_index_t(0), multi_index_t(1)) {}
 //------------------------------------------------------------------------------
 VTK::VTK(const multi_real_t &h, const multi_index_t &size,
-      const multi_real_t &offset, const multi_index_t &globalSize, const int &rank,
+      const multi_index_t &offset, const multi_index_t &globalSize, const int &rank,
       const multi_index_t &tidx, const multi_index_t &tdim)
     : _h(h), _size(size), _offset(offset), _globalSize(globalSize), _rank(rank),
     _tidx(tidx), _tdim(tdim), _handle(nullptr), _phandle(nullptr) {}
@@ -54,15 +53,15 @@ void VTK::Init(const char *path) {
   fprintf(this->_handle, "<?xml version=\"1.0\"?>\n");
   fprintf(this->_handle, "<VTKFile type=\"StructuredGrid\">\n");
   fprintf(this->_handle, "<StructuredGrid WholeExtent=\"%lu %lu %lu %lu %lu %lu\" GhostLevel=\"0\">\n",
-          this->_tidx[0] * (this->_size[0] - 2), (this->_tidx[0] + 1) * (this->_size[0] - 2),
-          this->_tidx[1] * (this->_size[1] - 2), (this->_tidx[1] + 1) * (this->_size[1] - 2),
-          (DIM == 3 ? (this->_tidx[2] * (this->_size[2] - 2)) : 0),
-          (DIM == 3 ? ((this->_tidx[2] + 1) * (this->_size[2] - 2)) : 0));
+          this->_offset[0], this->_offset[0] + (this->_size[0] - 2),
+          this->_offset[1], this->_offset[1] + (this->_size[1] - 2),
+          (DIM == 3 ? this->_offset[2] : 0),
+          (DIM == 3 ? (this->_offset[2] + (this->_size[2] - 2)) : 0));
   fprintf(this->_handle, "<Piece Extent=\"%lu %lu %lu %lu %lu %lu \">\n",
-          this->_tidx[0] * (this->_size[0] - 2), (this->_tidx[0] + 1) * (this->_size[0] - 2),
-          this->_tidx[1] * (this->_size[1] - 2), (this->_tidx[1] + 1) * (this->_size[1] - 2),
-          (DIM == 3 ? (this->_tidx[2] * (this->_size[2] - 2)) : 0),
-          (DIM == 3 ? ((this->_tidx[2] + 1) * (this->_size[2] - 2)) : 0));
+          this->_offset[0], this->_offset[0] + (this->_size[0] - 2),
+          this->_offset[1], this->_offset[1] + (this->_size[1] - 2),
+          (DIM == 3 ? (this->_offset[2]) : 0),
+          (DIM == 3 ? (this->_offset[2] + (this->_size[2] - 2)) : 0));
   fprintf(this->_handle, "<Points>\n");
   fprintf(this->_handle, "<DataArray type=\"Float64\" format=\"ascii\" "
                    "NumberOfComponents=\"3\">\n");
@@ -71,9 +70,9 @@ void VTK::Init(const char *path) {
     for (index_t y = 0; y < this->_size[1]-1; ++y) {
       for (index_t x = 0; x < this->_size[0]-1; ++x) {
         fprintf(this->_handle, "%le %le %le\n",
-                (double)x * this->_h[0] + this->_offset[0],
-                (double)y * this->_h[1] + this->_offset[1],
-                (DIM == 3 ? (double)z * this->_h[2] + this->_offset[2] : 0));
+                (double)(x + this->_offset[0]) * this->_h[0],
+                (double)(y + this->_offset[1]) * this->_h[1],
+                (DIM == 3 ? (double)(z + this->_offset[2]) * this->_h[2] : 0));
       }
     }
   }
@@ -106,10 +105,12 @@ void VTK::Init(const char *path) {
           sprintf(filename, "%s_r%02lu-%02lu-%02lu_%05lu.vts", (strlen(path) > 0)? path : "field",
                   x, y, z, this->_cnt);
           fprintf(this->_phandle, "<Piece Extent=\"%lu %lu %lu %lu %lu %lu\" Source=\"%s\"/>\n",
-                  x * (this->_size[0] - 2), (x + 1) * (this->_size[0] - 2),
-                  y * (this->_size[1] - 2), (y + 1) * (this->_size[1] - 2),
+                  x * (this->_size[0] - 2),
+                  ((x == this->_tdim[0]-1)? this->_globalSize[0] : (x + 1) * (this->_size[0] - 2)),
+                  y * (this->_size[1] - 2),
+                  ((y == this->_tdim[1]-1)? this->_globalSize[1] : (y + 1) * (this->_size[1] - 2)),
                   (DIM == 3 ? (z * (this->_size[2] - 2)) : 0),
-                  (DIM == 3 ? ((z + 1) * (this->_size[2] - 2)) : 0),
+                  (DIM == 3 ? ((z == this->_tdim[2]-1)? this->_globalSize[2] : (z + 1) * (this->_size[2] - 2)) : 0),
                   &filename[4]);
           delete[] filename;
         }
