@@ -110,10 +110,8 @@ int main(int argc, char *argv[]) {
 
   parseCommandLine(argc, argv, paramPath, geomPath);
 
-  Parameter param;
-  param.Load((paramPath != nullptr? paramPath : "param.txt"), (comm.ThreadNum() == 0));
-  Geometry geom(comm);
-  geom.Load((geomPath != nullptr? geomPath : "geometry.txt"), (comm.ThreadNum() == 0));
+  Parameter param(paramPath, (comm.ThreadNum() == 0));
+  Geometry geom(comm, geomPath, (comm.ThreadNum() == 0));
   if(param.Omega() <= 0.0 || param.Omega() > 2.0) {
     real_t h = std::fmax(geom.Mesh()[0], geom.Mesh()[1]);
     param.Omega() = 2.0 / (1.0 + std::sin(M_PI * h));

@@ -22,12 +22,16 @@
 #include "geometry.hpp"
 #include "iterator.hpp"
 
-Geometry::Geometry(const Communicator &comm) : Geometry(comm, multi_index_t {128, 128}) {}
 
-Geometry::Geometry(const Communicator &comm, const multi_index_t& size)
+Geometry::Geometry(const Communicator &comm, const multi_index_t& size,
+                   const char file[], const bool printinfo)
     : _comm(comm), _free(false), _flags(nullptr), _totalSize(size), _totalLength(1,1),
     _velocity(1,0), _pressure(0.1) {
-  this->computeSizes();
+  if(file != nullptr) {
+    this->Load(file, printinfo);
+  } else {
+    this->computeSizes();
+  }
 }
 
 /// Loads a geometry from a file
@@ -467,13 +471,9 @@ void Geometry::computeSizes() {
   for(index_t j = 0; j < this->_sizeP[1]; ++j) {
     strncpy(&flags[j * _sizeP[0]], &this->_flags[offset[0] + (offset[1]+j)*(_totalSize[0]+2)], _sizeP[0]);
   }
-  // TODO: output for testing
-  for(index_t j = 0; j < this->_sizeP[1]; j++) {
-    std::cout.write(&flags[this->_sizeP[0] * j], this->_sizeP[0]);
-    std::cout << std::endl;
-  }
   delete[] this->_flags;
   this->_flags = flags;
+
   // update eXchange boundaries in local flag field
   BoundaryIterator bit(*this, BoundaryIterator::boundary::left);
   for(bit.First(); bit.Valid(); bit.Next()) {
@@ -505,10 +505,6 @@ void Geometry::computeSizes() {
   for(InteriorIterator it(*this); it.Valid(); it.Next()) {
     this->_N++;
   }
-
-  // TODO: testing
-  std::cout << "Size: " << _totalSize << " Length: " << _totalLength << " h: " << _h
-            << " GSize: " << _sizeP << " Nloc: " << _N << std::endl;
 }
 
 const char& Geometry::flag(const Iterator &it) const {

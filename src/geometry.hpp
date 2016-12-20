@@ -36,8 +36,10 @@ public:
   ///     -------------
   ///       u=0, v=0
   /// </pre>
-  Geometry(const Communicator &comm);
-  Geometry(const Communicator &comm, const multi_index_t& size);
+  Geometry(const Communicator &comm, const char file[] = nullptr, const bool printinfo = false)
+      : Geometry(comm, multi_index_t(128), file, printinfo) {}
+  Geometry(const Communicator &comm, const multi_index_t& size,
+           const char file[] = nullptr, const bool printinfo = false);
   ~Geometry() { if(this->_flags != nullptr) delete[] this->_flags; }
 
   /// \brief Loads a geometry from a file
