@@ -56,7 +56,7 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
 }
 // Deletes all grids
 Compute::~Compute() {
-  delete _u; delete _v; delete _p; delete _F; 
+  delete _u; delete _v; delete _p; delete _F;
   delete _G; delete _rhs; delete _velocities; delete _solver;
   delete _streamline; delete _vorticity; delete _particle;
 }
@@ -162,6 +162,9 @@ void Compute::Stream() {
   for(Iterator it(this->_geom, 1); it.Valid(); it.Next()) {
     if(it.Pos()[1] == 0) {
       this->_streamline->Cell(it) = this->_streamline->Cell(it.Left()) - _geom.Mesh()[0] * this->_v->Cell(it);
+    } else if (this->_geom.noslip(it)) {
+      // correct for separated domains because integral is invariant even across process boundaries, only true for pure noslip obstacles
+      this->_streamline->Cell(it) = this->_streamline->Cell(it.Down());
     } else {
       this->_streamline->Cell(it) = this->_streamline->Cell(it.Down()) + _geom.Mesh()[1] * this->_u->Cell(it);
     }
@@ -181,7 +184,7 @@ void Compute::Particle() {
 
 }
 
-void Compute::Streaklines(){  
+void Compute::Streaklines(){
 
   // Cycle the list of particles
   for (std::list<multi_real_t>::iterator it = _streakline.begin(); it != _streakline.end(); ++it) {
@@ -192,7 +195,7 @@ void Compute::Streaklines(){
   std::list<multi_real_t>::iterator it = _streakline.begin();
   _streakline.insert (_streakline.begin(), this->_initPosParticle);
 
-}	
+}
 
 // ParticleStep() without live visualisation
 void Compute::ParticleStep(multi_real_t &lastPos) {

@@ -511,6 +511,10 @@ void Geometry::computeSizes() {
   }
 }
 
+bool Geometry::noslip(const Iterator &it) const {
+  return this->_flags[it] == '#';
+}
+
 const char& Geometry::flag(const Iterator &it) const {
   return this->_flags[it];
 }

@@ -92,6 +92,8 @@ public:
   /// Updates the velocity fields u and v for a free geometry
   void Update(Grid &u, Grid &v) const;
 
+  bool noslip(const Iterator &it) const;
+
 private:
   /// Computes the sizes of the grids.
   void computeSizes();
