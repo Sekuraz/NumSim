@@ -198,10 +198,15 @@ int main (int argc, char **argv) {
   }
   pos = getOpt("-ppos",argc,argv);
   if (pos) {
-    // TODO: read further input
+    int i = 1;
     multi_real_t ppos;
-    sscanf(argv[pos+1],"%lfx%lf", &ppos[0],&ppos[1]);
-    param.particlePos.push_back(ppos);
+    int result = sscanf(argv[pos+i],"%lfx%lf", &ppos[0],&ppos[1]);
+    while(result == 2) {
+      ++i;
+      param.particlePos.push_back(ppos);
+      if(pos+i == argc) break;
+      result = sscanf(argv[pos+i],"%lfx%lf", &ppos[0],&ppos[1]);
+    }
   } else {
     switch (geom.type) {
     case 1:
