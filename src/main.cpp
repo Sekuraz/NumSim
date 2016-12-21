@@ -33,7 +33,26 @@
 /// reads arguments from command line
 void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geomPath) {
   for(int i = 1; i < argc; i++) {
-    if(strncmp(argv[i], "-G",2)==0) { // geometry path
+    if (strncmp(argv[i], "-h", 2) == 0 or strncmp(argv[i], "--help", 6) == 0) {
+      std::cout << std::endl << "Numsim - Fluid simulation." << std::endl << std::endl
+         << "Usage: numsim [arguments]\tSolves the Navier-Stokes equation for the given geometry and parameters." << std::endl << std::endl
+         << "General arguments:" << std::endl
+         << "Arguments must be seperated by a space from their additional parameters." << std::endl
+         << "Starting without any argument solves a 128x128 driven cavity." << std::endl
+         << "\t-h, --help\tPrints this message." << std::endl
+         << "\t-g <num>\tChoose among some ready-made geometries." << std::endl
+         << "\t\t\t\t0: Driven Cavity" << std::endl
+         << "\t\t\t\t1: Simple channel" << std::endl
+         << "\t\t\t\t2: Pressure driven channel" << std::endl
+         << "\t\t\t\t3: Channel with step" << std::endl
+         << "\t\t\t\t4: Channel with barrier" << std::endl
+         << "\t-G <path>\tUse the specified geometry file" << std::endl
+         << "\t-P <path>\tUse the specified parameter file" << std::endl
+         << "\t-I <path>\tUse the specified parameter and geometry file" << std::endl
+         << "\t\t\tEquivalent to -G <path>.geom and -P <path>.param" << std::endl
+         << std::endl;
+      exit(0);
+    } else if(strncmp(argv[i], "-G",2)==0) { // geometry path
       // test whether path at flag or afterwards
       if (strlen(argv[i])>2) {
         geomPath = &argv[i][2];
@@ -97,18 +116,18 @@ void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geo
 int main(int argc, char *argv[]) {
   char *paramPath = nullptr, *geomPath = nullptr;
 
+  parseCommandLine(argc, argv, paramPath, geomPath);
+
   // Create communicator, parameter and geometry instances and load values
   Communicator comm(&argc, &argv);
 
   // Delete old VTK files, prevents bugs in paraview
   if(comm.ThreadNum() == 0) {
-    int status = system("exec rm -r ./VTK/*");
+    int status = system("rm -r ./VTK/* &>/dev/null");
     if (status < 0) {
       std::cerr << "Error while deleting old VTK files!" << std::endl;
     }
   }
-
-  parseCommandLine(argc, argv, paramPath, geomPath);
 
   Parameter param(paramPath, (comm.ThreadNum() == 0));
   Geometry geom(comm, geomPath, (comm.ThreadNum() == 0));

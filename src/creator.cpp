@@ -317,6 +317,6 @@ int main (int argc, char **argv) {
   } else {
     cerr << "Could not open \"" << name <<"\"!" << endl;
   }
-  
+
   return 0;
 }
