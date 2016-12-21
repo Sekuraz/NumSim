@@ -100,6 +100,8 @@ private:
   std::list<multi_real_t> _particleTracing; ///< list for particle tracing
   std::list<multi_real_t> _streakline; ///< list of streakline points
 
+  index_t _numParticles; ///< number of traced particles/ streaklines
+
   /// Compute the new velocities u,v
   void NewVelocities(const real_t &dt);
   /// Compute the temporary velocities F,G
