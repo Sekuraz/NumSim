@@ -58,18 +58,6 @@ public:
 
   /// Computes and returns the absolute velocity
   const Grid *GetVelocity();
-  /// Computes the vorticity
-  void Vort();
-  /// Computes the stream line values
-  void Stream();
-  /// Computes the new particles
-  void Particle(); 
-  /// Computes the new Streakline
-  void Streaklines(); 
-  /// Computes new particle place
-  void ParticleStep(multi_real_t &particlePos);
-  /// Computes new particle place with live visualisation
-  void ParticleStepVisu(multi_real_t &particlePos);
 
 private:
   real_t _t; ///< current timestep
@@ -108,6 +96,18 @@ private:
   void MomentumEqu(const real_t &dt);
   /// Compute the RHS of the poisson equation
   void RHS(const real_t &dt);
+  /// Computes the vorticity
+  void Vort();
+  /// Computes the stream line values
+  void Stream();
+  /// Computes the new particles
+  void Particle(const real_t &dt);
+  /// Computes the new streakline
+  void Streaklines(const real_t &dt);
+  /// Computes the new position of the particle
+  void ParticleStep(multi_real_t &particlePos, const real_t &dt);
+  /// Computes new position of the particle with live visualisation
+  void ParticleStepVisu(multi_real_t &particlePos, const real_t &dt, const index_t numPos);
 };
 //------------------------------------------------------------------------------
 #endif // __COMPUTE_HPP

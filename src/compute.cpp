@@ -17,6 +17,7 @@
 #include <iostream>
 #include <algorithm>
 #include <list>
+#include <iterator>
 #include <cmath>
 #include "typedef.hpp"
 #include "comm.hpp"
@@ -124,8 +125,8 @@ void Compute::TimeStep(bool printInfo) {
   // calculate new particle postitions
   // TODO: rewrite for parallelization
   if (_comm.ThreadCnt() == 1) {
-    this->Particle();
-    this->Streaklines();
+    this->Particle(dt);
+    this->Streaklines(dt);
   }
 
   // print information
@@ -175,49 +176,50 @@ void Compute::Stream() {
   }
 }
 
-void Compute::Particle() {
-
+void Compute::Particle(const real_t &dt) {
   std::list<multi_real_t>::iterator itEnd = this->_particleTracing.end();
-  std::list<multi_real_t>::iterator it = this->_particleTracing.end();
-	std::list<multi_real_t> append;
+  std::list<multi_real_t> append;
 
-  std::advance(it, -this->_numParticles);
-
-  for (;it != itEnd; ++it) {
+  for(std::list<multi_real_t>::iterator it = std::prev(itEnd, this->_numParticles); it != itEnd; ++it) {
     multi_real_t temp = *it;
-    this->ParticleStepVisu(temp);
+    this->ParticleStepVisu(temp, dt, this->_numParticles - std::distance(it, itEnd));
     append.push_back(temp);
   }
-	this->_particleTracing.insert(this->_particleTracing.end(), append.begin(), append.end());
+
+  // write new positions in the list
+  this->_particleTracing.insert(this->_particleTracing.end(), append.begin(), append.end());
 }
 
-void Compute::Streaklines(){
+// TODO: exchange between domains
+void Compute::Streaklines(const real_t &dt) {
   // Cycle the list of particles
   for (std::list<multi_real_t>::iterator it = this->_streakline.begin(); it != this->_streakline.end(); ++it) {
-    this->ParticleStep((*it));
+    this->ParticleStep((*it), dt);
+    // if NAN, outside of domain
+    if( std::isnan((*it)[0]) ) {
+      it = this->_streakline.erase(it);
+      --it;
+    }
   }
 
   // Add new particles at the initial positions
   this->_streakline.insert(this->_streakline.begin(), this->_initPosParticle.begin(), this->_initPosParticle.end());
 }
 
-// ParticleStep() without live visualisation
-void Compute::ParticleStep(multi_real_t &lastPos) {
+// updates particle position
+void Compute::ParticleStep(multi_real_t &pos, const real_t &dt) {
   // calculate new position
+  pos[0] += dt * this->_u->Interpolate(pos);
+  pos[1] += dt * this->_v->Interpolate(pos);
 
-  multi_real_t newPos;
-  newPos[0] = lastPos[0] + _dtlimit * this->_u->Interpolate(lastPos);
-  newPos[1] = lastPos[1] + _dtlimit * this->_v->Interpolate(lastPos);
-
-  // TODO: set to initial values (if possible with list?)
-  if (newPos[0] <= this->_geom.Length()[0] && newPos[1] <= this->_geom.Length()[1]) {
-    lastPos = newPos;
+  if (pos[0] >= this->_geom.Length()[0] || pos[1] >= this->_geom.Length()[1]) {
+    pos[0] = std::nan("");
   }
 }
 
-// ParticleStepVisu() with live visualisation (only valid for particle tracing)
-void Compute::ParticleStepVisu(multi_real_t &lastPos) {
-
+// updates particle position with live visualisation (only valid for particle tracing)
+// TODO: exchange between domains
+void Compute::ParticleStepVisu(multi_real_t &lastPos, const real_t &dt, const index_t numPos) {
   // get cell of the particle
   _particleIndx[0] = (index_t)(lastPos[0]/_geom.Mesh()[0] + 1);
   _particleIndx[1] = (index_t)(lastPos[1]/_geom.Mesh()[1] + 1);
@@ -226,24 +228,20 @@ void Compute::ParticleStepVisu(multi_real_t &lastPos) {
   this->_particle->Cell(Iterator(this->_geom, _particleIndx)) = 0;
 
   // calculate new position
-  multi_real_t newPos;
-  newPos[0] = lastPos[0] + _dtlimit * this->_u->Interpolate(lastPos);
-  newPos[1] = lastPos[1] + _dtlimit * this->_v->Interpolate(lastPos);
-  // write new position in the list
+  this->ParticleStep(lastPos, dt);
 
-  // write new position in the list
-  // TODO: set to initial values (if possible with list?)
-  if (newPos[0] <= this->_geom.Length()[0] && newPos[1] <= this->_geom.Length()[1]) {
-    lastPos = newPos;
+  // if NAN, outside domain, then reset
+  if( std::isnan(lastPos[0]) ) {
+    // deltes old particle path
+    // _particleTracing.clear();
+    lastPos = *std::next(this->_initPosParticle.begin(), numPos);
+  }
 
   // get cell of the particle
   _particleIndx[0] = (index_t)(lastPos[0]/_geom.Mesh()[0] + 1);
   _particleIndx[1] = (index_t)(lastPos[1]/_geom.Mesh()[1] + 1);
-
   // set new position to 1 for debug visualization
   this->_particle->Cell(Iterator(this->_geom, _particleIndx)) = 1;
-
-  }
 }
 
 // Compute the new velocites u,v
