@@ -43,8 +43,8 @@ struct param_t {
   real_t  particlePosX;
   real_t  particlePosY;
 
-  param_t() : re(1000), omega(1.7), alpha(0.9),  dt(0), tend(50), eps(1e-3),
-              tau(0.5), itermax(500), vtkDt(0.2), visuDt(0.1), particlePosX(0.1),
+  param_t() : re(1000), omega(1.7), alpha(0.9),  dt(1e-2), tend(50), eps(1e-3),
+              tau(0.5), itermax(500), vtkDt(0.5), visuDt(0), particlePosX(0.1),
               particlePosY(0.6) {}
 };
 
@@ -71,39 +71,39 @@ int main (int argc, char **argv) {
          << "Usage: creator [arguments]\tGenerates a geometry and a parameter file" << endl << endl
          << "General arguments:" << endl
          << "Arguments must be seperated by a space from their additional parameters." << endl
-         << "\t-h, --help\t\tPrints this message." << endl
-         << "\t-o <name>\t\tSaves the geometry and the parameters in \"<name>.param\"" << endl
+         << "\t-h, --help\tPrints this message." << endl
+         << "\t-o <name>\tSaves the geometry and the parameters in \"<name>.param\"" << endl
          << "\t\t\tand \"<name>.geom\". The default filenames are" << endl
          << "\t\t\t\"drivencavity.param\" and \"drivencavity.geom\"." << endl << endl
          << "Parameters:" << endl
          << "If some of these arguments are given, the \".param\" file is written." << endl
-         << "\t-re <float>\t\tReynolds number. Default: 1000" << endl
-         << "\t-omg <float>\tSOR parameter. Default: is 1.7" << endl
-         << "\t-alpha <float>\tDonor-Cell weighting parameter. Default: 0.9" << endl
-         << "\t-dt <float>\t\tTime-step. Default: 0 (no absolute restriction)" << endl
-         << "\t-eps <float>\tTolerance of the solver. Default: 0.001" << endl
-         << "\t-tau <float>\tSafety factor in time-step restriction. Default: 0.5" << endl
-         << "\t-tend <float>\tFinal (end) time. Default: 50.0" << endl
-         << "\t-iter <int>\t\tMaximal number of solver iterations per time-step. Default: 500" << endl
-         << "\t-vtkDt <float>\tTime-step for writing vtk-files. Default: 0.2" << endl
-         << "\t-visuDt <float>\tTime-step for real time visualization. Default: 0.1" << endl
-         << "\t-ppos <float>xfloat\tInital position of the particle for particle tracing." << endl
-         << "\t\t\tDefault: 0.1x0.6" << endl << endl
+         << "\t-re <float>\tReynolds number. Default: " << param.re << endl
+         << "\t-omg <float>\tSOR parameter. Default: is " << param.omega << endl
+         << "\t-alpha <float>\tDonor-Cell weighting parameter. Default: "<< param.alpha << endl
+         << "\t-dt <float>\tTime-step. Default: " << param.dt << endl
+         << "\t-eps <float>\tTolerance of the solver. Default: " << param.eps << endl
+         << "\t-tau <float>\tSafety factor in time-step restriction. Default: " << param.tau << endl
+         << "\t-tend <float>\tFinal (end) time. Default: " << param.tend << endl
+         << "\t-iter <int>\tMaximal number of solver iterations per time-step. Default: " << param.itermax << endl
+         << "\t-vtkDt <float>\tTime-step for writing vtk-files. Default: " << param.vtkDt << endl
+         << "\t-visuDt <float>\tTime-step for real time visualization. Default: " << param.visuDt << endl
+         << "\t-ppos <float>x<float>  Inital position of the particle for particle tracing." << endl
+         << "\t\t\tDefault: " << param.particlePosX << "x" << param.particlePosY << endl << endl
          << "Geometry:" << endl
          << "If some of these arguments are given, the \".geom\" file is written." << endl
          << "The default is a driven cavity. Pre-defined geometries must be set before" << endl
          << "changing other parameters." << endl
-         << "\t-pre <num>\t\tChoose among some ready-made geometries. Default: 0" << endl
-         << "\t\t\t0: Driven Cavity" << endl
-         << "\t\t\t1: Simple channel" << endl
-         << "\t\t\t2: Pressure driven channel" << endl
-         << "\t\t\t3: Channel with step" << endl
-         << "\t\t\t4: Channel with barrier" << endl
+         << "\t-pre <num>\tChoose among some ready-made geometries. Default: " << geom.type << endl
+         << "\t\t\t\t0: Driven Cavity" << endl
+         << "\t\t\t\t1: Simple channel" << endl
+         << "\t\t\t\t2: Pressure driven channel" << endl
+         << "\t\t\t\t3: Channel with step" << endl
+         << "\t\t\t\t4: Channel with barrier" << endl
          << "\t\t\tThese geometries change the default values." << endl
-         << "\t-length <x>x<y>\tReal real-world geometry size. Default 1.0x1.0" << endl
-         << "\t-pressure <float>\tPressure at dirichlet pressure boundary. Default: 0.0" << endl
-         << "\t-size <x>x<y>\tSize of the grid. Default: 128x128" << endl
-         << "\t-vel <x>x<y>\tVelocity of the fluid at dirichlet boundary. Default: 1.0x0.0" << endl
+         << "\t-length <x>x<y>\tReal real-world geometry size. Default " << geom.length[0] << "x" << geom.length[1] << endl
+         << "\t-pressure <float>  Pressure at dirichlet pressure boundary. Default: " << geom.pressure << endl
+         << "\t-size <x>x<y>\tSize of the grid. Default: " << geom.size[0] << "x" << geom.size[1] << endl
+         << "\t-vel <x>x<y>\tVelocity of the fluid at dirichlet boundary. Default: " << geom.velocity[0] << "x" << geom.velocity[1] << endl
          << endl;
     return 0;
   }

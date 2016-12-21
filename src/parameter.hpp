@@ -26,8 +26,8 @@ public:
   /// Constructs a new Parameter set with default values
   // Driven Cavity parameters; see exercise sheet 1
   Parameter(const char file[] = nullptr, const bool printinfo = 0)
-      : _re(1), _omega(1), _alpha(0.5), _dt(1e-2), _tend(1),
-        _eps(1e-3), _tau(0.8), _itermax(100), _vtkDt(0.2) {
+      : _re(1000), _omega(1.7), _alpha(0.9), _dt(1e-2), _tend(50),
+        _eps(1e-3), _tau(0.5), _itermax(500), _vtkDt(0.5), _visuDt(0) {
       if(file != nullptr) {
         this->Load(file, printinfo);
       }

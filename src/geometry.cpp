@@ -26,7 +26,7 @@
 Geometry::Geometry(const Communicator &comm, const multi_index_t& size,
                    const char file[], const bool printinfo)
     : _comm(comm), _free(false), _flags(nullptr), _totalSize(size), _totalLength(1,1),
-    _velocity(1,0), _pressure(0.1) {
+    _velocity(1,0), _pressure(0) {
   if(file != nullptr) {
     this->Load(file, printinfo);
   } else {
@@ -106,110 +106,6 @@ void Geometry::Load(const char file[], const bool printinfo) {
   this->computeSizes();
 }
 
-// Updates the velocity field u
-/*
-void Geometry::Update_U(Grid &u) const {
-  this->_comm.copyBoundary(u);
-  // driven cavity u given at top
-  BoundaryIterator it(*this, BoundaryIterator::boundary::left);
-  if(this->_comm.isLeft()) {
-    // homogenous Dirichlet condition left
-    for(it.First(); it.Valid(); it.Next()) {
-      u.Cell(it) = 0;
-    }
-  }
-  if(this->_comm.isBottom()) {
-    // homogenous Dirichlet condition (mean) down
-    it.SetBoundary(BoundaryIterator::boundary::down);
-    for(it.First(); it.Valid(); it.Next()) {
-      u.Cell(it) = -u.Cell(it.Top());
-    }
-  }
-  if(this->_comm.isRight()) {
-    // homogenous Dirichlet condition right
-    it.SetBoundary(BoundaryIterator::boundary::right);
-    for(it.First(); it.Valid(); it.Next()) {
-      u.Cell(it.Left()) = 0;
-      u.Cell(it) = 0;
-    }
-  }
-  if(this->_comm.isTop()) {
-    // inhomogenous Dirichlet condition (mean) top
-    it.SetBoundary(BoundaryIterator::boundary::top);
-    for(it.First(); it.Valid(); it.Next()) {
-      u.Cell(it) = 2*this->_velocity[0]-u.Cell(it.Down());
-    }
-  }
-}
-*/
-// Updates the velocity field v
-/*void Geometry::Update_V(Grid &v) const {
-  // driven cavity v given at top
-  this->_comm.copyBoundary(v);
-
-  BoundaryIterator it(*this, BoundaryIterator::boundary::left);
-  if(this->_comm.isLeft()) {
-    // homogenous Dirichlet condition (mean) left
-    for(it.First(); it.Valid(); it.Next()) {
-      v.Cell(it) = -v.Cell(it.Right());
-    }
-  }
-  if(this->_comm.isBottom()) {
-    // homogenous Dirichlet condition down
-    it.SetBoundary(BoundaryIterator::boundary::down);
-    for(it.First(); it.Valid(); it.Next()) {
-      v.Cell(it) = 0;
-    }
-  }
-  if(this->_comm.isRight()) {
-    // homogenous Dirichlet condition (mean) right
-    it.SetBoundary(BoundaryIterator::boundary::right);
-    for(it.First(); it.Valid(); it.Next()) {
-      v.Cell(it) = -v.Cell(it.Left());
-    }
-  }
-  if(this->_comm.isTop()) {
-    // inhomogenous Dirichlet condition top
-    it.SetBoundary(BoundaryIterator::boundary::top);
-    for(it.First(); it.Valid(); it.Next()) {
-      v.Cell(it) = this->_velocity[1];
-      v.Cell(it.Down()) = this->_velocity[1];
-    }
-  }
-}
-*/
-// Updates the pressure field p
-/*
-void Geometry::Update_P(Grid &p) const {
-  // homogenous Neumann condition at all sides
-  this->_comm.copyBoundary(p);
-
-  BoundaryIterator it(*this, BoundaryIterator::boundary::left);
-  if(this->_comm.isLeft()) {
-    for(it.First(); it.Valid(); it.Next()) {
-      p.Cell(it) = p.Cell(it.Right());
-    }
-  }
-  if(this->_comm.isBottom()) {
-    it.SetBoundary(BoundaryIterator::boundary::down);
-    for(it.First(); it.Valid(); it.Next()) {
-      p.Cell(it) = p.Cell(it.Top());
-    }
-  }
-  if(this->_comm.isRight()) {
-    it.SetBoundary(BoundaryIterator::boundary::right);
-    for(it.First(); it.Valid(); it.Next()) {
-      p.Cell(it) = p.Cell(it.Left());
-    }
-  }
-  if(this->_comm.isTop()) {
-    it.SetBoundary(BoundaryIterator::boundary::top);
-    for(it.First(); it.Valid(); it.Next()) {
-      p.Cell(it) = p.Cell(it.Down());
-    }
-  }
-}
-*/
 void Geometry::Update_P(Grid &p) const {
   this->_comm.copyBoundary(p);
 
