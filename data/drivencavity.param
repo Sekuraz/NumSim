@@ -8,5 +8,4 @@ tau = 0.5
 itermax = 500
 vtkDt = 0.5
 visuDt = 0
-particlePosX = 0.1
-particlePosY = 0.6
+particle = 0.1 0.6

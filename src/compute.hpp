@@ -95,7 +95,7 @@ private:
   const Parameter &_param; ///< parameters for the computation
   const Communicator &_comm; ///< communicator for boundary exchange
 
-  multi_real_t _initPosParticle; ///< initial position of the traced particles
+  const std::list<multi_real_t> &_initPosParticle; ///< initial positions of the traced particles
   multi_index_t _particleIndx; ///< cell of the traced particle for visu
   std::list<multi_real_t> _particleTracing; ///< list for particle tracing
   std::list<multi_real_t> _streakline; ///< list of streakline points

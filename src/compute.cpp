@@ -50,8 +50,8 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
   this->_particle->Initialize(0);
 
   // write first particle pos in list for particle trace and streakline
-  _particleTracing.push_back(this->_initPosParticle);
-  _streakline.push_back(this->_initPosParticle);
+  this->_particleTracing.insert(this->_particleTracing.begin(), this->_initPosParticle.begin(), this->_initPosParticle.end());
+  this->_streakline.insert(this->_streakline.begin(), this->_initPosParticle.begin(), this->_initPosParticle.end());
 
 }
 // Deletes all grids
@@ -177,35 +177,31 @@ void Compute::Stream() {
 
 void Compute::Particle() {
   // returns last particlePosition of the list
-  multi_real_t lastPos = _particleTracing.back();
+  multi_real_t lastPos = this->_particleTracing.back();
 
   // compute new step with live visualisation
   this->ParticleStepVisu(lastPos);
-
 }
 
 void Compute::Streaklines(){
-
   // Cycle the list of particles
-  for (std::list<multi_real_t>::iterator it = _streakline.begin(); it != _streakline.end(); ++it) {
+  for (std::list<multi_real_t>::iterator it = this->_streakline.begin(); it != this->_streakline.end(); ++it) {
     this->ParticleStep((*it));
   }
 
-  // Add new particle at the initial position
-  std::list<multi_real_t>::iterator it = _streakline.begin();
-  _streakline.insert (_streakline.begin(), this->_initPosParticle);
-
+  // Add new particles at the initial positions
+  this->_streakline.insert(this->_streakline.begin(), this->_initPosParticle.begin(), this->_initPosParticle.end());
 }
 
 // ParticleStep() without live visualisation
 void Compute::ParticleStep(multi_real_t &lastPos) {
-
   // calculate new position
   lastPos[0] += _dtlimit * this->_u->Interpolate(lastPos);
   lastPos[1] += _dtlimit * this->_v->Interpolate(lastPos);
 
-  if (lastPos[0] >= _geom.Length()[0] || lastPos[1] >= _geom.Length()[1]) {
-    lastPos = _initPosParticle;
+  if (lastPos[0] >= this->_geom.Length()[0] || lastPos[1] >= this->_geom.Length()[1]) {
+    // TODO fix for several particles
+    lastPos = *this->_initPosParticle.begin();
   }
 }
 
@@ -217,8 +213,7 @@ void Compute::ParticleStepVisu(multi_real_t &lastPos) {
   _particleIndx[1] = (index_t)(lastPos[1]/_geom.Mesh()[1] + 1);
 
   // set old position to 0 for debug visualization
-  Iterator it1(this->_geom, _particleIndx);
-  this->_particle->Cell(it1) = 0;
+  this->_particle->Cell(Iterator(this->_geom, _particleIndx)) = 0;
 
   // calculate new position
   lastPos[0] += _dtlimit * this->_u->Interpolate(lastPos);
@@ -227,7 +222,6 @@ void Compute::ParticleStepVisu(multi_real_t &lastPos) {
 
   // write new position in the list
   if (lastPos[0] < _geom.Length()[0] && lastPos[1] < _geom.Length()[1]) {
-
     _particleTracing.push_back(lastPos);
 
   // get cell of the particle
@@ -235,15 +229,14 @@ void Compute::ParticleStepVisu(multi_real_t &lastPos) {
   _particleIndx[1] = (index_t)(lastPos[1]/_geom.Mesh()[1] + 1);
 
   // set new position to 1 for debug visualization
-  Iterator it2(this->_geom, _particleIndx);
-  this->_particle->Cell(it2) = 1;
+  this->_particle->Cell(Iterator(this->_geom, _particleIndx)) = 1;
 
   } else {
     // deltes old particle path
     // _particleTracing.clear();
-    _particleTracing.push_back(_initPosParticle);
+    // TODO: fix to number
+    this->_particleTracing.push_back(*this->_initPosParticle.begin());
   }
-
 }
 
 // Compute the new velocites u,v

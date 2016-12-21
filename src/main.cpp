@@ -203,14 +203,6 @@ int main(int argc, char *argv[]) {
 #endif // USE_DEBUG_VISU
 
     if(comp.GetTime() >= nextTimeVTK ) {
-      // Create a VTK File in the folder VTK (must exist)
-      vtk.Init("VTK/field");
-      vtk.AddField("Velocity", comp.GetU(), comp.GetV());
-      vtk.AddScalar("Pressure", comp.GetP());
-      vtk.AddScalar("Vorticity", comp.GetVorticity());
-      vtk.AddScalar("Streamlines", comp.GetStreamline());
-      vtk.Finish();
-
       // Create VTK File for Particle tracing in the folder VTK (must exist)
       vtk.InitParticles("VTK/particle");
       vtk.AddParticles("Particle", comp.GetParticles());
@@ -220,6 +212,14 @@ int main(int argc, char *argv[]) {
       vtk.InitParticles("VTK/streakline");
       vtk.AddParticles("Streakline", comp.GetStreakline());
       vtk.FinishParticles();
+
+      // Create a VTK File in the folder VTK (must exist)
+      vtk.Init("VTK/field");
+      vtk.AddField("Velocity", comp.GetU(), comp.GetV());
+      vtk.AddScalar("Pressure", comp.GetP());
+      vtk.AddScalar("Vorticity", comp.GetVorticity());
+      vtk.AddScalar("Streamlines", comp.GetStreamline());
+      vtk.Finish();
 
       nextTimeVTK += param.VtkDt();
     }

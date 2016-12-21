@@ -18,6 +18,7 @@
 #include <fstream>
 #include <string>
 #include <limits>
+#include <list>
 #include "typedef.hpp"
 #include "parameter.hpp"
 
@@ -90,15 +91,12 @@ void Parameter::Load(const char file[], const bool printinfo) {
       if(printinfo) {
         std::cout << "Parameter: Load visuDt = " << this->_visuDt << std::endl;
       }
-    } else if(!param.compare("particleposx") || !param.compare("particlePosX") || !param.compare("PARTICLEPOSX")) {
-      this->_particleInitPos[0] = value;
+    } else if(!param.compare("particle") || !param.compare("Particle") || !param.compare("PARTICLE")) {
+      const real_t posX = value;
+      in >> value;
+      this->_particleInitPos.push_back(multi_real_t(posX, value));
       if(printinfo) {
-        std::cout << "Parameter: Load particlePosX = " << this->_particleInitPos[0] << std::endl;
-      }
-    } else if(!param.compare("particleposy") || !param.compare("particlePosY") || !param.compare("PARTICLEPOSY")) {
-      this->_particleInitPos[1] = value;
-      if(printinfo) {
-        std::cout << "Parameter: Load particlePosY = " << this->_particleInitPos[1] << std::endl;
+        std::cout << "Parameter: Load particle at " << posX << ", "<< value << std::endl;
       }
     } else {
       std::cerr << "Parameter: Unknown identifier " << param << std::endl;

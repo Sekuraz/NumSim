@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <list>
 #include <cstring>
 #include "typedef.hpp"
 using namespace std;
@@ -40,12 +41,10 @@ struct param_t {
   index_t itermax;
   real_t  vtkDt;
   real_t  visuDt;
-  real_t  particlePosX;
-  real_t  particlePosY;
+  std::list<multi_real_t>  particlePos;
 
   param_t() : re(1000), omega(1.7), alpha(0.9),  dt(1e-2), tend(50), eps(1e-3),
-              tau(0.5), itermax(500), vtkDt(0.5), visuDt(0), particlePosX(0.1),
-              particlePosY(0.6) {}
+              tau(0.5), itermax(500), vtkDt(0.5), visuDt(0) {}
 };
 
 struct geom_t {
@@ -76,7 +75,6 @@ int main (int argc, char **argv) {
          << "\t\t\tand \"<name>.geom\". The default filenames are" << endl
          << "\t\t\t\"drivencavity.param\" and \"drivencavity.geom\"." << endl << endl
          << "Parameters:" << endl
-         << "If some of these arguments are given, the \".param\" file is written." << endl
          << "\t-re <float>\tReynolds number. Default: " << param.re << endl
          << "\t-omg <float>\tSOR parameter. Default: is " << param.omega << endl
          << "\t-alpha <float>\tDonor-Cell weighting parameter. Default: "<< param.alpha << endl
@@ -87,10 +85,9 @@ int main (int argc, char **argv) {
          << "\t-iter <int>\tMaximal number of solver iterations per time-step. Default: " << param.itermax << endl
          << "\t-vtkDt <float>\tTime-step for writing vtk-files. Default: " << param.vtkDt << endl
          << "\t-visuDt <float>\tTime-step for real time visualization. Default: " << param.visuDt << endl
-         << "\t-ppos <float>x<float>  Inital position of the particle for particle tracing." << endl
-         << "\t\t\tDefault: " << param.particlePosX << "x" << param.particlePosY << endl << endl
+         << "\t-ppos <float>x<float> [...]  Inital positions of the particles for particle tracing." << endl
+         << "\t\t\tDefault: 0.1x0.6" << endl << endl
          << "Geometry:" << endl
-         << "If some of these arguments are given, the \".geom\" file is written." << endl
          << "The default is a driven cavity. Pre-defined geometries must be set before" << endl
          << "changing other parameters." << endl
          << "\t-pre <num>\tChoose among some ready-made geometries. Default: " << geom.type << endl
@@ -194,10 +191,35 @@ int main (int argc, char **argv) {
   if (pos) {
     sscanf(argv[pos+1],"%lf",&param.vtkDt);
   }
+
+  pos = getOpt("-length",argc,argv);
+  if (pos) {
+    sscanf(argv[pos+1],"%lfx%lf",&geom.length[0],&geom.length[1]);
+  }
   pos = getOpt("-ppos",argc,argv);
   if (pos) {
-    sscanf(argv[pos+1],"%lfx%lf", &param.particlePosX,&param.particlePosY);
-    sscanf(argv[pos+1],"%lf",&param.particlePosX);
+    // TODO: read further input
+    multi_real_t ppos;
+    sscanf(argv[pos+1],"%lfx%lf", &ppos[0],&ppos[1]);
+    param.particlePos.push_back(ppos);
+  } else {
+    switch (geom.type) {
+    case 1:
+    case 2:
+    case 4:
+      param.particlePos.push_back(multi_real_t(0.1, geom.length[1]/4));
+      param.particlePos.push_back(multi_real_t(0.1, geom.length[1]/2));
+      param.particlePos.push_back(multi_real_t(0.1, geom.length[1]*3/4));
+      break;
+    case 3:
+      param.particlePos.push_back(multi_real_t(0.1, geom.length[1]*5/8));
+      param.particlePos.push_back(multi_real_t(0.1, geom.length[1]*3/4));
+      param.particlePos.push_back(multi_real_t(0.1, geom.length[1]*7/8));
+      break;
+    default:
+      param.particlePos.push_back(multi_real_t(0.1,0.6));
+      break;
+    }
   }
 
   char name[100];
@@ -213,19 +235,16 @@ int main (int argc, char **argv) {
        << "tau = " << param.tau << endl
        << "itermax = " << param.itermax << endl
        << "vtkDt = " << param.vtkDt << endl
-       << "visuDt = " << param.visuDt << endl
-       << "particlePosX = " << param.particlePosX << endl
-       << "particlePosY = " << param.particlePosY << endl;
+       << "visuDt = " << param.visuDt << endl;
+    for(std::list<multi_real_t>::iterator it = param.particlePos.begin(); it != param.particlePos.end(); ++it) {
+      of << "particle = " << (*it)[0] << " " << (*it)[1] << endl;
+    }
     of.close();
     cout << "Wrote \"" << name << "\"."<< endl;
   } else {
     cerr << "Could not open \"" << name << "\"!" << endl;
   }
 
-  pos = getOpt("-length",argc,argv);
-  if (pos) {
-    sscanf(argv[pos+1],"%lfx%lf",&geom.length[0],&geom.length[1]);
-  }
   pos = getOpt("-size",argc,argv);
   if (pos) {
     sscanf(argv[pos+1],"%lux%lu",&geom.size[0],&geom.size[1]);
