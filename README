@@ -1,0 +1,5 @@
+Numerical solver for the Navier-Stokes equations.
+
+For creating geometry and parameter files please look at creator -h
+
+For running the solver please look at numsim -h
