@@ -42,6 +42,10 @@ if (DEBUG_VISU)
   INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES} ${SDL2_INCLUDE_DIRS})
 endif (DEBUG_VISU)
 
+# write vtk?
+option (WRITE_VTK
+  "Writing out vtk files for use with paraview" ON)
+
 # find mpi
 find_package (MPI REQUIRED)
 INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES} ${MPI_INCLUDE_PATH})
@@ -56,7 +60,6 @@ set (HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/src/parameter.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/solver.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/typedef.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/vtk.hpp
   )
 
 set (SOURCES
@@ -67,7 +70,6 @@ set (SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iterator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/parameter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/solver.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/vtk.cpp
   )
 
 # add header and source of visu if it shall be built
@@ -83,8 +85,24 @@ if (DEBUG_VISU)
     ${CMAKE_CURRENT_SOURCE_DIR}/src/visu.cpp
     )
 
-  add_definitions(-DUSE_DEBUG_VISU)
+  add_definitions(-DDEBUG_VISU)
 endif (DEBUG_VISU)
+
+# add header and source of vtk if it shall be built
+# additionally set a flag
+if (WRITE_VTK)
+  set (HEADERS
+    ${HEADERS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vtk.hpp
+    )
+
+  set (SOURCES
+    ${SOURCES}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/vtk.cpp
+    )
+
+  add_definitions(-DWRITE_VTK)
+endif (WRITE_VTK)
 
 # build executable and link libs against it
 add_executable (numsim ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)

@@ -25,10 +25,13 @@
 #include "geometry.hpp"
 #include "iterator.hpp"
 #include "parameter.hpp"
-#ifdef USE_DEBUG_VISU
+#ifdef DEBUG_VISU
   #include "visu.hpp"
 #endif
-#include "vtk.hpp"
+#ifdef WRITE_VTK
+  #include "vtk.hpp"
+#endif
+
 
 /// reads arguments from command line
 void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geomPath) {
@@ -121,6 +124,7 @@ int main(int argc, char *argv[]) {
   // Create communicator, parameter and geometry instances and load values
   Communicator comm(&argc, &argv);
 
+#ifdef WRITE_VTK
   // Delete old VTK files, prevents bugs in paraview
   if(comm.ThreadNum() == 0) {
     int status = system("rm -r ./VTK/* &>/dev/null");
@@ -128,6 +132,7 @@ int main(int argc, char *argv[]) {
       std::cerr << "Error while deleting old VTK files!" << std::endl;
     }
   }
+#endif // WRITE_VTK
 
   Parameter param(paramPath, (comm.ThreadNum() == 0));
   Geometry geom(comm, geomPath, (comm.ThreadNum() == 0));
@@ -140,29 +145,32 @@ int main(int argc, char *argv[]) {
   // Create the fluid solver
   Compute comp(geom, param, comm);
 
-#ifdef USE_DEBUG_VISU
+#ifdef DEBUG_VISU
   // Create and initialize the visualization
   const int hRes = 800;
   const int vRes = (int)(hRes * geom.TotalLength()[1] / geom.TotalLength()[0]);
   Renderer visu(geom.Length(), geom.Mesh());
   visu.Init(hRes, vRes, comm.ThreadNum(), comm.ThreadIdx(), comm.ThreadDim());
-#endif // USE_DEBUG_VISU
 
+  const Grid *visugrid;
+  visugrid = comp.GetVelocity();
+  real_t nextTimeVisu = 0;
+#endif // DEBUG_VISU
+
+#ifdef WRITE_VTK
   // Create a VTK generator
   VTK vtk(geom.Mesh(), geom.SizeP(), geom.Offset(), geom.TotalSize(), comm.ThreadNum(),
           comm.ThreadIdx(), comm.ThreadDim());
 
-  const Grid *visugrid;
+  real_t nextTimeVTK = 0;
+#endif // WRITE_VTK
+
   bool run = true;
 
-  visugrid = comp.GetVelocity();
-
-  real_t nextTimeVTK = 0;
-  real_t nextTimeVisu = 0;
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
 
-#ifdef USE_DEBUG_VISU
+#ifdef DEBUG_VISU
     if(comp.GetTime() >= nextTimeVisu) {
       // compute global min and max
       real_t min, max;
@@ -200,8 +208,9 @@ int main(int argc, char *argv[]) {
       };
     nextTimeVisu += param.VisuDt();
     }
-#endif // USE_DEBUG_VISU
+#endif // DEBUG_VISU
 
+#ifdef WRITE_VTK
     if(comp.GetTime() >= nextTimeVTK ) {
       // Create VTK File for Particle tracing in the folder VTK (must exist)
       vtk.InitParticles("VTK/particle");
@@ -223,6 +232,7 @@ int main(int argc, char *argv[]) {
 
       nextTimeVTK += param.VtkDt();
     }
+#endif // WRITE_VTK
 
 /*
     std::cout << std::endl << "U: " << comp.GetU()->Size();
@@ -234,10 +244,10 @@ int main(int argc, char *argv[]) {
     std::cin.get();
 */
     comp.TimeStep(comm.ThreadNum() == 0);
-#ifdef USE_DEBUG_VISU
+#ifdef DEBUG_VISU
     // Gather if one process stopped
     run = comm.gatherAnd(run);
-#endif
+#endif //DEBUG_VISU
   }
 
   return 0;
