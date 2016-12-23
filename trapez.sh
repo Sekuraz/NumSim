@@ -1,0 +1,23 @@
+#!/bin/bash
+
+N=50
+
+DIR=Trapez$(date +%Y-%m-%d_%H-%M-%S)
+mkdir ${DIR}
+
+SIGMA=166.666666666667
+MU=1500
+START=$(bc <<< "${MU} - 3 * ${SIGMA}")
+END=$(bc <<< "${MU} + 3 * ${SIGMA}")
+STEP=$(echo "(${END}-${START}) / $N" | bc)
+
+echo "Simulating Re from ${START} to ${END} in steps of ${STEP}"
+
+for n in $(seq 1 $N); do
+  RE=$(bc <<< "${START} + $n * ${STEP}")
+  ./creator -re ${RE} -vtkDt 51 -visuDt 51 -tau 0.75 -dt 0.002
+  ./numsim -I drivencavity &>${DIR}/run${I}.log
+done
+
+rm -f drivencavity.geom drivencavity.param
+

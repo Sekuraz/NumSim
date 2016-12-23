@@ -123,6 +123,7 @@ int main(int argc, char *argv[]) {
 
   // Create communicator, parameter and geometry instances and load values
   Communicator comm(&argc, &argv);
+  bool printInfo = false; /* comm.ThreadNum() == 0; */
 
 #ifdef WRITE_VTK
   // Delete old VTK files, prevents bugs in paraview
@@ -134,12 +135,12 @@ int main(int argc, char *argv[]) {
   }
 #endif // WRITE_VTK
 
-  Parameter param(paramPath, (comm.ThreadNum() == 0));
-  Geometry geom(comm, geomPath, (comm.ThreadNum() == 0));
+  Parameter param(paramPath, printInfo);
+  Geometry geom(comm, geomPath, printInfo);
   if(param.Omega() <= 0.0 || param.Omega() > 2.0) {
     real_t h = std::fmax(geom.Mesh()[0], geom.Mesh()[1]);
     param.Omega() = 2.0 / (1.0 + std::sin(M_PI * h));
-    std::cout << "Set new omega = " << param.Omega() << std::endl;
+    /*std::cout << "Set new omega = " << param.Omega() << std::endl;*/
   }
 
   // Create the fluid solver
@@ -243,7 +244,7 @@ int main(int argc, char *argv[]) {
     comp.GetP()->print();
     std::cin.get();
 */
-    comp.TimeStep(comm.ThreadNum() == 0);
+    comp.TimeStep(printInfo);
 #ifdef DEBUG_VISU
     // Gather if one process stopped
     run = comm.gatherAnd(run);

@@ -19,6 +19,8 @@
 #include <fstream>
 #include <list>
 #include <cstring>
+#include <chrono>
+#include <random>
 #include "typedef.hpp"
 using namespace std;
 
@@ -76,6 +78,8 @@ int main (int argc, char **argv) {
          << "\t\t\t\"drivencavity.param\" and \"drivencavity.geom\"." << endl << endl
          << "Parameters:" << endl
          << "\t-re <float>\tReynolds number. Default: " << param.re << endl
+         << "\t-rand <mu>x<sigma>  Chooses the reynolds number drawn from a nomal distribution with" << endl
+         << "\t\t\tmean <mu> and standard deviation <sigma>. Default: disabled." << endl
          << "\t-omg <float>\tSOR parameter. Default: is " << param.omega << endl
          << "\t-alpha <float>\tDonor-Cell weighting parameter. Default: "<< param.alpha << endl
          << "\t-dt <float>\tTime-step. Default: " << param.dt << endl
@@ -86,7 +90,7 @@ int main (int argc, char **argv) {
          << "\t-vtkDt <float>\tTime-step for writing vtk-files. Default: " << param.vtkDt << endl
          << "\t-visuDt <float>\tTime-step for real time visualization. Default: " << param.visuDt << endl
          << "\t-ppos <float>x<float> [...]  Inital positions of the particles for particle tracing." << endl
-         << "\t\t\tDefault: 0.1x0.6" << endl << endl
+         << "\t\t\tDefault: no particles." << endl << endl
          << "Geometry:" << endl
          << "The default is a driven cavity. Pre-defined geometries must be set before" << endl
          << "changing other parameters." << endl
@@ -175,6 +179,18 @@ int main (int argc, char **argv) {
   if (pos) {
     sscanf(argv[pos+1],"%lf",&param.re);
   }
+  pos = getOpt("-rand",argc,argv);
+  if (pos) {
+    real_t mu, sigma;
+    do {
+      sscanf(argv[pos+1],"%lfx%lf", &mu, &sigma);
+      index_t seed = std::chrono::system_clock::now().time_since_epoch().count();
+      std::default_random_engine generator(seed);
+      std::normal_distribution<real_t> distribution(mu,sigma);
+      param.re = distribution(generator);
+    } while(param.re < 1e-2);
+    cout << "Draw Re = " << param.re << endl;
+  }
   pos = getOpt("-tau",argc,argv);
   if (pos) {
     sscanf(argv[pos+1],"%lf",&param.tau);
@@ -222,7 +238,6 @@ int main (int argc, char **argv) {
       param.particlePos.push_back(multi_real_t(0.1, geom.length[1]*7/8));
       break;
     default:
-      param.particlePos.push_back(multi_real_t(0.1,0.6));
       break;
     }
   }
