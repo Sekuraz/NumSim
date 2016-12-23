@@ -92,7 +92,11 @@ public:
   /// Updates the velocity fields u and v for a free geometry
   void Update(Grid &u, Grid &v) const;
 
+  /// returns wether this cell is a noslip boundary
   bool noslip(const Iterator &it) const;
+
+  /// Returns the parabolic velocity profile (1/2*Re*dp/L_x*y*(y-L_y)).
+  real_t parabolic(const Iterator &it) const;
 
 private:
   /// Computes the sizes of the grids.
@@ -100,8 +104,6 @@ private:
   /// Returns the grid flag of the cell at the position of it.
   const char& flag(const Iterator &it) const;
 
-  /// Returns the parabolic velocity profile (1/2*Re*dp/L_x*y*(y-L_y)).
-  real_t parabolic(const Iterator &it) const;
 
 /*
   /// Returns whether the cell at the position of the iterator is NoSlip cell.

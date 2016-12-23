@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <fstream>
 #include <cstring>
 #include <cstdlib>
 #include "typedef.hpp"
@@ -249,6 +250,21 @@ int main(int argc, char *argv[]) {
     // Gather if one process stopped
     run = comm.gatherAnd(run);
 #endif //DEBUG_VISU
+  }
+
+  real_t err_2 = 0;
+  real_t tmp;
+
+  for(Iterator it(geom); it.Valid(); it.Next()) {
+    err_2 += comp.GetV()->Cell(it) * comp.GetV()->Cell(it);
+    tmp = comp.GetU()->Cell(it) - geom.parabolic(it);
+
+    err_2 += tmp * tmp;
+  }
+
+  std::ofstream of("canal_error", std::ofstream::app);
+  if(of.is_open()) {
+      of << geom.TotalSize() << ": " << std::sqrt(err_2) << std::endl;
   }
 
   return 0;
