@@ -58,7 +58,7 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
   const Iterator it1(this->_geom, multi_index_t(120, 5));
   const Iterator it2(this->_geom, multi_index_t(64, 64));
   const Iterator it3(this->_geom, multi_index_t(5, 120));
-  std::cout << this->_param.Re() << "\t" << this->_t << "\t"
+  std::cout << this->_param.Re() << "\t" << this->_t << "\t" << 0.0 << "\t"
             << this->_u->Cell(it1) << "\t" << this->_v->Cell(it1) << "\t"
             << this->_u->Cell(it2) << "\t" << this->_v->Cell(it2) << "\t"
             << this->_u->Cell(it3) << "\t" << this->_v->Cell(it3) << "\t"
@@ -153,7 +153,7 @@ void Compute::TimeStep(bool printInfo) {
   const Iterator it1(this->_geom, multi_index_t(120, 5));
   const Iterator it2(this->_geom, multi_index_t(64, 64));
   const Iterator it3(this->_geom, multi_index_t(5, 120));
-  std::cout << this->_param.Re() << "\t" << this->_t << "\t"
+  std::cout << this->_param.Re() << "\t" << this->_t << "\t" << std::sqrt(res) << "\t"
             << this->_u->Cell(it1) << "\t" << this->_v->Cell(it1) << "\t"
             << this->_u->Cell(it2) << "\t" << this->_v->Cell(it2) << "\t"
             << this->_u->Cell(it3) << "\t" << this->_v->Cell(it3) << "\t"

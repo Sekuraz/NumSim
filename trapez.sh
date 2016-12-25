@@ -15,7 +15,7 @@ echo "Simulating Re from ${START} to ${END} in steps of ${STEP}"
 
 for n in $(seq 1 $N); do
   RE=$(bc <<< "${START} + $n * ${STEP}")
-  ./creator -re ${RE} -vtkDt 51 -visuDt 51 -tau 0.75 -dt 0.002
+  ./creator -re ${RE} -tau 0.75 -dt 0.002 -iter 1000
   ./numsim -I drivencavity &>${DIR}/run${I}.log
 done
 
