@@ -39,8 +39,12 @@ cmake_install.cmake
 Makefile
 
 # Output
+Montecarlo-*/
 VTK/
 doc/
 profiler.svg
 *.geom
 *.param
+*.csv
+*.log
+*.pdf
