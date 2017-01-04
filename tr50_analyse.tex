@@ -11,9 +11,8 @@
   compat=1.11,
   every y tick scale label/.append style={xshift=-30pt}
 }
-\pgfplotstableread{mc_mean-sd_small.csv}\datameansd
-\pgfplotstableread{mc_conv.csv}\dataconv
-\pgfplotstableread{mc_hist.csv}\datahist
+\pgfplotstableread{tr50_mean-sd_small.csv}\datameansd
+\pgfplotstableread{tr_conv.csv}\dataconv
 
 \begin{document}
 
@@ -201,111 +200,6 @@
       {$\overline{u}$ at (120,5)}, {$\sigma_u$ at (120,5)}
     }
   \end{semilogyaxis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-  \begin{axis}[
-    title = {Histogram of the Reynolds number $Re$},
-    xlabel = {Reynolds number $Re$},
-    ylabel = {Frequency},
-    width=16cm,
-    ybar interval,
-    xticklabel={$[\pgfmathprintnumber\tick, \pgfmathprintnumber\nexttick)$},
-    xticklabel style={font=\tiny},
-    scaled x ticks=base 10:-3,
-  ]
-    \addplot+[ hist={ bins=10 } ] table [y index = {0}] \datahist;
-  \end{axis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-  \begin{axis}[
-    title = {Histogram of the velocity $u$ at (120,5) and time $t = 50$},
-    xlabel = {Velocity $u$},
-    ylabel = {Frequency},
-    width=16cm,
-    ybar interval,
-    xticklabel={$[\pgfmathprintnumber\tick, \pgfmathprintnumber\nexttick)$},
-    xticklabel style={font=\tiny},
-    scaled x ticks=base 10:3,
-  ]
-    \addplot+[ hist={ bins=10 } ] table [y index = {3}] \datahist;
-  \end{axis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-  \begin{axis}[
-    title = {Histogram of the velocity $v$ at (120,5) and time $t = 50$},
-    xlabel = {Velocity $v$},
-    ylabel = {Frequency},
-    width=16cm,
-    ybar interval,
-    xticklabel={$[\pgfmathprintnumber\tick, \pgfmathprintnumber\nexttick)$},
-    xticklabel style={font=\tiny},
-    scaled x ticks=base 10:3,
-  ]
-    \addplot+[ hist={ bins=10 } ] table [y index = {4}] \datahist;
-  \end{axis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-  \begin{axis}[
-    title = {Histogram of the velocity $u$ at (64,64) and time $t = 50$},
-    xlabel = {Velocity $u$},
-    ylabel = {Frequency},
-    width=16cm,
-    ybar interval,
-    xticklabel={$[\pgfmathprintnumber\tick, \pgfmathprintnumber\nexttick)$},
-    xticklabel style={font=\tiny},
-    scaled x ticks=base 10:2,
-  ]
-    \addplot+[ hist={ bins=10 } ] table [y index = {5}] \datahist;
-  \end{axis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-  \begin{axis}[
-    title = {Histogram of the velocity $v$ at (64,64) and time $t = 50$},
-    xlabel = {Velocity $v$},
-    ylabel = {Frequency},
-    width=16cm,
-    ybar interval,
-    xticklabel={$[\pgfmathprintnumber\tick, \pgfmathprintnumber\nexttick)$},
-    xticklabel style={font=\tiny},
-    scaled x ticks=base 10:2,
-  ]
-    \addplot+[ hist={ bins=10 } ] table [y index = {6}] \datahist;
-  \end{axis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-  \begin{axis}[
-    title = {Histogram of the velocity $u$ at (5,120) and time $t = 50$},
-    xlabel = {Velocity $u$},
-    ylabel = {Frequency},
-    width=16cm,
-    ybar interval,
-    xticklabel={$[\pgfmathprintnumber\tick, \pgfmathprintnumber\nexttick)$},
-    xticklabel style={font=\tiny},
-    scaled x ticks=base 10:2,
-  ]
-    \addplot+[ hist={ bins=10 } ] table [y index = {7}] \datahist;
-  \end{axis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-  \begin{axis}[
-    title = {Histogram of the velocity $v$ at (5,120) and time $t = 50$},
-    xlabel = {Velocity $v$},
-    ylabel = {Frequency},
-    width=16cm,
-    ybar interval,
-    xticklabel={$[\pgfmathprintnumber\tick, \pgfmathprintnumber\nexttick)$},
-    xticklabel style={font=\tiny},
-    scaled x ticks=base 10:2,
-  ]
-    \addplot+[ hist={ bins=10 } ] table [y index = {8}] \datahist;
-  \end{axis}
 \end{tikzpicture}
 
 \end{document}

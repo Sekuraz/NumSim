@@ -13,7 +13,7 @@ STEP=$(echo "(${END}-${START}) / $N" | bc)
 
 echo "Simulating Re from ${START} to ${END} in steps of ${STEP}"
 
-for n in $(seq 1 $N); do
+for n in $(seq 0 $N); do
   RE=$(bc <<< "${START} + $n * ${STEP}")
   ./creator -re ${RE} -tau 0.75 -dt 0.002 -iter 1000
   ./numsim -I drivencavity &>${DIR}/run${n}.log
