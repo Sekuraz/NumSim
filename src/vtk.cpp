@@ -43,7 +43,7 @@ void VTK::Init(const char *path) {
   sprintf(filename, "%s_r%02lu-%02lu-%02lu_%05lu.vts", (strlen(path) > 0)? path : "field",
           this->_tidx[0], this->_tidx[1], (DIM == 3? this->_tidx[2] : 0), this->_cnt);
   this->_handle = fopen(filename, "w");
-  
+
   if(this->_rank == 0) {
     sprintf(filename, "%s_%05lu.pvts",  (strlen(path) > 0)? path : "field", this->_cnt);
     this->_phandle = fopen(filename, "w");
@@ -282,7 +282,7 @@ void VTK::AddParticles(const char *title, const std::list<multi_real_t> particle
   fprintf(_handle, "<Points>\n");
   fprintf(_handle, "<DataArray Name=\"%s\" type=\"Float64\" format=\"ascii\" "
                    "NumberOfComponents=\"3\">\n",title);
-  
+
   std::list<multi_real_t>::const_iterator it;
   for (it = particles.begin(); it != particles.end(); ++it) {
     multi_real_t data = *it;

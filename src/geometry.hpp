@@ -79,6 +79,8 @@ public:
   inline bool isFree() const { return this->_free; }
   /// Returns the local number of fluid cells
   inline const index_t &NumFluid() const { return this->_N; }
+  /// Returns the initial Temperature of the fluid cells
+  inline const real_t &InitTemp() const { return this->_temperatureInit; }
 
   /// Returns whether the cell at the position of the iterator is fluid cell.
   inline bool isFluid(const Iterator &it) const { return ( this->flag(it) == ' ' ); }
@@ -89,6 +91,8 @@ public:
   //void Update_V(Grid &v) const;
   /// Updates the pressure field p for a free geometry
   void Update_P(Grid &p) const;
+  /// Updates the temperature field temperature for a free geometry
+  void Update_Temperature(Grid &T) const;
   /// Updates the velocity fields u and v for a free geometry
   void Update(Grid &u, Grid &v) const;
 
@@ -134,6 +138,10 @@ private:
   index_t _N;                ///< local number of fluid cells
   multi_real_t _velocity;    ///< constant boundary velocities (u,v) at upper boundary
   real_t _pressure;          ///< constant pressure difference between left and right
+  real_t _temperatureHeat;   ///< constant boundary temperature for heating
+  real_t _temperatureCool;   ///< constant boundary temperature for cooling
+  real_t _temperatureInit;   ///< initial temperature
+  real_t _temperatureWall;   ///< constant boundary temperature of the walls
 };
 //------------------------------------------------------------------------------
 #endif // __GEOMETRY_HPP

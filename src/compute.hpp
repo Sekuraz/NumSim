@@ -51,6 +51,8 @@ public:
   /// Returns the pointer to the Particle Tracing grid
 	inline const Grid *GetParticleTrace() const { return this->_particle; };
   /// Returns the pointer to the Particle Tracing list
+	inline const Grid *GetTemperature() const { return this->_T; };
+  /// Returns the pointer to the temperature list
   inline const std::list<multi_real_t> GetParticles() const { return this->_particleTracing; };
   /// Returns the pointer to the Particle Tracing list
 	//inline const std::list<multi_real_t> *GetStreakline() const { return this->_streakline; };
@@ -75,6 +77,7 @@ private:
   Grid *_streamline; ///< grid for streamfunction
   Grid *_vorticity; ///< grid for the vorticity
   Grid *_particle; ///< grid for the particle tracing
+  Grid *_T; ///< grid for the temperature
 
   RedOrBlackSOR *_solver; ///< solver for the pressure (poisson) equation
   const bool _firstRed; ///< Whether first Red of Black Cycle is done
@@ -94,6 +97,8 @@ private:
   void NewVelocities(const real_t &dt);
   /// Compute the temporary velocities F,G
   void MomentumEqu(const real_t &dt);
+  /// Compute the new temperature T
+  void Temperature(const real_t &dt);
   /// Compute the RHS of the poisson equation
   void RHS(const real_t &dt);
   /// Computes the vorticity

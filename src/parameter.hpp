@@ -27,7 +27,7 @@ public:
   /// Constructs a new Parameter set with default values
   // Driven Cavity parameters; see exercise sheet 1
   Parameter(const char file[] = nullptr, const bool printinfo = 0)
-      : _re(1000), _omega(1.7), _alpha(0.9), _dt(1e-2), _tend(50),
+      : _re(1000), _pr(150), _omega(1.7), _alpha1(0.9), _alpha2(0.9), _beta(0.000207), _dt(1e-2), _tend(50),
         _eps(1e-3), _tau(0.5), _itermax(500), _vtkDt(0.5), _visuDt(0) {
       if(file != nullptr) {
         this->Load(file, printinfo);
@@ -39,12 +39,18 @@ public:
 
   /// Returns the Reynolds-number
   inline const real_t &Re() const { return this->_re; };
+  /// Returns the Prandl-number
+  inline const real_t &Pr() const { return this->_pr; };
   /// Returns the over-relaxation parameter for SOR and RedBlackSOR
   inline const real_t &Omega() const { return this->_omega; };
   /// Returns the over-relaxation parameter for SOR and RedBlackSOR (write access)
   inline real_t &Omega() { return this->_omega; };
-  /// Returns the weighting between Donor-Cell and central differences
-  inline const real_t &Alpha() const { return this->_alpha; };
+  /// Returns the weighting between Donor-Cell and central differences for velocities
+  inline const real_t &Alpha1() const { return this->_alpha1; };
+  /// Returns the weighting between Donor-Cell and central differences for temperature
+  inline const real_t &Alpha2() const { return this->_alpha2; };
+  /// Returns the dimensionless volume expansion coefficient
+  inline const real_t &Beta() const { return this->_beta; };
   /// Returns the maximal time-step
   inline const real_t &Dt() const { return this->_dt; };
   /// Returns the final time
@@ -64,8 +70,11 @@ public:
 
 private:
   real_t _re;
+  real_t _pr;
   real_t _omega;
-  real_t _alpha;
+  real_t _alpha1;
+  real_t _alpha2;
+  real_t _beta;
   real_t _dt;
   real_t _tend;
   real_t _eps;

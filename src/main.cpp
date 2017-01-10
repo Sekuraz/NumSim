@@ -49,6 +49,8 @@ void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geo
          << "\t\t\t\t2: Pressure driven channel" << std::endl
          << "\t\t\t\t3: Channel with step" << std::endl
          << "\t\t\t\t4: Channel with barrier" << std::endl
+         << "\t\t\t\t5: Coffe with milk insertion" << std::endl
+         << "\t\t\t\t6: Heating of a room" << std::endl
          << "\t-G <path>\tUse the specified geometry file" << std::endl
          << "\t-P <path>\tUse the specified parameter file" << std::endl
          << "\t-I <path>\tUse the specified parameter and geometry file" << std::endl
@@ -89,6 +91,14 @@ void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geo
           strcpy(geomPath, "data/karman.geom");
           strcpy(paramPath, "data/karman.param");
           break;
+        case 5:
+          strcpy(geomPath, "data/coffee.geom");
+          strcpy(paramPath, "data/coffee.param");
+          break;
+        case 6:
+          strcpy(geomPath, "data/heating.geom");
+          strcpy(paramPath, "data/heating.param");
+          break;
         default:
           strcpy(geomPath, "data/drivencavity.geom");
           strcpy(paramPath, "data/drivencavity.param");
@@ -123,7 +133,7 @@ int main(int argc, char *argv[]) {
 
   // Create communicator, parameter and geometry instances and load values
   Communicator comm(&argc, &argv);
-  bool printInfo = false; /* comm.ThreadNum() == 0; */
+  bool printInfo = true; /* comm.ThreadNum() == 0; */
 
 #ifdef WRITE_VTK
   // Delete old VTK files, prevents bugs in paraview
@@ -204,6 +214,9 @@ int main(int argc, char *argv[]) {
       case 6:
         visugrid = comp.GetParticleTrace();
         break;
+      case 7:
+        visugrid = comp.GetTemperature();
+        break;
       default:
         break;
       };
@@ -229,6 +242,7 @@ int main(int argc, char *argv[]) {
       vtk.AddScalar("Pressure", comp.GetP());
       vtk.AddScalar("Vorticity", comp.GetVorticity());
       vtk.AddScalar("Streamlines", comp.GetStreamline());
+      vtk.AddScalar("Temperature", comp.GetTemperature());
       vtk.Finish();
 
       nextTimeVTK += param.VtkDt();

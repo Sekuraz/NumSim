@@ -43,15 +43,31 @@ void Parameter::Load(const char file[], const bool printinfo) {
       if(printinfo) {
         std::cout << "Parameter: Load Re = " << this->_re << std::endl;
       }
-    } else if(!param.compare("Omega") || !param.compare("omega")) {
+    } else if(!param.compare("Pr") || !param.compare("pr")) {
+      this->_pr = value;
+      if(printinfo) {
+        std::cout << "Parameter: Load Pr = " << this->_pr << std::endl;
+      }
+    }
+    else if(!param.compare("Omega") || !param.compare("omega")) {
       this->_omega = value;
       if(printinfo) {
         std::cout << "Parameter: Load omega = " << this->_omega << std::endl;
       }
-    } else if(!param.compare("Alpha") || !param.compare("alpha")) {
-      this->_alpha = value;
+    } else if(!param.compare("Alpha1") || !param.compare("alpha1")) {
+      this->_alpha1 = value;
       if(printinfo) {
-        std::cout << "Parameter: Load alpha = " << this->_alpha << std::endl;
+        std::cout << "Parameter: Load alpha1 = " << this->_alpha1 << std::endl;
+      }
+    } else if(!param.compare("Alpha2") || !param.compare("alpha2")) {
+      this->_alpha2 = value;
+      if(printinfo) {
+        std::cout << "Parameter: Load alpha2 = " << this->_alpha2 << std::endl;
+      }
+    } else if(!param.compare("Beta") || !param.compare("beta")) {
+      this->_beta = value;
+      if(printinfo) {
+        std::cout << "Parameter: Load beta = " << this->_beta << std::endl;
       }
     } else if(!param.compare("Dt") || !param.compare("dt")) {
       if(value == 0) {

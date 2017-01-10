@@ -37,6 +37,7 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
     _F(new Grid(geom)), _G(new Grid(geom)), _rhs(new Grid(geom)),
     _velocities(new Grid(geom)), _streamline(new Grid(geom)),
     _vorticity(new Grid(geom)), _particle(new Grid(geom, multi_real_t(geom.Mesh()[0]/2, geom.Mesh()[1]/2))),
+    _T(new Grid(geom, multi_real_t(geom.Mesh()[0]/2, geom.Mesh()[1]/2))),
     _firstRed(comm.EvenOdd() && (geom.Size()[0] % 2 == 0)), // TODO one size even other odd
     _geom(geom), _param(param), _comm(comm),
     _initPosParticle(param.ParticleInitPos()), _numParticles(param.ParticleInitPos().size()) {
@@ -49,6 +50,7 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
   this->_v->Initialize(0);
   this->_p->Initialize(0);
   this->_particle->Initialize(0);
+  this->_T->Initialize(this->_geom.InitTemp());
 
   // write first particle pos in list for particle trace and streakline
   this->_particleTracing.insert(this->_particleTracing.begin(), this->_initPosParticle.begin(), this->_initPosParticle.end());
@@ -68,25 +70,35 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
 Compute::~Compute() {
   delete _u; delete _v; delete _p; delete _F;
   delete _G; delete _rhs; delete _velocities; delete _solver;
-  delete _streamline; delete _vorticity; delete _particle;
+  delete _streamline; delete _vorticity; delete _particle; delete _T;
 }
 
 // Execute one time step of the fluid simulation (with or without debug info)
 // @ param printInfo print information about current solver state (residual
 // etc.)
 void Compute::TimeStep(bool printInfo) {
+
   // set boundary values for u, v
   this->_geom.Update(*(this->_u), *(this->_v));
+
+  this->_geom.Update_Temperature(*this->_T);
 
   // compute local dt
   // Test CFL and Pr condition
   const multi_real_t &h = this->_geom.Mesh();
-  this->_dtlimit = this->_param.Tau()
+  //this->_dtlimit = this->_param.Tau()
+  //               * std::min(std::min(h[0] / this->_u->AbsMax(), h[1] / this->_v->AbsMax()),
+  //                          this->_param.Re() * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]));
+  // dtlimit with prandl
+  this->_dtlimit = this->_param.Tau() * this->_param.Pr()
                  * std::min(std::min(h[0] / this->_u->AbsMax(), h[1] / this->_v->AbsMax()),
                             this->_param.Re() * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]));
   real_t dt = std::min(this->_dtlimit, this->_param.Dt());
   // gather global dt
   dt = this->_comm.gatherMin(dt);
+
+  //TODO: compute new T
+  this->Temperature(dt);
 
   // compute the momentum equations
   this->MomentumEqu(dt);
@@ -278,12 +290,27 @@ void Compute::MomentumEqu(const real_t &dt) {
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_F->Cell(it) = this->_u->Cell(it) + dt * (
         ( this->_u->dxx(it) + this->_u->dyy(it) )/this->_param.Re()
-        - this->_u->DC_udu_x(it, this->_param.Alpha())
-        - this->_u->DC_vdu_y(it, this->_param.Alpha(), this->_v) );
+        - this->_u->DC_udu_x(it, this->_param.Alpha1())
+        - this->_u->DC_vdu_y(it, this->_param.Alpha1(), this->_v) );
+        //+ dt * (1 -_param.Beta() * 0.5 *(this->_T->Cell(it) + this->_T->Cell(it.Right())));
+        //+ dt * (1 -_param.Beta() * this->_T->Cell(it) );
+    /*
     this->_G->Cell(it) = this->_v->Cell(it) + dt * (
         ( this->_v->dxx(it) + this->_v->dyy(it) )/this->_param.Re()
-        - this->_v->DC_vdv_y(it, this->_param.Alpha())
-        - this->_v->DC_udv_x(it, this->_param.Alpha(), this->_u) );
+        - this->_v->DC_vdv_y(it, this->_param.Alpha1())
+        - this->_v->DC_udv_x(it, this->_param.Alpha1(), this->_u) );
+    */
+    // TODO: rewrite for 3 dimensions
+    this->_G->Cell(it) = this->_v->Cell(it) + dt * (
+        ( this->_v->dxx(it) + this->_v->dyy(it) )/this->_param.Re()
+        - this->_v->DC_vdv_y(it, this->_param.Alpha1())
+        - this->_v->DC_udv_x(it, this->_param.Alpha1(), this->_u) )
+      //+ dt * _param.Beta() * (1.1337 * 9.81 * this->_geom.Mesh()[0]*this->_geom.Mesh()[1] )
+      // 0.5 * (this->_T->Cell(it) + this->_T->Cell(it.Top()));
+        //+ dt * (1 -_param.Beta() * 0.5 *(this->_T->Cell(it) + this->_T->Cell(it.Top())));
+        //+ dt * (1 -_param.Beta() * this->_T->Cell(it) );
+        //* 0.5 * (this->_T->Cell(it) + this->_T->Cell(it.Top()));
+        + dt * _param.Beta() * 0.5 * (this->_T->Cell(it) + this->_T->Cell(it.Top()));
   }
 
   // boundary values of F and G
@@ -297,3 +324,15 @@ void Compute::RHS(const real_t &dt) {
   }
 }
 
+// Compute the new temperature T
+void Compute::Temperature(const real_t &dt) {
+  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
+    // T(n+1) = T(n) + dt*( 1/(Re*Pr)*(ddTdxdx +  ddTdydy) - duTdx - dvTdy)
+    //std::cout << "T_old = " << _T->Cell(it) << std::endl;
+    this->_T->Cell(it) = this->_T->Cell(it) + dt * (1/(this->_param.Re() * this->_param.Pr()) * (this->_T->dxx(it) + this->_T->dyy(it)) - this->_T->DC_udu_x(it, this->_param.Alpha2()) - this->_T->DC_vdv_y(it, this->_param.Alpha2()));
+    //std::cout << "T_new = " << _T->Cell(it) << std::endl;
+  }
+
+  // boundary values of T
+  //this->_geom.Update_Temperature(*this->_T);
+}

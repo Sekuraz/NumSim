@@ -77,6 +77,26 @@ void Geometry::Load(const char file[], const bool printinfo) {
       if(printinfo) {
         std::cout << "Geometry: Load velocity = " << this->_velocity << std::endl;
       }
+    } else if(!param.compare("TemperatureInit") || !param.compare("temperatureInit")) {
+      this->_temperatureInit = value;
+      if(printinfo) {
+        std::cout << "Geometry: Load temperatureInit = " << this->_temperatureInit << std::endl;
+      }
+    } else if(!param.compare("TemperatureHeat") || !param.compare("temperatureHeat")) {
+      this->_temperatureHeat = value;
+      if(printinfo) {
+        std::cout << "Geometry: Load temperatureHeat = " << this->_temperatureHeat << std::endl;
+      }
+    } else if(!param.compare("TemperatureWall") || !param.compare("temperatureWall")) {
+      this->_temperatureWall = value;
+      if(printinfo) {
+        std::cout << "Geometry: Load temperatureWall = " << this->_temperatureWall << std::endl;
+      }
+    } else if(!param.compare("TemperatureCool") || !param.compare("temperatureCool")) {
+      this->_temperatureCool = value;
+      if(printinfo) {
+        std::cout << "Geometry: Load temperatureCool = " << this->_temperatureCool << std::endl;
+      }
     } else if(!param.compare("Pressure") || !param.compare("pressure")) {
       this->_pressure = value;
       if(printinfo) {
@@ -112,6 +132,60 @@ void Geometry::Update_P(Grid &p) const {
   for(Iterator it(*this); it.Valid(); it.Next()) {
     switch(this->flag(it)) {
       case '#': // '#' Wall/Obstacle/NoSlip boundary (u = v = 0, dp/dn = 0)
+        if(this->isFluid(it.Left())) {
+          if(this->isFluid(it.Top())) {
+            p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()));
+          } else {
+            p.Cell(it) = p.Cell(it.Left());
+          }
+        } else if(this->isFluid(it.Top())) {
+          if(this->isFluid(it.Right())) {
+            p.Cell(it) = 0.5 * (p.Cell(it.Top()) + p.Cell(it.Right()));
+          } else {
+            p.Cell(it) = p.Cell(it.Top());
+          }
+        } else if(this->isFluid(it.Right())) {
+          if(this->isFluid(it.Down())) {
+            p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()));
+          } else {
+            p.Cell(it) = p.Cell(it.Down());
+          }
+        } else if(this->isFluid(it.Down())) {
+          if(this->isFluid(it.Left())) {
+            p.Cell(it) = 0.5 * (p.Cell(it.Down()) + p.Cell(it.Left()));
+          } else {
+            p.Cell(it) = p.Cell(it.Down());
+          }
+        }
+        break;
+      case 'C': // 'cooled' Wall/Obstacle/NoSlip boundary (u = v = 0, dp/dn = 0)
+        if(this->isFluid(it.Left())) {
+          if(this->isFluid(it.Top())) {
+            p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()));
+          } else {
+            p.Cell(it) = p.Cell(it.Left());
+          }
+        } else if(this->isFluid(it.Top())) {
+          if(this->isFluid(it.Right())) {
+            p.Cell(it) = 0.5 * (p.Cell(it.Top()) + p.Cell(it.Right()));
+          } else {
+            p.Cell(it) = p.Cell(it.Top());
+          }
+        } else if(this->isFluid(it.Right())) {
+          if(this->isFluid(it.Down())) {
+            p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()));
+          } else {
+            p.Cell(it) = p.Cell(it.Down());
+          }
+        } else if(this->isFluid(it.Down())) {
+          if(this->isFluid(it.Left())) {
+            p.Cell(it) = 0.5 * (p.Cell(it.Down()) + p.Cell(it.Left()));
+          } else {
+            p.Cell(it) = p.Cell(it.Down());
+          }
+        }
+        break;
+      case 'h': // 'h'heated Wall/Obstacle/NoSlip boundary (u = v = 0, dp/dn = 0)
         if(this->isFluid(it.Left())) {
           if(this->isFluid(it.Top())) {
             p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()));
@@ -200,12 +274,157 @@ void Geometry::Update_P(Grid &p) const {
   }
 }
 
+void Geometry::Update_Temperature(Grid &T) const {
+  this->_comm.copyBoundary(T);
+
+  for(Iterator it(*this); it.Valid(); it.Next()) {
+    switch(this->flag(it)) {
+      case 'I': // 'I' genaral inflow adiabatic (dT/dn = 0)
+      case '#': // '#' Wall/Obstacle/NoSlip/adiabate wall boundary (u = v = 0, dT/dn = 0)
+        /*
+        if(this->isFluid(it.Left())) {
+          if(this->isFluid(it.Top())) {
+            T.Cell(it) = 0.5 * (T.Cell(it.Left()) + T.Cell(it.Top()));
+          } else {
+            T.Cell(it) = T.Cell(it.Left());
+          }
+        } else if(this->isFluid(it.Top())) {
+          if(this->isFluid(it.Right())) {
+            T.Cell(it) = 0.5 * (T.Cell(it.Top()) + T.Cell(it.Right()));
+          } else {
+            T.Cell(it) = T.Cell(it.Top());
+          }
+        } else if(this->isFluid(it.Right())) {
+          if(this->isFluid(it.Down())) {
+            T.Cell(it) = 0.5 * (T.Cell(it.Right()) + T.Cell(it.Down()));
+          } else {
+            T.Cell(it) = T.Cell(it.Down());
+          }
+        } else if(this->isFluid(it.Down())) {
+          if(this->isFluid(it.Left())) {
+            T.Cell(it) = 0.5 * (T.Cell(it.Down()) + T.Cell(it.Left()));
+          } else {
+            T.Cell(it) = T.Cell(it.Down());
+          }
+        }
+        */
+        if(this->isFluid(it.Left())) {
+          T.Cell(it) = 2*this->_temperatureWall - T.Cell(it.Left());
+        } else if(this->isFluid(it.Right())) {
+          T.Cell(it) = 2*this->_temperatureWall - T.Cell(it.Right());
+        } else if(this->isFluid(it.Top())) {
+          T.Cell(it) = 2*this->_temperatureWall - T.Cell(it.Top());
+        } else if(this->isFluid(it.Down())) {
+          T.Cell(it) = 2*this->_temperatureWall - T.Cell(it.Down());
+        }
+        break;
+      case 'h': // heated wall (T = T_heat)
+        if(this->isFluid(it.Left())) {
+          T.Cell(it) = 2*this->_temperatureHeat - T.Cell(it.Left());
+        } else if(this->isFluid(it.Right())) {
+          T.Cell(it) = 2*this->_temperatureHeat - T.Cell(it.Right());
+        } else if(this->isFluid(it.Top())) {
+          T.Cell(it) = 2*this->_temperatureHeat - T.Cell(it.Top());
+        } else if(this->isFluid(it.Down())) {
+          T.Cell(it) = 2*this->_temperatureHeat - T.Cell(it.Down());
+        }
+        break;
+      case 'C': // cooled wall (T = T_cool)
+        if(this->isFluid(it.Left())) {
+          T.Cell(it) = 2*this->_temperatureCool - T.Cell(it.Left());
+        } else if(this->isFluid(it.Right())) {
+          T.Cell(it) = 2*this->_temperatureCool - T.Cell(it.Right());
+        } else if(this->isFluid(it.Top())) {
+          T.Cell(it) = 2*this->_temperatureCool - T.Cell(it.Top());
+        } else if(this->isFluid(it.Down())) {
+          T.Cell(it) = 2*this->_temperatureCool - T.Cell(it.Down());
+        }
+        break;
+        // heated wall at top of driven cavity
+        //if(this->isFluid(it.Down())) {
+        //  T.Cell(it) = 2*this->_temperature - T.Cell(it.Down());
+        //}
+
+        //if(this->isFluid(it.Left())) {
+        //  if(this->isFluid(it.Top())) {
+        //    T.Cell(it) = 0.5 * (T.Cell(it.Left()) + T.Cell(it.Top()));
+        //  } else {
+        //    T.Cell(it) = T.Cell(it.Left());
+        //  }
+        //} else if(this->isFluid(it.Top())) {
+        //  if(this->isFluid(it.Right())) {
+        //    T.Cell(it) = 0.5 * (T.Cell(it.Top()) + T.Cell(it.Right()));
+        //  } else {
+        //    T.Cell(it) = T.Cell(it.Top());
+        //  }
+        //} else if(this->isFluid(it.Right())) {
+        //  if(this->isFluid(it.Down())) {
+        //    T.Cell(it) = 0.5 * (T.Cell(it.Right()) + T.Cell(it.Down()));
+        //  } else {
+        //    T.Cell(it) = T.Cell(it.Down());
+        //  }
+        //} else if(this->isFluid(it.Down())) {
+        //  if(this->isFluid(it.Left())) {
+        //    T.Cell(it) = 0.5 * (T.Cell(it.Down()) + T.Cell(it.Left()));
+        //  } else {
+        //    T.Cell(it) = T.Cell(it.Down());
+        //  }
+        //}
+        //break;
+      case 'V': // Vertical Inflow boundary (u = u_0, v = v_0, but only fluid right or left)
+        /*
+        if(this->isFluid(it.Left())) {
+          T.Cell(it) = T.Cell(it.Left());
+        } else if(this->isFluid(it.Right())) {
+          T.Cell(it) = T.Cell(it.Right());
+        }
+        */
+        break;
+      case 'H': // Horizontal Inflow boundary (u = u_0, v = v_0, but only fluid top or down)
+        /*
+        if(this->isFluid(it.Top())) {
+          T.Cell(it) = T.Cell(it.Top());
+        } else if(this->isFluid(it.Down())) {
+          T.Cell(it) = T.Cell(it.Down());
+        }
+        */
+        break;
+      case 'O': // Outflow boundary (d/dn (u,v) = 0)
+        //TODO: ???
+        /*
+        T.Cell(it) = 0;
+        */
+        break;
+      case '|': // Vertical Slip-boundary (du/dx = 0, v = 0, dT determined by parameter pressure)
+        /*
+        if(this->isFluid(it.Left())) {
+          T.Cell(it) = 2*this->_temperature - T.Cell(it.Left());
+        } else if(this->isFluid(it.Right())) {
+          T.Cell(it) = 2*this->_temperature - T.Cell(it.Right());
+        }
+        */
+        break;
+      case '-': // Horizontal Slip-boundary (u = 0, dv/dy = 0, dT determined by parameter pressure)
+        /*
+        if(this->isFluid(it.Top())) {
+          T.Cell(it) = 2*this->_temperature - T.Cell(it.Top());
+        } else if(this->isFluid(it.Down())) {
+          T.Cell(it) = 2*this->_temperature - T.Cell(it.Down());
+        }
+        */
+        break;
+    }
+  }
+}
+
 void Geometry::Update(Grid &u, Grid &v) const {
   this->_comm.copyBoundary(u);
   this->_comm.copyBoundary(v);
 
   for(Iterator it(*this); it.Valid(); it.Next()) {
     switch(this->flag(it)) {
+      case 'h': // heated wall
+      case 'C': // cooled wall
       case '#': // '#' Wall/Obstacle/NoSlip boundary (u = v = 0, dp/dn = 0)
         if(this->isFluid(it.Left())) {
           u.Cell(it.Left()) = 0;

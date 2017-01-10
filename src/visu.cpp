@@ -6,7 +6,7 @@ uint8_t HueR (real_t value, real_t min, real_t max) {
   if (value < min) value = min;
   if (value > max) value = max;
   double dval = max - min;
-  
+
   if (value < (min + 0.25 * dval))
     return 0;
   if (value < (min + 0.5  * dval))
@@ -20,7 +20,7 @@ uint8_t HueG (real_t value, real_t min, real_t max) {
   if (value < min) value = min;
   if (value > max) value = max;
   double dval = max - min;
-  
+
   if (value < (min + 0.25 * dval))
     return 255*(4 * (value - min) / dval);
   if (value < (min + 0.5  * dval))
@@ -34,7 +34,7 @@ uint8_t HueB (real_t value, real_t min, real_t max) {
   if (value < min) value = min;
   if (value > max) value = max;
   double dval = max - min;
-  
+
   if (value < (min + 0.25 * dval))
     return 255;
   if (value < (min + 0.5  * dval))
@@ -71,7 +71,7 @@ Renderer::Renderer (const multi_real_t& length, const multi_real_t& h) : _length
 	if (_count == 0)
 		SDL_Init(SDL_INIT_VIDEO);
 	_count++;
-	_state = 0;
+	_state = 7;
 	for (uint32_t i=0;i<DIM;++i)
 		_orig[i] = 0;
 	_x = 0;
