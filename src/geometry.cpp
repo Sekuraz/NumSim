@@ -128,7 +128,7 @@ void Geometry::Update_P(Grid &p) const {
           if(this->isFluid(it.Down())) {
             p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()));
           } else {
-            p.Cell(it) = p.Cell(it.Down());
+            p.Cell(it) = p.Cell(it.Right());
           }
         } else if(this->isFluid(it.Down())) {
           if(this->isFluid(it.Left())) {
