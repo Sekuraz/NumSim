@@ -254,10 +254,12 @@ int main(int argc, char *argv[]) {
 
   real_t err_2 = 0;
   real_t tmp;
+  real_t y;
 
   for(Iterator it(geom); it.Valid(); it.Next()) {
     err_2 += comp.GetV()->Cell(it) * comp.GetV()->Cell(it);
-    tmp = comp.GetU()->Cell(it) - geom.parabolic(it);
+    y = (geom.Offset()[1] + it.Pos()[1] - .5) * geom.Mesh()[1];
+    tmp = comp.GetU()->Cell(it) - 0.5 * param.Re() * geom.PDiff() / geom.TotalLength()[0] * y * (geom.TotalSize()[1] * geom.Mesh()[1] - y);
 
     err_2 += tmp * tmp;
   }

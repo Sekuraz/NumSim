@@ -73,6 +73,8 @@ public:
   inline const multi_real_t &Velocity() const { return this->_velocity; }
   /// Returns the meshwidth
   inline const multi_real_t &Mesh() const { return this->_h; }
+  /// Returns the pressure difference
+  inline const real_t &PDiff() const { return this->_pressure; }
   /// Returns the invers meshwidth
   inline const multi_real_t &invMesh() const { return this->_hInv; }
   /// Returns whether the geometry is free.
