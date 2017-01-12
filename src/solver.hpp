@@ -16,6 +16,7 @@
  */
 //------------------------------------------------------------------------------
 #include "typedef.hpp"
+#include "comm.hpp"
 //------------------------------------------------------------------------------
 #ifndef __SOLVER_HPP
 #define __SOLVER_HPP
@@ -55,7 +56,7 @@ public:
   /// Returns the total residual and executes a solver cycle
   /// \param[in][out] grid current pressure values
   /// \param[in] rhs right hand side
-  real_t Cycle(Grid &grid, const Grid &rhs) const;
+  virtual real_t Cycle(Grid &grid, const Grid &rhs) const;
 
 protected:
   const real_t _correction;  ///< The correction factor computed from over-relaxation parameter
@@ -67,9 +68,17 @@ protected:
 class RedOrBlackSOR : public SOR {
 public:
   /// Constructs an RedBlackSOR solver
-  RedOrBlackSOR(const Geometry &geom, const real_t &omega) : SOR(geom,omega) {};
+  RedOrBlackSOR(const Geometry &geom, const real_t &omega, const Communicator &comm)
+      : SOR(geom,omega), _comm(comm),
+      _firstRed(comm.EvenOdd() && (geom.Size()[0] % 2 == 0))  // TODO one size even other odd
+      {};
   /// Destructor
   ~RedOrBlackSOR() {};
+
+  /// Returns the total residual and executes a red solver cycle
+  /// \param[in][out] grid current pressure values
+  /// \param[in] rhs right hand side
+  real_t Cycle(Grid &grid, const Grid &rhs) const;
 
   /// Returns the total residual and executes a red solver cycle
   /// \param[in][out] grid current pressure values
@@ -79,6 +88,10 @@ public:
   /// \param[in][out] grid current pressure values
   /// \param[in] rhs right hand side
   real_t BlackCycle(Grid &grid, const Grid &rhs) const;
+
+protected:
+  const Communicator& _comm;
+  const bool _firstRed; ///< Whether first Red of Black Cycle is done
 };
 //------------------------------------------------------------------------------
 #endif // __SOLVER_HPP

@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
   g.Initialize(0);
   rhs.Initialize(0);
 
-  RedOrBlackSOR rbsor(geom, param.Omega());
+  RedOrBlackSOR rbsor(geom, param.Omega(), comm);
 
 #ifdef DEBUG_VISU
   // Create and initialize the visualization

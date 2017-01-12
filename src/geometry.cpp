@@ -155,7 +155,7 @@ void Geometry::Update_P(Grid &p) const {
           if(this->isFluid(it.Down())) {
             p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()));
           } else {
-            p.Cell(it) = p.Cell(it.Down());
+            p.Cell(it) = p.Cell(it.Right());
           }
         } else if(this->isFluid(it.Down())) {
           if(this->isFluid(it.Left())) {
@@ -213,15 +213,16 @@ void Geometry::Update(Grid &u, Grid &v) const {
             u.Cell(it) = -u.Cell(it.Top());
             v.Cell(it) = 0;
           } else {
+            u.Cell(it) = 0;
             v.Cell(it) = -v.Cell(it.Left());
           }
         } else if(this->isFluid(it.Top())) {
-          v.Cell(it) = 0;
           if(this->isFluid(it.Right())) {
             u.Cell(it) = 0;
           } else {
             u.Cell(it) = -u.Cell(it.Top());
           }
+          v.Cell(it) = 0;
         } else if(this->isFluid(it.Right())) {
           u.Cell(it) = 0;
           v.Cell(it) = -v.Cell(it.Right());
@@ -229,48 +230,37 @@ void Geometry::Update(Grid &u, Grid &v) const {
             v.Cell(it.Down()) = 0;
           }
         } else if(this->isFluid(it.Down())) {
-          v.Cell(it.Down()) = 0;
           u.Cell(it) = -u.Cell(it.Down());
+          v.Cell(it.Down()) = 0;
           if(this->isFluid(it.Left())) {
             u.Cell(it.Left()) = 0;
             v.Cell(it) = - v.Cell(it.Left());
+          } else {
+            v.Cell(it) = 0;
           }
         }
         break;
       case 'I': // General Inflow boundary (u = u_0, v = v_0, dp/dn = 0)
         if(this->isFluid(it.Left())) {
+          u.Cell(it.Left()) = this->_velocity[0];
           u.Cell(it) = this->_velocity[0];
-          if(this->isFluid(it.Top())) {
-            v.Cell(it) = this->_velocity[1];
-          } else {
-            v.Cell(it) = 2*this->_velocity[1] - v.Cell(it.Left());
-          }
+          v.Cell(it) = 2*this->_velocity[1] - v.Cell(it.Left());
         } else if(this->isFluid(it.Top())) {
+          u.Cell(it) = 2*this->_velocity[0] - u.Cell(it.Top());
           v.Cell(it) = this->_velocity[1];
-          if(this->isFluid(it.Right())) {
-            u.Cell(it) = this->_velocity[0];
-          } else {
-            u.Cell(it) = 2*this->_velocity[0] - u.Cell(it.Top());
-          }
         } else if(this->isFluid(it.Right())) {
           u.Cell(it) = this->_velocity[0];
-          if(this->isFluid(it.Down())) {
-            v.Cell(it) = this->_velocity[1];
-          } else {
-            v.Cell(it) = 2*this->_velocity[1] - v.Cell(it.Right());
-          }
+          v.Cell(it) = 2*this->_velocity[1] - v.Cell(it.Right());
         } else if(this->isFluid(it.Down())) {
+          u.Cell(it) = 2*this->_velocity[0] - u.Cell(it.Down());
+          v.Cell(it.Down()) = this->_velocity[1];
           v.Cell(it) = this->_velocity[1];
-          if(this->isFluid(it.Left())) {
-            u.Cell(it.Left()) = this->_velocity[0];
-          } else {
-            u.Cell(it) = 2*this->_velocity[0] - u.Cell(it.Down());
-          }
         }
         break;
       case 'V': // Vertical Inflow boundary (u = u_0, v = v_0, but only fluid right or left)
         // TODO: other than const velocities
         if(this->isFluid(it.Left())) {
+          u.Cell(it.Left()) = this->_velocity[0];
           u.Cell(it) = this->_velocity[0];
           v.Cell(it) = 2*this->_velocity[1] - v.Cell(it.Left());
         } else if(this->isFluid(it.Right())) {
@@ -281,30 +271,34 @@ void Geometry::Update(Grid &u, Grid &v) const {
       case 'H': // Horizontal Inflow boundary (u = u_0, v = v_0, but only fluid top or down)
         // TODO: other than const velocities
         if(this->isFluid(it.Top())) {
-          v.Cell(it) = this->_velocity[1];
           u.Cell(it) = 2*this->_velocity[0] - u.Cell(it.Top());
-        } else if(this->isFluid(it.Down())) {
           v.Cell(it) = this->_velocity[1];
+        } else if(this->isFluid(it.Down())) {
           u.Cell(it) = 2*this->_velocity[0] - u.Cell(it.Down());
+          v.Cell(it.Down()) = this->_velocity[1];
+          v.Cell(it) = this->_velocity[1];
         }
         break;
       case 'O': // Outflow boundary (d/dn (u,v) = 0)
         if(this->isFluid(it.Left())) {
+          // TODO: set u.left ?
           u.Cell(it) = u.Cell(it.Left());
           v.Cell(it) = v.Cell(it.Left());
         } else if(this->isFluid(it.Top())) {
-          v.Cell(it) = v.Cell(it.Top());
           u.Cell(it) = u.Cell(it.Top());
+          v.Cell(it) = v.Cell(it.Top());
         } else if(this->isFluid(it.Right())) {
           u.Cell(it) = u.Cell(it.Right());
           v.Cell(it) = v.Cell(it.Right());
         } else if(this->isFluid(it.Down())) {
-          v.Cell(it) = v.Cell(it.Down());
+          // TODO: set v.down ?
           u.Cell(it) = u.Cell(it.Down());
+          v.Cell(it) = v.Cell(it.Down());
         }
         break;
       case '|': // Vertical Slip-boundary (du/dx = 0, v = 0, dp determined by parameter pressure)
         if(this->isFluid(it.Left())) {
+          // TODO: set u.left ?
           u.Cell(it) = u.Cell(it.Left());
           v.Cell(it) = 0;
         } else if(this->isFluid(it.Right())) {
@@ -318,6 +312,7 @@ void Geometry::Update(Grid &u, Grid &v) const {
           v.Cell(it) = v.Cell(it.Top());
         } else if(this->isFluid(it.Down())) {
           u.Cell(it) = 0;
+          // TODO: set v.down ?
           v.Cell(it) = v.Cell(it.Down());
         }
         break;

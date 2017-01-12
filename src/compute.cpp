@@ -37,12 +37,11 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
     _F(new Grid(geom)), _G(new Grid(geom)), _rhs(new Grid(geom)),
     _velocities(new Grid(geom)), _streamline(new Grid(geom)),
     _vorticity(new Grid(geom)), _particle(new Grid(geom, multi_real_t(geom.Mesh()[0]/2, geom.Mesh()[1]/2))),
-    _firstRed(comm.EvenOdd() && (geom.Size()[0] % 2 == 0)), // TODO one size even other odd
     _geom(geom), _param(param), _comm(comm),
     _initPosParticle(param.ParticleInitPos()), _numParticles(param.ParticleInitPos().size()) {
 
   // initialize the solver
-  this->_solver = new RedOrBlackSOR(geom, param.Omega());
+  this->_solver = new RedOrBlackSOR(geom, param.Omega(), comm);
 
   // initialize u,v,p,particle
   this->_u->Initialize(0);
@@ -50,23 +49,23 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
   this->_p->Initialize(0);
   this->_particle->Initialize(0);
 
+#ifndef BLATT4
   if (this->_comm.ThreadCnt() == 1) {
     // write first particle pos in list for particle trace and streakline
     this->_particleTracing.insert(this->_particleTracing.begin(), this->_initPosParticle.begin(), this->_initPosParticle.end());
     this->_streakline.insert(this->_streakline.begin(), this->_initPosParticle.begin(), this->_initPosParticle.end());
   }
 
-  #ifdef BLATT4
-    // output for exercise sheet 4
-    const Iterator it1(this->_geom, multi_index_t(120, 5));
-    const Iterator it2(this->_geom, multi_index_t(64, 64));
-    const Iterator it3(this->_geom, multi_index_t(5, 120));
-    std::cout << this->_param.Re() << "\t" << this->_t << "\t" << 0.0 << "\t"
-              << this->_u->Cell(it1) << "\t" << this->_v->Cell(it1) << "\t"
-              << this->_u->Cell(it2) << "\t" << this->_v->Cell(it2) << "\t"
-              << this->_u->Cell(it3) << "\t" << this->_v->Cell(it3) << "\t"
-              << std::endl;
-  #endif
+  // output for exercise sheet 4
+  const Iterator it1(this->_geom, multi_index_t(120, 5));
+  const Iterator it2(this->_geom, multi_index_t(64, 64));
+  const Iterator it3(this->_geom, multi_index_t(5, 120));
+  std::cout << this->_param.Re() << "\t" << this->_t << "\t" << 0.0 << "\t"
+            << this->_u->Cell(it1) << "\t" << this->_v->Cell(it1) << "\t"
+            << this->_u->Cell(it2) << "\t" << this->_v->Cell(it2) << "\t"
+            << this->_u->Cell(it3) << "\t" << this->_v->Cell(it3) << "\t"
+            << std::endl;
+#endif
 }
 // Deletes all grids
 Compute::~Compute() {
@@ -104,23 +103,9 @@ void Compute::TimeStep(bool printInfo) {
   real_t res = 2 * this->_param.Eps() * this->_param.Eps();
   index_t i;
   for(i = 0; (i < this->_param.IterMax()) && (res > this->_param.Eps() * this->_param.Eps()) ; i++) {
-    // first half-step
-    if(this->_firstRed) {
-      res = this->_solver->RedCycle(*(this->_p), *(this->_rhs));
-    } else {
-      res = this->_solver->BlackCycle(*(this->_p), *(this->_rhs));
-    }
-    // exchange boundary values for p
-    this->_comm.copyBoundary(*(this->_p));
-    // second half-step
-    if(this->_firstRed) {
-      res += this->_solver->BlackCycle(*(this->_p), *(this->_rhs));
-    } else {
-      res += this->_solver->RedCycle(*(this->_p), *(this->_rhs));
-    }
+    res = this->_solver->Cycle(*(this->_p), *(this->_rhs));
     // set boundary values for p
     this->_geom.Update_P(*(this->_p));
-
     // gather global residual
     res = this->_comm.gatherSum(res);
   }
@@ -131,6 +116,7 @@ void Compute::TimeStep(bool printInfo) {
   // compute new velocites
   this->NewVelocities(dt);
 
+#ifndef BLATT4
   // calculate streamlines and vorticity
   this->Stream();
   this->Vort();
@@ -149,21 +135,22 @@ void Compute::TimeStep(bool printInfo) {
               << "\tres = " << std::scientific << std::sqrt(res)
               << std::defaultfloat << std::endl;
   }
+#endif
 
   // update the time
   this->_t += dt;
 
-  #ifdef BLATT4
-    // output for exercise sheet 4
-    const Iterator it1(this->_geom, multi_index_t(120, 5));
-    const Iterator it2(this->_geom, multi_index_t(64, 64));
-    const Iterator it3(this->_geom, multi_index_t(5, 120));
-    std::cout << this->_param.Re() << "\t" << this->_t << "\t" << std::sqrt(res) << "\t"
-              << this->_u->Cell(it1) << "\t" << this->_v->Cell(it1) << "\t"
-              << this->_u->Cell(it2) << "\t" << this->_v->Cell(it2) << "\t"
-              << this->_u->Cell(it3) << "\t" << this->_v->Cell(it3) << "\t"
-              << std::endl;
-  #endif
+#ifdef BLATT4
+  // output for exercise sheet 4
+  const Iterator it1(this->_geom, multi_index_t(120, 5));
+  const Iterator it2(this->_geom, multi_index_t(64, 64));
+  const Iterator it3(this->_geom, multi_index_t(5, 120));
+  std::cout << this->_param.Re() << "\t" << this->_t << "\t" << std::sqrt(res) << "\t"
+            << this->_u->Cell(it1) << "\t" << this->_v->Cell(it1) << "\t"
+            << this->_u->Cell(it2) << "\t" << this->_v->Cell(it2) << "\t"
+            << this->_u->Cell(it3) << "\t" << this->_v->Cell(it3) << "\t"
+            << std::endl;
+#endif
 }
 
 // Computes and returns the absolute velocity

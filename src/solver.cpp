@@ -16,6 +16,7 @@
  */
 #include <cmath>
 #include "typedef.hpp"
+#include "comm.hpp"
 #include "grid.hpp"
 #include "iterator.hpp"
 #include "solver.hpp"
@@ -50,14 +51,42 @@ real_t SOR::Cycle(Grid &grid, const Grid &rhs) const {
 //------------------------------------------------------------------------------
 // concrete Red or Black SOR solver
 
+real_t RedOrBlackSOR::Cycle(Grid &grid, const Grid &rhs) const {
+  real_t res = 0;
+  if(this->_firstRed) {
+    // first half-step
+    res = this->RedCycle(grid, rhs);
+    // exchange boundary values for p
+    this->_comm.copyBoundary(grid);
+    // second half-step
+    res += this->BlackCycle(grid, rhs);
+  } else {
+    // first half-step
+    res = this->BlackCycle(grid, rhs);
+    // exchange boundary values for p
+    this->_comm.copyBoundary(grid);
+    // second half-step
+    res += this->RedCycle(grid, rhs);
+  }
+  return res;
+}
+
 real_t RedOrBlackSOR::RedCycle(Grid &grid, const Grid &rhs) const {
   real_t residual = 0;
 
-  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
+  /*for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     real_t localRes = Solver::localRes(it, grid, rhs);
     residual += localRes * localRes;
     grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
     it.Next();
+  }*/
+  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
+    const multi_index_t pos = it.Pos();
+    if((pos[0]+pos[1]) % 2 == 0) {
+      real_t localRes = Solver::localRes(it, grid, rhs);
+      residual += localRes * localRes;
+      grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
+    }
   }
 
   return residual * this->_invNumFluid;
@@ -66,13 +95,20 @@ real_t RedOrBlackSOR::RedCycle(Grid &grid, const Grid &rhs) const {
 real_t RedOrBlackSOR::BlackCycle(Grid &grid, const Grid &rhs) const {
   real_t residual = 0;
 
-  InteriorIterator it(this->_geom);
+  /*InteriorIterator it(this->_geom);
   for(it.Next(); it.Valid(); it.Next()) {
     real_t localRes = Solver::localRes(it, grid, rhs);
     residual += localRes * localRes;
     grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
     it.Next();
+  }*/
+  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
+    const multi_index_t pos = it.Pos();
+    if((pos[0]+pos[1]) % 2 == 1) {
+      real_t localRes = Solver::localRes(it, grid, rhs);
+      residual += localRes * localRes;
+      grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
+    }
   }
-
   return residual * this->_invNumFluid;
 }

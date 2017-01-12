@@ -83,10 +83,6 @@ public:
   /// Returns whether the cell at the position of the iterator is fluid cell.
   inline bool isFluid(const Iterator &it) const { return ( this->flag(it) == ' ' ); }
 
-  /// Updates the velocity field u
-  //void Update_U(Grid &u) const;
-  /// Updates the velocity field v
-  //void Update_V(Grid &v) const;
   /// Updates the pressure field p for a free geometry
   void Update_P(Grid &p) const;
   /// Updates the velocity fields u and v for a free geometry
@@ -103,22 +99,6 @@ private:
   /// Returns the parabolic velocity profile (1/2*Re*dp/L_x*y*(y-L_y)).
   real_t parabolic(const Iterator &it) const;
 
-/*
-  /// Returns whether the cell at the position of the iterator is NoSlip cell.
-  inline bool isNoSlip(const multi_index_t &pos) const { return ( this->flag(pos) == '#' ); };
-  /// Returns whether the cell at the position of the iterator is general Inflow cell.
-  inline bool isGInflow(const multi_index_t &pos) const { return ( this->flag(pos) == 'I' ); };
-  /// Returns whether the cell at the position of the iterator is horizontal Inflow cell.
-  inline bool isHInflow(const multi_index_t &pos) const { return ( this->flag(pos) == 'H' ); };
-  /// Returns whether the cell at the position of the iterator is vertical Inflow cell.
-  inline bool isVInflow(const multi_index_t &pos) const { return ( this->flag(pos) == 'V' ); };
-  /// Returns whether the cell at the position of the iterator is Outflow cell.
-  inline bool isOutflow(const multi_index_t &pos) const { return ( this->flag(pos) == 'O' ); };
-  /// Returns whether the cell at the position of the iterator is vertical Slip cell.
-  inline bool isVSlip(const multi_index_t &pos) const { return ( this->flag(pos) == '|' ); };
-  /// Returns whether the cell at the position of the iterator is horizontal Slip cell.
-  inline bool isHSlip(const multi_index_t &pos) const { return ( this->flag(pos) == '-' ); };
-*/
   const Communicator &_comm; ///< Communicator for boundary exchange and local sizes of Grids
   bool _free;                ///< Whether use free geometry given in loaded file or driven cavity
   char *_flags;              ///< flag field indicating the type of the cells
