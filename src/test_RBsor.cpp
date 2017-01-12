@@ -22,7 +22,7 @@
 #include "geometry.hpp"
 #include "iterator.hpp"
 #include "parameter.hpp"
-#ifdef USE_DEBUG_VISU
+#ifdef DEBUG_VISU
   #include "visu.hpp"
 #endif
 #include "grid.hpp"
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 
   RedOrBlackSOR rbsor(geom, param.Omega());
 
-#ifdef USE_DEBUG_VISU
+#ifdef DEBUG_VISU
   // Create and initialize the visualization
   const int hRes = 600;
   const int vRes = (int)(hRes / geom.TotalLength()[0]);
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     max = comm.gatherMax(max);
     res = comm.gatherSum(res);
 
-#ifdef USE_DEBUG_VISU
+#ifdef DEBUG_VISU
     visu.Render(&g, min, max);
 #endif
     if(comm.ThreadNum() == 0) {

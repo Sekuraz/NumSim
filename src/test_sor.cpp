@@ -21,7 +21,7 @@
 #include "geometry.hpp"
 #include "iterator.hpp"
 #include "parameter.hpp"
-#ifdef USE_DEBUG_VISU
+#ifdef DEBUG_VISU
   #include "visu.hpp"
 #endif
 #include "grid.hpp"
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 
   SOR sor(geom, param.Omega());
 
-#ifdef USE_DEBUG_VISU
+#ifdef DEBUG_VISU
   // Create and initialize the visualization
   Renderer visu(geom.Length(), geom.Mesh());
   visu.Init(600,600);//(800, 800);
@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
     geom.Update_P(g);
 
     sor.Cycle(g, rhs);
-#ifdef USE_DEBUG_VISU
+#ifdef DEBUG_VISU
     visu.Render(&g);
 #endif
     for (Iterator it(geom); it.Valid(); it.Next()) {

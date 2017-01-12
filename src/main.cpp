@@ -32,7 +32,6 @@
   #include "vtk.hpp"
 #endif
 
-
 /// reads arguments from command line
 void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geomPath) {
   for(int i = 1; i < argc; i++) {
@@ -116,6 +115,28 @@ void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geo
   }
 }
 
+#ifdef WRITE_VTK
+void writeVTK(VTK &vtk, Compute &comp, bool writeParticles) {
+  if (writeParticles) {
+    // Create VTK File for Particle tracing in the folder VTK (must exist)
+    vtk.InitParticles("VTK/particle");
+    vtk.AddParticles("Particle", comp.GetParticles());
+    vtk.FinishParticles();
+    // Create VTK File for Streaklines in the folder VTK (must exist)
+    vtk.InitParticles("VTK/streakline");
+    vtk.AddParticles("Streakline", comp.GetStreakline());
+    vtk.FinishParticles();
+  }
+  // Create a VTK File in the folder VTK (must exist)
+  vtk.Init("VTK/field");
+  vtk.AddField("Velocity", comp.GetU(), comp.GetV());
+  vtk.AddScalar("Pressure", comp.GetP());
+  vtk.AddScalar("Vorticity", comp.GetVorticity());
+  vtk.AddScalar("Streamfunction", comp.GetStreamline());
+  vtk.Finish();
+}
+#endif
+
 int main(int argc, char *argv[]) {
   char *paramPath = nullptr, *geomPath = nullptr;
 
@@ -123,7 +144,10 @@ int main(int argc, char *argv[]) {
 
   // Create communicator, parameter and geometry instances and load values
   Communicator comm(&argc, &argv);
-  bool printInfo = false; /* comm.ThreadNum() == 0; */
+  bool printInfo = comm.ThreadNum() == 0;
+  #ifdef BLATT4
+    printInfo = false;
+  #endif
 
 #ifdef WRITE_VTK
   // Delete old VTK files, prevents bugs in paraview
@@ -140,7 +164,9 @@ int main(int argc, char *argv[]) {
   if(param.Omega() <= 0.0 || param.Omega() > 2.0) {
     real_t h = std::fmax(geom.Mesh()[0], geom.Mesh()[1]);
     param.Omega() = 2.0 / (1.0 + std::sin(M_PI * h));
-    /*std::cout << "Set new omega = " << param.Omega() << std::endl;*/
+    #ifndef BLATT4
+      std::cout << "Set new omega = " << param.Omega() << std::endl;
+    #endif
   }
 
   // Create the fluid solver
@@ -162,12 +188,10 @@ int main(int argc, char *argv[]) {
   // Create a VTK generator
   VTK vtk(geom.Mesh(), geom.SizeP(), geom.Offset(), geom.TotalSize(), comm.ThreadNum(),
           comm.ThreadIdx(), comm.ThreadDim());
-
   real_t nextTimeVTK = 0;
 #endif // WRITE_VTK
 
   bool run = true;
-
   // Run the time steps until the end is reached
   while (comp.GetTime() < param.Tend() && run) {
 
@@ -213,24 +237,7 @@ int main(int argc, char *argv[]) {
 
 #ifdef WRITE_VTK
     if(comp.GetTime() >= nextTimeVTK ) {
-      // Create VTK File for Particle tracing in the folder VTK (must exist)
-      vtk.InitParticles("VTK/particle");
-      vtk.AddParticles("Particle", comp.GetParticles());
-      vtk.FinishParticles();
-
-      // Create VTK File for Streaklines in the folder VTK (must exist)
-      vtk.InitParticles("VTK/streakline");
-      vtk.AddParticles("Streakline", comp.GetStreakline());
-      vtk.FinishParticles();
-
-      // Create a VTK File in the folder VTK (must exist)
-      vtk.Init("VTK/field");
-      vtk.AddField("Velocity", comp.GetU(), comp.GetV());
-      vtk.AddScalar("Pressure", comp.GetP());
-      vtk.AddScalar("Vorticity", comp.GetVorticity());
-      vtk.AddScalar("Streamlines", comp.GetStreamline());
-      vtk.Finish();
-
+      writeVTK(vtk, comp, comm.ThreadCnt() == 1);
       nextTimeVTK += param.VtkDt();
     }
 #endif // WRITE_VTK
@@ -250,6 +257,12 @@ int main(int argc, char *argv[]) {
     run = comm.gatherAnd(run);
 #endif //DEBUG_VISU
   }
+
+#ifdef WRITE_VTK
+  if(comp.GetTime() >= nextTimeVTK ) {
+    writeVTK(vtk, comp, comm.ThreadCnt() == 1);
+  }
+#endif // WRITE_VTK
 
   return 0;
 }

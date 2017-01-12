@@ -35,16 +35,13 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GOOD_FLAGS}")
 option (DEBUG_VISU
   "Enable debugging visualization" ON)
 
-if (DEBUG_VISU)
-  # find sdl 2
-  INCLUDE(FindPkgConfig)
-  PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
-  INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES} ${SDL2_INCLUDE_DIRS})
-endif (DEBUG_VISU)
-
 # write vtk?
 option (WRITE_VTK
   "Writing out vtk files for use with paraview" ON)
+
+# output for exercise sheet 4?
+option (BLATT4
+  "Produce output for exercise sheet 4 (Blatt 4). Disables WRITE_VTK and DEBUG_VISU." OFF)
 
 # find mpi
 find_package (MPI REQUIRED)
@@ -72,9 +69,18 @@ set (SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/solver.cpp
   )
 
+# set flag for exercise sheet 4
+if (BLATT4)
+  add_definitions(-DBLATT4)
+else (BLATT4)
 # add header and source of visu if it shall be built
 # additionally set a flag
 if (DEBUG_VISU)
+  # find sdl 2
+  INCLUDE(FindPkgConfig)
+  PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
+  INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES} ${SDL2_INCLUDE_DIRS})
+
   set (HEADERS
     ${HEADERS}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/visu.hpp
@@ -103,6 +109,7 @@ if (WRITE_VTK)
 
   add_definitions(-DWRITE_VTK)
 endif (WRITE_VTK)
+endif (BLATT4)
 
 # build executable and link libs against it
 add_executable (numsim ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)

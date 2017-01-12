@@ -50,19 +50,23 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
   this->_p->Initialize(0);
   this->_particle->Initialize(0);
 
-  // write first particle pos in list for particle trace and streakline
-  this->_particleTracing.insert(this->_particleTracing.begin(), this->_initPosParticle.begin(), this->_initPosParticle.end());
-  this->_streakline.insert(this->_streakline.begin(), this->_initPosParticle.begin(), this->_initPosParticle.end());
+  if (this->_comm.ThreadCnt() == 1) {
+    // write first particle pos in list for particle trace and streakline
+    this->_particleTracing.insert(this->_particleTracing.begin(), this->_initPosParticle.begin(), this->_initPosParticle.end());
+    this->_streakline.insert(this->_streakline.begin(), this->_initPosParticle.begin(), this->_initPosParticle.end());
+  }
 
-  // TODO: only for exercise sheet 4
-  const Iterator it1(this->_geom, multi_index_t(120, 5));
-  const Iterator it2(this->_geom, multi_index_t(64, 64));
-  const Iterator it3(this->_geom, multi_index_t(5, 120));
-  std::cout << this->_param.Re() << "\t" << this->_t << "\t" << 0.0 << "\t"
-            << this->_u->Cell(it1) << "\t" << this->_v->Cell(it1) << "\t"
-            << this->_u->Cell(it2) << "\t" << this->_v->Cell(it2) << "\t"
-            << this->_u->Cell(it3) << "\t" << this->_v->Cell(it3) << "\t"
-            << std::endl;
+  #ifdef BLATT4
+    // output for exercise sheet 4
+    const Iterator it1(this->_geom, multi_index_t(120, 5));
+    const Iterator it2(this->_geom, multi_index_t(64, 64));
+    const Iterator it3(this->_geom, multi_index_t(5, 120));
+    std::cout << this->_param.Re() << "\t" << this->_t << "\t" << 0.0 << "\t"
+              << this->_u->Cell(it1) << "\t" << this->_v->Cell(it1) << "\t"
+              << this->_u->Cell(it2) << "\t" << this->_v->Cell(it2) << "\t"
+              << this->_u->Cell(it3) << "\t" << this->_v->Cell(it3) << "\t"
+              << std::endl;
+  #endif
 }
 // Deletes all grids
 Compute::~Compute() {
@@ -149,15 +153,17 @@ void Compute::TimeStep(bool printInfo) {
   // update the time
   this->_t += dt;
 
-  // TODO: only for exercise sheet 4
-  const Iterator it1(this->_geom, multi_index_t(120, 5));
-  const Iterator it2(this->_geom, multi_index_t(64, 64));
-  const Iterator it3(this->_geom, multi_index_t(5, 120));
-  std::cout << this->_param.Re() << "\t" << this->_t << "\t" << std::sqrt(res) << "\t"
-            << this->_u->Cell(it1) << "\t" << this->_v->Cell(it1) << "\t"
-            << this->_u->Cell(it2) << "\t" << this->_v->Cell(it2) << "\t"
-            << this->_u->Cell(it3) << "\t" << this->_v->Cell(it3) << "\t"
-            << std::endl;
+  #ifdef BLATT4
+    // output for exercise sheet 4
+    const Iterator it1(this->_geom, multi_index_t(120, 5));
+    const Iterator it2(this->_geom, multi_index_t(64, 64));
+    const Iterator it3(this->_geom, multi_index_t(5, 120));
+    std::cout << this->_param.Re() << "\t" << this->_t << "\t" << std::sqrt(res) << "\t"
+              << this->_u->Cell(it1) << "\t" << this->_v->Cell(it1) << "\t"
+              << this->_u->Cell(it2) << "\t" << this->_v->Cell(it2) << "\t"
+              << this->_u->Cell(it3) << "\t" << this->_v->Cell(it3) << "\t"
+              << std::endl;
+  #endif
 }
 
 // Computes and returns the absolute velocity
