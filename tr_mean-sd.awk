@@ -6,11 +6,12 @@ BEGIN {
   SIGMA=166.666666666667;
   FACTOR=1/(SIGMA * sqrt(2*PI));
   FACTOR2=-1/(2*SIGMA^2);
+  N=50;
 }
 function gausspdf(x) {
   return FACTOR * exp(FACTOR2*(x-MU)^2);
 }
-{
+(FNR-1)%N == 0 {
   nr[FNR]++;
   p=gausspdf($1);
   psum[FNR]+=p;
@@ -25,7 +26,7 @@ function gausspdf(x) {
   v3[FNR]+=$9 * p; v3Sq[FNR]+=$9^2 * p;
 }
 END {
-  for(i=1; i<=FNR; i++) {
+  for(i=1; i<=FNR; i+=N) {
     reSD=sqrt((reSq[i] - (re[i])^2/psum[i])/psum[i]);
     resSD=sqrt((resSq[i] - (res[i])^2/psum[i])/psum[i]);
     u1SD=sqrt((u1Sq[i] - (u1[i])^2/psum[i])/psum[i]);

@@ -1,8 +1,9 @@
 BEGIN {
   FS="\t";
   OFS="\t";
+  N=50;
 }
-{
+(FNR-1)%N == 0 {
   nr[FNR]++;
   re[FNR]+=$1; reSq[FNR]+=$1^2;
   t[FNR]+=$2;
@@ -12,7 +13,7 @@ BEGIN {
   u3[FNR]+=$8; u3Sq[FNR]+=$8^2; v3[FNR]+=$9; v3Sq[FNR]+=$9^2;
 }
 END {
-  for(i=1; i<=FNR; i++) {
+  for(i=1; i<=FNR; i+=N) {
     reSD=sqrt((reSq[i] - (re[i])^2/nr[i])/(nr[i]-1));
     resSD=sqrt((resSq[i] - (res[i])^2/nr[i])/(nr[i]-1));
     u1SD=sqrt((u1Sq[i] - (u1[i])^2/nr[i])/(nr[i]-1));

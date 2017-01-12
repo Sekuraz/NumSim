@@ -11,11 +11,10 @@
   compat=1.11,
   every y tick scale label/.append style={xshift=-30pt}
 }
-\pgfplotstableread{mc_mean-sd_2000.csv}\dataMeansdFull
-\pgfplotstableread{mc_mean-sd_1000.csv}\dataMeansdHalf
-\pgfplotstableread{mc_mean-sd_500.csv}\dataMeansdQuarter
-\pgfplotstableread{mc_conv.csv}\dataconv
-\pgfplotstableread{mc_hist.csv}\datahist
+\pgfplotstableread{tr_mean-sd_200.csv}\dataMeansdFull
+\pgfplotstableread{tr_mean-sd_100.csv}\dataMeansdHalf
+\pgfplotstableread{tr_mean-sd_50.csv}\dataMeansdQuarter
+\pgfplotstableread{tr_conv.csv}\dataconv
 
 \begin{document}
 
@@ -39,9 +38,9 @@
       table[x index = {0}, y index = {4}]{\dataMeansdFull};
 
     \legend{
-      $\overline{r}$ ($N = 500$), $\sigma_r$ ($N = 500$),
-      $\overline{r}$ ($N = 1000$), $\sigma_r$ ($N = 1000$),
-      $\overline{r}$ ($N = 2000$), $\sigma_r$ ($N = 2000$)
+      $\overline{r}$ ($N = 50$), $\sigma_r$ ($N = 50$),
+      $\overline{r}$ ($N = 100$), $\sigma_r$ ($N = 100$),
+      $\overline{r}$ ($N = 200$), $\sigma_r$ ($N = 200$)
     }
   \end{semilogyaxis}
 \end{tikzpicture}
@@ -73,15 +72,15 @@
     \addplot[blue!50!white, opacity=0.1, forget plot] fill between[of=u1p and u1m];
 
     \legend{
-      {$\overline{u}$ ($N = 500$)},
-      {$\overline{u}+\sigma_u$ ($N = 500$)},
-      {$\overline{u}-\sigma_u$ ($N = 500$)},
-      {$\overline{u}$ ($N = 1000$)},
-      {$\overline{u}+\sigma_u$ ($N = 1000$)},
-      {$\overline{u}-\sigma_u$ ($N = 1000$)},
-      {$\overline{u}$ ($N = 2000$)},
-      {$\overline{u}+\sigma_u$ ($N = 2000$)},
-      {$\overline{u}-\sigma_u$ ($N = 2000$)}
+      {$\overline{u}$ ($N = 50$)},
+      {$\overline{u}+\sigma_u$ ($N = 50$)},
+      {$\overline{u}-\sigma_u$ ($N = 50$)},
+      {$\overline{u}$ ($N = 100$)},
+      {$\overline{u}+\sigma_u$ ($N = 100$)},
+      {$\overline{u}-\sigma_u$ ($N = 100$)},
+      {$\overline{u}$ ($N = 200$)},
+      {$\overline{u}+\sigma_u$ ($N = 200$)},
+      {$\overline{u}-\sigma_u$ ($N = 200$)}
     }
   \end{axis}
 \end{tikzpicture}
@@ -113,15 +112,15 @@
     \addplot[blue!50!white, opacity=0.1] fill between[of=v1p and v1m];
 
     \legend{
-      {$\overline{v}$ ($N = 500$)},
-      {$\overline{v}+\sigma_v$ ($N = 500$)},
-      {$\overline{v}-\sigma_v$ ($N = 500$)},
-      {$\overline{v}$ ($N = 1000$)},
-      {$\overline{v}+\sigma_v$ ($N = 1000$)},
-      {$\overline{v}-\sigma_v$ ($N = 1000$)},
-      {$\overline{v}$ ($N = 2000$)},
-      {$\overline{v}+\sigma_v$ ($N = 2000$)},
-      {$\overline{v}-\sigma_v$ ($N = 2000$)}
+      {$\overline{v}$ ($N = 50$)},
+      {$\overline{v}+\sigma_v$ ($N = 50$)},
+      {$\overline{v}-\sigma_v$ ($N = 50$)},
+      {$\overline{v}$ ($N = 100$)},
+      {$\overline{v}+\sigma_v$ ($N = 100$)},
+      {$\overline{v}-\sigma_v$ ($N = 100$)},
+      {$\overline{v}$ ($N = 200$)},
+      {$\overline{v}+\sigma_v$ ($N = 200$)},
+      {$\overline{v}-\sigma_v$ ($N = 200$)}
     }
   \end{axis}
 \end{tikzpicture}
@@ -153,15 +152,15 @@
     \addplot[blue!50!white, opacity=0.1] fill between[of=u2p and u2m];
 
     \legend{
-      {$\overline{u}$ ($N = 500$)},
-      {$\overline{u}+\sigma_u$ ($N = 500$)},
-      {$\overline{u}-\sigma_u$ ($N = 500$)},
-      {$\overline{u}$ ($N = 1000$)},
-      {$\overline{u}+\sigma_u$ ($N = 1000$)},
-      {$\overline{u}-\sigma_u$ ($N = 1000$)},
-      {$\overline{u}$ ($N = 2000$)},
-      {$\overline{u}+\sigma_u$ ($N = 2000$)},
-      {$\overline{u}-\sigma_u$ ($N = 2000$)}
+      {$\overline{u}$ ($N = 50$)},
+      {$\overline{u}+\sigma_u$ ($N = 50$)},
+      {$\overline{u}-\sigma_u$ ($N = 50$)},
+      {$\overline{u}$ ($N = 100$)},
+      {$\overline{u}+\sigma_u$ ($N = 100$)},
+      {$\overline{u}-\sigma_u$ ($N = 100$)},
+      {$\overline{u}$ ($N = 200$)},
+      {$\overline{u}+\sigma_u$ ($N = 200$)},
+      {$\overline{u}-\sigma_u$ ($N = 200$)}
     }
   \end{axis}
 \end{tikzpicture}
@@ -193,15 +192,15 @@
     \addplot[blue!50!white, opacity=0.1] fill between[of=v2p and v2m];
 
     \legend{
-      {$\overline{v}$ ($N = 500$)},
-      {$\overline{v}+\sigma_v$ ($N = 500$)},
-      {$\overline{v}-\sigma_v$ ($N = 500$)},
-      {$\overline{v}$ ($N = 1000$)},
-      {$\overline{v}+\sigma_v$ ($N = 1000$)},
-      {$\overline{v}-\sigma_v$ ($N = 1000$)},
-      {$\overline{v}$ ($N = 2000$)},
-      {$\overline{v}+\sigma_v$ ($N = 2000$)},
-      {$\overline{v}-\sigma_v$ ($N = 2000$)}
+      {$\overline{v}$ ($N = 50$)},
+      {$\overline{v}+\sigma_v$ ($N = 50$)},
+      {$\overline{v}-\sigma_v$ ($N = 50$)},
+      {$\overline{v}$ ($N = 100$)},
+      {$\overline{v}+\sigma_v$ ($N = 100$)},
+      {$\overline{v}-\sigma_v$ ($N = 100$)},
+      {$\overline{v}$ ($N = 200$)},
+      {$\overline{v}+\sigma_v$ ($N = 200$)},
+      {$\overline{v}-\sigma_v$ ($N = 200$)}
     }
   \end{axis}
 \end{tikzpicture}
@@ -233,15 +232,15 @@
     \addplot[blue!50!white, opacity=0.1] fill between[of=u3p and u3m];
 
     \legend{
-      {$\overline{u}$ ($N = 500$)},
-      {$\overline{u}+\sigma_u$ ($N = 500$)},
-      {$\overline{u}-\sigma_u$ ($N = 500$)},
-      {$\overline{u}$ ($N = 1000$)},
-      {$\overline{u}+\sigma_u$ ($N = 1000$)},
-      {$\overline{u}-\sigma_u$ ($N = 1000$)},
-      {$\overline{u}$ ($N = 2000$)},
-      {$\overline{u}+\sigma_u$ ($N = 2000$)},
-      {$\overline{u}-\sigma_u$ ($N = 2000$)}
+      {$\overline{u}$ ($N = 50$)},
+      {$\overline{u}+\sigma_u$ ($N = 50$)},
+      {$\overline{u}-\sigma_u$ ($N = 50$)},
+      {$\overline{u}$ ($N = 100$)},
+      {$\overline{u}+\sigma_u$ ($N = 100$)},
+      {$\overline{u}-\sigma_u$ ($N = 100$)},
+      {$\overline{u}$ ($N = 200$)},
+      {$\overline{u}+\sigma_u$ ($N = 200$)},
+      {$\overline{u}-\sigma_u$ ($N = 200$)}
     }
   \end{axis}
 \end{tikzpicture}
@@ -273,15 +272,15 @@
     \addplot[blue!50!white, opacity=0.1] fill between[of=v3p and v3m];
 
     \legend{
-      {$\overline{v}$ ($N = 500$)},
-      {$\overline{v}+\sigma_v$ ($N = 500$)},
-      {$\overline{v}-\sigma_v$ ($N = 500$)},
-      {$\overline{v}$ ($N = 1000$)},
-      {$\overline{v}+\sigma_v$ ($N = 1000$)},
-      {$\overline{v}-\sigma_v$ ($N = 1000$)},
-      {$\overline{v}$ ($N = 2000$)},
-      {$\overline{v}+\sigma_v$ ($N = 2000$)},
-      {$\overline{v}-\sigma_v$ ($N = 2000$)}
+      {$\overline{v}$ ($N = 50$)},
+      {$\overline{v}+\sigma_v$ ($N = 50$)},
+      {$\overline{v}-\sigma_v$ ($N = 50$)},
+      {$\overline{v}$ ($N = 100$)},
+      {$\overline{v}+\sigma_v$ ($N = 100$)},
+      {$\overline{v}-\sigma_v$ ($N = 100$)},
+      {$\overline{v}$ ($N = 200$)},
+      {$\overline{v}+\sigma_v$ ($N = 200$)},
+      {$\overline{v}-\sigma_v$ ($N = 200$)}
     }
   \end{axis}
 \end{tikzpicture}
@@ -289,9 +288,10 @@
 \begin{tikzpicture}
   \begin{loglogaxis}[
     title = {Convergence at time $t = 50$},
-    xlabel = {\#Samples $N$},
+    xlabel = {\#Quadrature Points $N$},
     ylabel = {Estimated Relative Error},
     legend pos = outer north east,
+%    xmin = 1, xmax = 110,
     ]
     \addplot[orange!60!black]
       table[x index = {0}, y index = {1}]{\dataconv};
@@ -309,121 +309,16 @@
       table[x index = {0}, y index = {11}]{\dataconv};
     \addplot[green!60!white]
       table[x index = {0}, y index = {12}]{\dataconv};
-    \addplot[black, domain=50:1950, samples=100] {sqrt(50)/sqrt(x)};
+    \addplot[black, domain=2:100, samples=100] {4/(x*x)};
 
     \legend{
       $\overline{Re}$, $\sigma_{Re}$,
       {$\overline{u}$ at (5,120)}, {$\sigma_u$ at (5,120)},
       {$\overline{u}$ at (64,64)}, {$\sigma_u$ at (64,64)},
       {$\overline{u}$ at (120,5)}, {$\sigma_u$ at (120,5)},
-      {$\mathcal{O}(\tfrac{1}{\sqrt{N}})$ (expected)}
+      {$\mathcal{O}(\tfrac{1}{N^2})$ (expected)}
     }
   \end{loglogaxis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-  \begin{axis}[
-    title = {Histogram of the Reynolds number $Re$},
-    xlabel = {Reynolds number $Re$},
-    ylabel = {Frequency},
-    width=16cm,
-    ybar interval,
-    xticklabel={$[\pgfmathprintnumber\tick, \pgfmathprintnumber\nexttick)$},
-    xticklabel style={font=\tiny},
-    scaled x ticks=base 10:-3,
-  ]
-    \addplot+[ hist={ bins=10 } ] table [y index = {0}] \datahist;
-  \end{axis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-  \begin{axis}[
-    title = {Histogram of the velocity $u$ at (120,5) and time $t = 50$},
-    xlabel = {Velocity $u$},
-    ylabel = {Frequency},
-    width=16cm,
-    ybar interval,
-    xticklabel={$[\pgfmathprintnumber\tick, \pgfmathprintnumber\nexttick)$},
-    xticklabel style={font=\tiny},
-    scaled x ticks=base 10:3,
-  ]
-    \addplot+[ hist={ bins=10 } ] table [y index = {3}] \datahist;
-  \end{axis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-  \begin{axis}[
-    title = {Histogram of the velocity $v$ at (120,5) and time $t = 50$},
-    xlabel = {Velocity $v$},
-    ylabel = {Frequency},
-    width=16cm,
-    ybar interval,
-    xticklabel={$[\pgfmathprintnumber\tick, \pgfmathprintnumber\nexttick)$},
-    xticklabel style={font=\tiny},
-    scaled x ticks=base 10:3,
-  ]
-    \addplot+[ hist={ bins=10 } ] table [y index = {4}] \datahist;
-  \end{axis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-  \begin{axis}[
-    title = {Histogram of the velocity $u$ at (64,64) and time $t = 50$},
-    xlabel = {Velocity $u$},
-    ylabel = {Frequency},
-    width=16cm,
-    ybar interval,
-    xticklabel={$[\pgfmathprintnumber\tick, \pgfmathprintnumber\nexttick)$},
-    xticklabel style={font=\tiny},
-    scaled x ticks=base 10:2,
-  ]
-    \addplot+[ hist={ bins=10 } ] table [y index = {5}] \datahist;
-  \end{axis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-  \begin{axis}[
-    title = {Histogram of the velocity $v$ at (64,64) and time $t = 50$},
-    xlabel = {Velocity $v$},
-    ylabel = {Frequency},
-    width=16cm,
-    ybar interval,
-    xticklabel={$[\pgfmathprintnumber\tick, \pgfmathprintnumber\nexttick)$},
-    xticklabel style={font=\tiny},
-    scaled x ticks=base 10:2,
-  ]
-    \addplot+[ hist={ bins=10 } ] table [y index = {6}] \datahist;
-  \end{axis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-  \begin{axis}[
-    title = {Histogram of the velocity $u$ at (5,120) and time $t = 50$},
-    xlabel = {Velocity $u$},
-    ylabel = {Frequency},
-    width=16cm,
-    ybar interval,
-    xticklabel={$[\pgfmathprintnumber\tick, \pgfmathprintnumber\nexttick)$},
-    xticklabel style={font=\tiny},
-    scaled x ticks=base 10:2,
-  ]
-    \addplot+[ hist={ bins=10 } ] table [y index = {7}] \datahist;
-  \end{axis}
-\end{tikzpicture}
-
-\begin{tikzpicture}
-  \begin{axis}[
-    title = {Histogram of the velocity $v$ at (5,120) and time $t = 50$},
-    xlabel = {Velocity $v$},
-    ylabel = {Frequency},
-    width=16cm,
-    ybar interval,
-    xticklabel={$[\pgfmathprintnumber\tick, \pgfmathprintnumber\nexttick)$},
-    xticklabel style={font=\tiny},
-    scaled x ticks=base 10:2,
-  ]
-    \addplot+[ hist={ bins=10 } ] table [y index = {8}] \datahist;
-  \end{axis}
 \end{tikzpicture}
 
 \end{document}
