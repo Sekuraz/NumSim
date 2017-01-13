@@ -55,7 +55,7 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
     this->_particleTracing.insert(this->_particleTracing.begin(), this->_initPosParticle.begin(), this->_initPosParticle.end());
     this->_streakline.insert(this->_streakline.begin(), this->_initPosParticle.begin(), this->_initPosParticle.end());
   }
-
+#else
   // output for exercise sheet 4
   const Iterator it1(this->_geom, multi_index_t(120, 5));
   const Iterator it2(this->_geom, multi_index_t(64, 64));
