@@ -112,28 +112,27 @@ endif (WRITE_VTK)
 endif (BLATT4)
 
 # build executable and link libs against it
-add_executable (numsim ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
-add_executable (creator ${CMAKE_CURRENT_SOURCE_DIR}/src/creator.cpp)
-add_executable (test_mpi ${CMAKE_CURRENT_SOURCE_DIR}/src/test_mpi.cpp)
-add_executable (test_iter ${CMAKE_CURRENT_SOURCE_DIR}/src/test_iterator.cpp)
-add_executable (test_sor ${CMAKE_CURRENT_SOURCE_DIR}/src/test_sor.cpp)
-add_executable (test_rbsor ${CMAKE_CURRENT_SOURCE_DIR}/src/test_RBsor.cpp)
-add_executable (test_dc ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dc.cpp)
 add_library (_numsim ${SOURCES})
 
+add_executable (numsim ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 target_link_libraries (numsim _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
-target_link_libraries (test_mpi _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
-target_link_libraries (test_iter _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
-target_link_libraries (test_sor _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
-target_link_libraries (test_rbsor _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
-target_link_libraries (test_dc _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
 
-if (MPI_COMPILE_FLAGS)
-  set_target_properties(numsim PROPERTIES
-    COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
-endif()
+add_executable (creator ${CMAKE_CURRENT_SOURCE_DIR}/src/creator.cpp)
 
-if (MPI_LINK_FLAGS)
-  set_target_properties (numsim PROPERTIES
-    LINK_FLAGS "${MPI_LINK_FLAGS}")
-endif()
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+  message ("Building Debug.")
+  add_executable (test_mpi ${CMAKE_CURRENT_SOURCE_DIR}/src/test_mpi.cpp)
+  target_link_libraries (test_mpi _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
+
+  add_executable (test_iter ${CMAKE_CURRENT_SOURCE_DIR}/src/test_iterator.cpp)
+  target_link_libraries (test_iter _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
+
+  add_executable (test_sor ${CMAKE_CURRENT_SOURCE_DIR}/src/test_sor.cpp)
+  target_link_libraries (test_sor _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
+
+  add_executable (test_rbsor ${CMAKE_CURRENT_SOURCE_DIR}/src/test_RBsor.cpp)
+  target_link_libraries (test_rbsor _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
+
+  add_executable (test_dc ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dc.cpp)
+  target_link_libraries (test_dc _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
+endif (CMAKE_BUILD_TYPE MATCHES Debug)
