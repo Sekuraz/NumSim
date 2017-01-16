@@ -154,8 +154,8 @@ protected:
   const Communicator &_comm;
   const index_t _level;
   const index_t _nu;
-  const SOR _smoother;
-  MG *_coarse;
+  const RedOrBlackSOR _smoother;
+  const MG *_coarse;
   Grid *_e;
   Grid *_res;
 };

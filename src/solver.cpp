@@ -193,8 +193,7 @@ real_t MG::Cycle(Grid &p, const Grid &rhs) const {
     this->_coarse->Cycle(*this->_e, *this->_res);
     this->Interpolate(p);
   } // TODO: else solve
-  real_t res = this->Smooth(p, rhs);
-  return this->_comm.gatherSum(res);
+  return this->Smooth(p, rhs);
 }
 
 // Restricts the residuals of the solution to the next coarser Grid

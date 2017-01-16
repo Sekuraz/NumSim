@@ -132,6 +132,9 @@ if (CMAKE_BUILD_TYPE MATCHES Debug)
   add_executable (test_rbsor ${CMAKE_CURRENT_SOURCE_DIR}/src/test_RBsor.cpp)
   target_link_libraries (test_rbsor _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
 
+  add_executable (test_mg ${CMAKE_CURRENT_SOURCE_DIR}/src/test_MG.cpp)
+  target_link_libraries (test_mg _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
+
   add_executable (test_dc ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dc.cpp)
   target_link_libraries (test_dc _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
 endif (CMAKE_BUILD_TYPE MATCHES Debug)

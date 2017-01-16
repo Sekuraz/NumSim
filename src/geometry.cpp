@@ -300,6 +300,7 @@ void Geometry::Update(Grid &u, Grid &v) const {
         if(this->isFluid(it.Left())) {
           // TODO: set u.left ?
           u.Cell(it) = u.Cell(it.Left());
+          u.Cell(it.Left()) = u.Cell(it.Left().Left());
           v.Cell(it) = 0;
         } else if(this->isFluid(it.Right())) {
           u.Cell(it) = u.Cell(it.Right());
