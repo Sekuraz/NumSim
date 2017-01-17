@@ -273,7 +273,7 @@ void VTK::FinishParticles(){
 }
 //------------------------------------------------------------------------------
 
-void VTK::AddParticles(const char *title, const std::list<multi_real_t> particles){
+void VTK::AddParticles(const char *title, const std::list<multi_real_t> &particles){
   if (!_handle)  {
     return;
   }

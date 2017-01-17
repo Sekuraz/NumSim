@@ -54,7 +54,7 @@ public:
   void FinishParticles();
 
   /// Add a particle data
-  void AddParticles(const char *title, const std::list<multi_real_t> particles);
+  void AddParticles(const char *title, const std::list<multi_real_t> &particles);
 
 private:
   const multi_real_t &_h;

@@ -49,6 +49,11 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
   this->_p->Initialize(0);
   this->_particle->Initialize(0);
 
+  // initialize timestep restriction
+  const multi_real_t &h = this->_geom.Mesh();
+  this->_dtlimit = std::min(this->_param.Dt(),
+      this->_param.Tau() * this->_param.Re() * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]));
+
 #ifndef BLATT4
   if (this->_comm.ThreadCnt() == 1) {
     // write first particle pos in list for particle trace and streakline
@@ -84,10 +89,8 @@ void Compute::TimeStep(bool printInfo) {
   // compute local dt
   // Test CFL and Pr condition
   const multi_real_t &h = this->_geom.Mesh();
-  this->_dtlimit = this->_param.Tau()
-                 * std::min(std::min(h[0] / this->_u->AbsMax(), h[1] / this->_v->AbsMax()),
-                            this->_param.Re() * 0.5 * (h[0]*h[0]*h[1]*h[1])/(h[0]*h[0]+h[1]*h[1]));
-  real_t dt = std::min(this->_dtlimit, this->_param.Dt());
+  real_t dt = std::min(this->_dtlimit,
+      this->_param.Tau() * std::min(h[0] / this->_u->AbsMax(), h[1] / this->_v->AbsMax()));
   // gather global dt
   dt = this->_comm.gatherMin(dt);
 
@@ -117,10 +120,6 @@ void Compute::TimeStep(bool printInfo) {
   this->NewVelocities(dt);
 
 #ifndef BLATT4
-  // calculate streamlines and vorticity
-  this->Stream();
-  this->Vort();
-
   // calculate new particle postitions
   // TODO: rewrite for parallelization
   if (_comm.ThreadCnt() == 1) {
@@ -164,13 +163,14 @@ const Grid *Compute::GetVelocity() {
 }
 
 // Computes and returns the vorticity
-void Compute::Vort() {
+const Grid* Compute::GetVorticity() {
   for(Iterator it(this->_geom); it.Valid(); it.Next()) {
     this->_vorticity->Cell(it) = this->_u->dy_r(it) - this->_v->dx_r(it);
   }
+  return this->_vorticity;
 }
 // Computes the stream line values
-void Compute::Stream() {
+const Grid* Compute::GetStreamline() {
   this->_streamline->Data()[0] = 0;
   for(Iterator it(this->_geom, 1); it.Valid(); it.Next()) {
     if(it.Pos()[1] == 0) {
@@ -186,6 +186,7 @@ void Compute::Stream() {
   for(Iterator it(this->_geom); it.Valid(); it.Next()) {
     this->_streamline->Cell(it) += offset;
   }
+  return this->_streamline;
 }
 
 void Compute::Particle(const real_t &dt) {
@@ -260,8 +261,6 @@ void Compute::ParticleStepVisu(multi_real_t &lastPos, const real_t &dt, const in
 void Compute::NewVelocities(const real_t &dt) {
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_u->Cell(it) = this->_F->Cell(it) - dt * this->_p->dx_r(it);
-  }
-  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_v->Cell(it) = this->_G->Cell(it) - dt * this->_p->dy_r(it);
   }
 }

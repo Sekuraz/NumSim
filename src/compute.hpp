@@ -45,16 +45,15 @@ public:
   /// Returns the pointer to RHS
   inline const Grid *GetRHS() const { return this->_rhs; };
   /// Returns the pointer to the Streamline
-	inline const Grid *GetStreamline() const { return this->_streamline; };
+  const Grid *GetStreamline();
   /// Returns the pointer to the Vorticity
-	inline const Grid *GetVorticity() const { return this->_vorticity; };
+  const Grid *GetVorticity();
   /// Returns the pointer to the Particle Tracing grid
-	inline const Grid *GetParticleTrace() const { return this->_particle; };
+  inline const Grid *GetParticleTrace() const { return this->_particle; };
   /// Returns the pointer to the Particle Tracing list
-  inline const std::list<multi_real_t> GetParticles() const { return this->_particleTracing; };
+  inline const std::list<multi_real_t> &GetParticles() const { return this->_particleTracing; };
   /// Returns the pointer to the Particle Tracing list
-	//inline const std::list<multi_real_t> *GetStreakline() const { return this->_streakline; };
-  inline const std::list<multi_real_t> GetStreakline() const { return this->_streakline; };
+  inline const std::list<multi_real_t> &GetStreakline() const { return this->_streakline; };
 
   /// Computes and returns the absolute velocity
   const Grid *GetVelocity();
@@ -86,8 +85,7 @@ private:
   multi_index_t _particleIndx; ///< cell of the traced particle for visu
   std::list<multi_real_t> _particleTracing; ///< list for particle tracing
   std::list<multi_real_t> _streakline; ///< list of streakline points
-
-  index_t _numParticles; ///< number of traced particles/ streaklines
+  const index_t _numParticles; ///< number of traced particles/ streaklines
 
   /// Compute the new velocities u,v
   void NewVelocities(const real_t &dt);
@@ -95,10 +93,6 @@ private:
   void MomentumEqu(const real_t &dt);
   /// Compute the RHS of the poisson equation
   void RHS(const real_t &dt);
-  /// Computes the vorticity
-  void Vort();
-  /// Computes the stream line values
-  void Stream();
   /// Computes the new particles
   void Particle(const real_t &dt);
   /// Computes the new streakline

@@ -42,7 +42,7 @@ real_t SOR::Cycle(Grid &grid, const Grid &rhs) const {
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     real_t localRes = Solver::localRes(it, grid, rhs);
     residual += localRes * localRes;
-    grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
+    grid.Cell(it) -= this->_correction * localRes;
   }
 
   return residual * this->_invNumFluid;
@@ -77,7 +77,7 @@ real_t RedOrBlackSOR::RedCycle(Grid &grid, const Grid &rhs) const {
   /*for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     real_t localRes = Solver::localRes(it, grid, rhs);
     residual += localRes * localRes;
-    grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
+    grid.Cell(it) -= this->_correction * localRes;
     it.Next();
   }*/
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
@@ -85,7 +85,7 @@ real_t RedOrBlackSOR::RedCycle(Grid &grid, const Grid &rhs) const {
     if((pos[0]+pos[1]) % 2 == 0) {
       real_t localRes = Solver::localRes(it, grid, rhs);
       residual += localRes * localRes;
-      grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
+      grid.Cell(it) -= this->_correction * localRes;
     }
   }
 
@@ -99,7 +99,7 @@ real_t RedOrBlackSOR::BlackCycle(Grid &grid, const Grid &rhs) const {
   for(it.Next(); it.Valid(); it.Next()) {
     real_t localRes = Solver::localRes(it, grid, rhs);
     residual += localRes * localRes;
-    grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
+    grid.Cell(it) -= this->_correction * localRes;
     it.Next();
   }*/
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
@@ -107,7 +107,7 @@ real_t RedOrBlackSOR::BlackCycle(Grid &grid, const Grid &rhs) const {
     if((pos[0]+pos[1]) % 2 == 1) {
       real_t localRes = Solver::localRes(it, grid, rhs);
       residual += localRes * localRes;
-      grid.Cell(it) = grid.Cell(it) - this->_correction * localRes;
+      grid.Cell(it) -= this->_correction * localRes;
     }
   }
   return residual * this->_invNumFluid;
