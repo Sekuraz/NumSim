@@ -53,7 +53,7 @@ protected:
 class SOR : public Solver {
 public:
   /// Constructs an actual SOR solver
-  SOR(const Geometry &geom, const real_t &omega);
+  SOR(const Geometry &geom, const real_t &omega, const Communicator &comm);
   /// Destructor
   ~SOR() {};
 
@@ -63,6 +63,7 @@ public:
   virtual real_t Cycle(Grid &grid, const Grid &rhs) const;
 
 protected:
+  const Communicator& _comm;
   const real_t _correction;  ///< The correction factor computed from over-relaxation parameter
   const real_t _invNumFluid; ///< The invers of the number of fluid cells
 };
@@ -73,8 +74,7 @@ class RedOrBlackSOR : public SOR {
 public:
   /// Constructs an RedBlackSOR solver
   RedOrBlackSOR(const Geometry &geom, const real_t &omega, const Communicator &comm)
-      : SOR(geom,omega), _comm(comm),
-      _firstRed(comm.EvenOdd() && (geom.Size()[0] % 2 == 0))  // TODO one size even other odd
+      : SOR(geom, omega, comm), _firstRed(comm.EvenOdd() && (geom.Size()[0] % 2 == 0))  // TODO one size even other odd
       {};
   /// Destructor
   ~RedOrBlackSOR() {};
@@ -94,7 +94,6 @@ public:
   real_t BlackCycle(Grid &grid, const Grid &rhs) const;
 
 protected:
-  const Communicator& _comm;
   const bool _firstRed; ///< Whether first Red of Black Cycle is done
 };
 

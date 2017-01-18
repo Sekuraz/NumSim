@@ -25,7 +25,8 @@
 class Compute {
 public:
   /// Creates a compute instance with given geometry, parameter and communicator
-  Compute(const Geometry &geom, const Parameter &param, const Communicator &comm);
+  Compute(const Geometry &geom, const Parameter &param, const Communicator &comm,
+          const char sol[] = nullptr);
   /// Deletes all grids
   ~Compute();
 

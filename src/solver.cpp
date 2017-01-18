@@ -31,7 +31,8 @@ real_t Solver::localRes(const Iterator &it, const Grid &grid, const Grid &rhs) c
 // concrete SOR solver
 
 // Constructs an actual SOR solver
-SOR::SOR(const Geometry &geom, const real_t &omega) : Solver(geom),
+SOR::SOR(const Geometry &geom, const real_t &omega, const Communicator &comm)
+  : Solver(geom), _comm(comm),
     _correction(omega * 0.5 * (geom.Mesh()[0]*geom.Mesh()[0]*geom.Mesh()[1]*geom.Mesh()[1])
                 / (geom.Mesh()[0]*geom.Mesh()[0]+geom.Mesh()[1]*geom.Mesh()[1])),
     _invNumFluid(1.0/geom.NumFluid()) {}
@@ -46,7 +47,9 @@ real_t SOR::Cycle(Grid &grid, const Grid &rhs) const {
     grid.Cell(it) -= this->_correction * localRes;
   }
 
-  return residual * this->_invNumFluid;
+  residual *= this->_invNumFluid;
+  // gather global residual
+  return this->_comm.gatherSum(residual);
 }
 
 //------------------------------------------------------------------------------
@@ -69,7 +72,8 @@ real_t RedOrBlackSOR::Cycle(Grid &grid, const Grid &rhs) const {
     // second half-step
     res += this->RedCycle(grid, rhs);
   }
-  return res;
+  // gather global residual
+  return this->_comm.gatherSum(res);
 }
 
 real_t RedOrBlackSOR::RedCycle(Grid &grid, const Grid &rhs) const {
@@ -111,6 +115,7 @@ real_t RedOrBlackSOR::BlackCycle(Grid &grid, const Grid &rhs) const {
       grid.Cell(it) -= this->_correction * localRes;
     }
   }
+
   return residual * this->_invNumFluid;
 }
 
@@ -123,26 +128,33 @@ void CG::reset(const Grid &grid, const Grid &rhs) {
     this->_direction.Cell(it) = local;
   }
   this->old_residual = this->_res.InnerProduct(this->_res);
+  // gather global residual
+  this->old_residual = this->_comm.gatherSum(this->old_residual);
 }
 
 real_t CG::Cycle(Grid &grid, const Grid &rhs __attribute__((unused))) const {
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_Ad.Cell(it) = this->_direction.dxx(it) + this->_direction.dyy(it);
   }
-  real_t alpha = this->old_residual / this->_direction.InnerProduct(this->_Ad);
+
+  real_t dTAd = this->_direction.InnerProduct(this->_Ad);
+  real_t alpha = this->old_residual / this->_comm.gatherSum(dTAd);
 
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     grid.Cell(it) += alpha * this->_direction.Cell(it);
     this->_res.Cell(it) -= alpha * this->_Ad.Cell(it);
   }
-  real_t residual = this->_res.InnerProduct(this->_res);
 
+  real_t residual = this->_res.InnerProduct(this->_res);
+  // gather global residual
+  residual = this->_comm.gatherSum(residual);
   real_t beta = residual / this->old_residual;
 
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_direction.Cell(it) *= beta;
     this->_direction.Cell(it) += this->_res.Cell(it);
   }
+  this->_comm.copyBoundary(this->_direction);
 
   this->old_residual = residual;
   return residual;

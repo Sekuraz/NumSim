@@ -33,7 +33,7 @@
 #endif
 
 /// reads arguments from command line
-void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geomPath) {
+void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geomPath, char* &solver) {
   for(int i = 1; i < argc; i++) {
     if (strncmp(argv[i], "-h", 2) == 0 or strncmp(argv[i], "--help", 6) == 0) {
       std::cout << std::endl << "Numsim - Fluid simulation." << std::endl << std::endl
@@ -42,7 +42,7 @@ void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geo
          << "Arguments must be seperated by a space from their additional parameters." << std::endl
          << "Starting without any argument solves a 128x128 driven cavity." << std::endl
          << "\t-h, --help\tPrints this message." << std::endl
-         << "\t-g <num>\tChoose among some ready-made geometries." << std::endl
+         << "\t-g <num>\tChoose among some already-made geometries." << std::endl
          << "\t\t\t\t0: Driven Cavity" << std::endl
          << "\t\t\t\t1: Simple channel" << std::endl
          << "\t\t\t\t2: Pressure driven channel" << std::endl
@@ -52,6 +52,10 @@ void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geo
          << "\t-P <path>\tUse the specified parameter file" << std::endl
          << "\t-I <path>\tUse the specified parameter and geometry file" << std::endl
          << "\t\t\tEquivalent to -G <path>.geom and -P <path>.param" << std::endl
+         << "\t-s <type>\tUse the specified solver for the poisson equation" << std::endl
+         << "\t\t\t\tSOR: Successive OverRelaxation (lexicographic order)" << std::endl
+         << "\t\t\t\tRB: RedBlack SOR (checkerboard order)" << std::endl
+         << "\t\t\t\tCG: Conjugated Gradient Method (Default)" << std::endl
          << std::endl;
       exit(0);
     } else if(strncmp(argv[i], "-G",2)==0) { // geometry path
@@ -111,6 +115,13 @@ void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geo
         sprintf(paramPath, "%s.param", argv[++i]);
         sprintf(geomPath, "%s.geom", argv[i]);
       }
+    } else if(strncmp(argv[i], "-s",2)==0) { // solver type
+      // test whether path at flag or afterwards
+      if (strlen(argv[i])>2) {
+        solver = &argv[i][2];
+      } else {
+        solver = argv[++i];
+      }
     }
   }
 }
@@ -138,9 +149,9 @@ void writeVTK(VTK &vtk, Compute &comp, bool writeParticles) {
 #endif
 
 int main(int argc, char *argv[]) {
-  char *paramPath = nullptr, *geomPath = nullptr;
+  char *paramPath = nullptr, *geomPath = nullptr, *solver = nullptr;
 
-  parseCommandLine(argc, argv, paramPath, geomPath);
+  parseCommandLine(argc, argv, paramPath, geomPath, solver);
 
   // Create communicator, parameter and geometry instances and load values
   Communicator comm(&argc, &argv);
@@ -170,7 +181,7 @@ int main(int argc, char *argv[]) {
   }
 
   // Create the fluid solver
-  Compute comp(geom, param, comm);
+  Compute comp(geom, param, comm, solver);
 
 #ifdef DEBUG_VISU
   // Create and initialize the visualization

@@ -19,6 +19,7 @@
 #include <list>
 #include <iterator>
 #include <cmath>
+#include <cstring>
 #include "typedef.hpp"
 #include "comm.hpp"
 #include "compute.hpp"
@@ -29,7 +30,7 @@
 #include "solver.hpp"
 
 // Creates a compute instance with given geometry, parameter and communicator
-Compute::Compute(const Geometry &geom, const Parameter &param, const Communicator &comm)
+Compute::Compute(const Geometry &geom, const Parameter &param, const Communicator &comm, const char sol[])
     : _t(0),
     _u(new Grid(geom, multi_real_t(0, geom.Mesh()[1]/2))),
     _v(new Grid(geom, multi_real_t(geom.Mesh()[0]/2, 0))),
@@ -41,7 +42,13 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
     _initPosParticle(param.ParticleInitPos()), _numParticles(param.ParticleInitPos().size()) {
 
   // initialize the solver
-  this->_solver = new CG(geom, comm);
+  if(sol == nullptr || strncmp(sol, "CG", 2) == 0) {
+    this->_solver = new CG(geom, comm);
+  } else if(strncmp(sol, "RB", 2) == 0) {
+    this->_solver = new RedOrBlackSOR(geom, param.Omega(), comm);
+  } else {
+    this->_solver = new SOR(geom, param.Omega(), comm);
+  }
 
   // initialize u,v,p,particle
   this->_u->Initialize(0);
@@ -112,11 +119,9 @@ void Compute::TimeStep(bool printInfo) {
     res = this->_solver->Cycle(*(this->_p), *(this->_rhs));
     // set boundary values for p
     this->_geom.Update_P(*(this->_p));
-    // gather global residual
-    res = this->_comm.gatherSum(res);
   }
   if((i == this->_param.IterMax()) && printInfo) {
-    std::cerr << "Warning: SOR did not converge! res = " << std::sqrt(res) << std::endl;
+    std::cerr << "Warning: Compute: Solver did not converge! res = " << std::sqrt(res) << std::endl;
   }
 
   // compute new velocites
