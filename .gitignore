@@ -41,10 +41,13 @@ Makefile
 # Output
 Montecarlo-*/
 VTK/
-doc/
 profiler.svg
+doc/
 *.geom
 *.param
 *.csv
 *.log
+*.err
+*.aux
+*.out
 *.pdf
