@@ -41,7 +41,7 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
     _initPosParticle(param.ParticleInitPos()), _numParticles(param.ParticleInitPos().size()) {
 
   // initialize the solver
-  this->_solver = new RedOrBlackSOR(geom, param.Omega(), comm);
+  this->_solver = new CG(geom, comm);
 
   // initialize u,v,p,particle
   this->_u->Initialize(0);
@@ -105,6 +105,9 @@ void Compute::TimeStep(bool printInfo) {
   // solve the poisson equation for the pressure
   real_t res = 2 * this->_param.Eps() * this->_param.Eps();
   index_t i;
+
+  this->_solver->reset(*(this->_p), *(this->_rhs));
+
   for(i = 0; (i < this->_param.IterMax()) && (res > this->_param.Eps() * this->_param.Eps()) ; i++) {
     res = this->_solver->Cycle(*(this->_p), *(this->_rhs));
     // set boundary values for p

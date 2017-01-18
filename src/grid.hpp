@@ -91,6 +91,8 @@ public:
   /// Prints the data of the grid
   void print() const;
 
+  real_t InnerProduct(const Grid& other) const;
+
 private:
   real_t *_data;
   const multi_real_t _offset;

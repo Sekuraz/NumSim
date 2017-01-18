@@ -36,6 +36,10 @@ public:
   // @returns accumulated residual
   virtual real_t Cycle(Grid &grid, const Grid &rhs) const = 0;
 
+  /// Resets the solver and prepares it for a new time step
+  virtual void reset(const Grid &grid __attribute__((unused)), const Grid &rhs __attribute__((unused))) {};
+
+
 protected:
   const Geometry &_geom;
 
@@ -92,6 +96,33 @@ public:
 protected:
   const Communicator& _comm;
   const bool _firstRed; ///< Whether first Red of Black Cycle is done
+};
+
+
+class CG : public Solver {
+public:
+  /// Constructs an RedBlackSOR solver
+  CG(const Geometry &geom, const Communicator &comm)
+      : Solver(geom),
+      _comm(comm), _res(geom), _direction(geom), _Ad(geom)
+      {};
+  /// Destructor
+  ~CG() {};
+
+  /// Returns the total residual and executes a red solver cycle
+  /// \param[in][out] grid current pressure values
+  /// \param[in] rhs right hand side
+  real_t Cycle(Grid &grid, const Grid &rhs) const;
+
+  /// Resets the solver and prepares it for a new time step
+  virtual void reset(const Grid &grid, const Grid &rhs);
+
+protected:
+  const Communicator& _comm;
+  mutable Grid _res;
+  mutable Grid _direction;
+  mutable Grid _Ad;
+  mutable real_t old_residual;
 };
 //------------------------------------------------------------------------------
 #endif // __SOLVER_HPP

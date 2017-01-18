@@ -1,3 +1,4 @@
+/* vim: set tabstop=2:softtabstop=2:shiftwidth=2:expandtab */
 /*
  * Copyright (C) 2016   Stephan Lunowa, Markus Baur, Jonas Harsch
  *
@@ -112,3 +113,38 @@ real_t RedOrBlackSOR::BlackCycle(Grid &grid, const Grid &rhs) const {
   }
   return residual * this->_invNumFluid;
 }
+
+void CG::reset(const Grid &grid, const Grid &rhs) {
+  real_t local;
+  for (InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
+    local = Solver::localRes(it, grid, rhs);
+
+    this->_res.Cell(it) = local;
+    this->_direction.Cell(it) = local;
+  }
+  this->old_residual = this->_res.InnerProduct(this->_res);
+}
+
+real_t CG::Cycle(Grid &grid, const Grid &rhs __attribute__((unused))) const {
+  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
+    this->_Ad.Cell(it) = this->_direction.dxx(it) + this->_direction.dyy(it);
+  }
+  real_t alpha = this->old_residual / this->_direction.InnerProduct(this->_Ad);
+
+  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
+    grid.Cell(it) += alpha * this->_direction.Cell(it);
+    this->_res.Cell(it) -= alpha * this->_Ad.Cell(it);
+  }
+  real_t residual = this->_res.InnerProduct(this->_res);
+
+  real_t beta = residual / this->old_residual;
+
+  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
+    this->_direction.Cell(it) *= beta;
+    this->_direction.Cell(it) += this->_res.Cell(it);
+  }
+
+  this->old_residual = residual;
+  return residual;
+}
+

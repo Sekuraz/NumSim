@@ -210,3 +210,10 @@ void Grid::print() const {
   std::cout << std::endl;
 }
 
+real_t Grid::InnerProduct(const Grid& other) const {
+  real_t retval = 0;
+  for (InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
+    retval += this->_data[it] * other._data[it];
+  }
+  return retval;
+}
