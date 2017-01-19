@@ -22,13 +22,6 @@
 #ifndef __COMM_HPP
 #define __COMM_HPP
 //------------------------------------------------------------------------------
-#if REAL_TYPE==double
-  #define MPI_REAL_TYPE MPI_DOUBLE
-#elif REAL_TYPE==long double
-  #define MPI_REAL_TYPE MPI_LONG_DOUBLE
-#else
-  #define MPI_REAL_TYPE MPI_FLOAT
-#endif
 
 /// Class for all data exchange between the processes (via MPI).
 class Communicator {

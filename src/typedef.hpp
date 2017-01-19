@@ -27,13 +27,19 @@
 //------------------------------------------------------------------------------
 
 #define DIM 2
-#define REAL_TYPE double
+#define REAL_TYPE DOUBLE // FLOAT, DOUBLE or LONG_DOUBLE
 #define INDEX_TYPE std::size_t
 
 //------------------------------------------------------------------------------
 
 /// Typedef for reals
-typedef REAL_TYPE real_t;
+#if REAL_TYPE==DOUBLE
+typedef double real_t;
+#elif REAL_TYPE==LONG_DOUBLE
+typedef long double real_t;
+#else
+typedef float real_t;
+#endif
 
 /// Typedef for integers
 typedef INDEX_TYPE index_t;
@@ -105,7 +111,5 @@ class Grid;
 class Iterator;
 class Parameter;
 class Solver;
-class SOR;
-class RedOrBlackSOR;
 
 #endif // __TYPEDEF_HPP
