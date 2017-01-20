@@ -88,6 +88,42 @@ Iterator Iterator::Down() const {
     return Iterator(this->_geom, this->_value - this->_geom.SizeP()[0]);
 }
 
+// Returns the value of an Iterator that is located left from this one.
+// If we are at the left boundary, the cell sees itself.
+index_t Iterator::Left(int __attribute__((unused))) const {
+    if (this->_value % this->_geom.SizeP()[0] == 0) {
+        return this->_value;
+    }
+    return this->_value - 1;
+}
+
+// Returns the value of an Iterator that is located right from this one.
+// If we are at the right boundary, the cell sees itself.
+index_t Iterator::Right(int __attribute__((unused))) const {
+    if ((this->_value + 1) % this->_geom.SizeP()[0] == 0) {
+        return this->_value;
+    }
+    return this->_value + 1;
+}
+
+// Returns the value of an Iterator that is located above this one.
+// If we are at the upper domain boundary, the cell sees itself.
+index_t Iterator::Top(int __attribute__((unused))) const {
+    if (this->_value >= this->_geom.SizeP()[0]*(this->_geom.SizeP()[1]-1)) {
+        return this->_value;
+    }
+    return this->_value + this->_geom.SizeP()[0];
+}
+
+// Returns the value of an Iterator that is located below this one
+// If we are at the lower domain boundary, the cell sees itself
+index_t Iterator::Down(int __attribute__((unused))) const {
+    if (this->_value < this->_geom.SizeP()[0]) {
+        return this->_value;
+    }
+    return this->_value - this->_geom.SizeP()[0];
+}
+
 //------------------------------------------------------------------------------
 // Iterator for interior cells
 

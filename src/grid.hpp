@@ -83,8 +83,6 @@ public:
   inline const Geometry &Geom() const { return this->_geom; }
   /// Returns the size of the Grid in each dimension
   inline const multi_index_t &Size() const { return this->_geom.SizeP(); }
-  /// Returns the total data size of the Grid
-  inline const index_t &dataSize() const { return this->_sizeData; }
 
   /// Returns a pointer to the raw data
   inline real_t *Data() { return _data; };
@@ -103,7 +101,6 @@ private:
   const Geometry &_geom;
   const multi_real_t &_hInv;
   const multi_real_t _hInv2;
-  index_t _sizeData;
 };
 //------------------------------------------------------------------------------
 #endif // __GRID_HPP

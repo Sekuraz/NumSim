@@ -59,6 +59,22 @@ public:
   // If we are at the upper domain boundary, the cell sees itself.
   virtual Iterator Top() const;
 
+  /// Returns the value of an Iterator that is located below this one
+  // If we are at the lower domain boundary, the cell sees itself
+  virtual index_t Down(int __attribute__((unused))) const;
+
+  /// Returns the value of an Iterator that is located left from this one.
+  // If we are at the left boundary, the cell sees itself.
+  virtual index_t Left(int __attribute__((unused))) const;
+
+  /// Returns the value of an Iterator that is located right from this one.
+  // If we are at the right boundary, the cell sees itself.
+  virtual index_t Right(int __attribute__((unused))) const;
+
+  /// Returns the value of an Iterator that is located above this one.
+  // If we are at the upper domain boundary, the cell sees itself.
+  virtual index_t Top(int __attribute__((unused))) const;
+
   /// Returns an Iterator that is located below this one
   // If we are at the lower domain boundary, the cell sees itself
   virtual Iterator Down() const;
