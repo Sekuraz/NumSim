@@ -33,9 +33,9 @@ public:
   Iterator(const Geometry &geom, const multi_index_t &pos);
 
   /// Returns the current position value
-  virtual const index_t &Value() const;
+  inline const index_t &Value() const { return this->_value; }
   /// Cast operator to convert Iterators to integers
-  virtual operator const index_t &() const;
+  inline operator const index_t& () const { return this->_value; }
   /// Returns the position coordinates
   virtual multi_index_t Pos() const;
 
@@ -45,7 +45,7 @@ public:
   virtual void Next();
 
   /// Checks if the iterator still has a valid value
-  virtual bool Valid() const;
+  inline bool Valid() const { return this->_valid; }
 
   /// Returns an Iterator that is located left from this one.
   // If we are at the left boundary, the cell sees itself.

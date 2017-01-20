@@ -57,15 +57,6 @@ void Grid::Initialize(const real_t &value) {
   }
 }
 
-// Write access to the grid cell at position [it]
-real_t &Grid::Cell(const Iterator &it) {
-  return this->_data[it];
-}
-// Read access to the grid cell at position [it]
-const real_t &Grid::Cell(const Iterator &it) const {
-  return this->_data[it];
-}
-
 // Interpolate the value at a arbitrary position
 real_t Grid::Interpolate(const multi_real_t &pos) const {
   const multi_index_t &size = this->Size();

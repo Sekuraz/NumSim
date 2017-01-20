@@ -41,7 +41,7 @@ Makefile
 # Output
 Montecarlo-*/
 VTK/
-profiler.svg
+profiler*.svg
 doc/
 *.geom
 *.param

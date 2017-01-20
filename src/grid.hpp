@@ -15,12 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "typedef.hpp"
-#include "geometry.hpp"
 //------------------------------------------------------------------------------
 #ifndef __GRID_HPP
 #define __GRID_HPP
 //------------------------------------------------------------------------------
+#include "typedef.hpp"
+#include "geometry.hpp"
+#include "iterator.hpp"
+
 /// Class describing a grid of a variable for the computation
 class Grid {
 public:
@@ -40,10 +42,9 @@ public:
   void Initialize(const real_t &value);
 
   /// Write access to the grid cell at position [it]
-  real_t &Cell(const Iterator &it);
+  inline real_t& Cell(const Iterator &it) { return this->_data[it]; }
   /// Read access to the grid cell at position [it]
-  const real_t &Cell(const Iterator &it) const;
-
+  inline const real_t& Cell(const Iterator &it) const { return this->_data[it]; }
   /// Interpolate the value at a arbitrary (real) position
   real_t Interpolate(const multi_real_t &pos) const;
 

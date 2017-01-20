@@ -1,13 +1,14 @@
 #!/bin/bash
 REP=5
+DIR=drivencavity$(date +%Y-%m-%d_%H-%M-%S)
+mkdir ${DIR}
 
 rm -f drivencavity*.log drivencavity*.err drivencavity_*.csv
 
 for METHOD in CG MG RBSOR SOR; do
   echo "Method ${METHOD}:"
-  rm -f drivencavity_${METHOD}.csv
 
-  for N in 8 16 32 64 #128
+  for N in 8 16 #32 64 #128
   do
     echo "  Size ${N}:"
     FILE=drivencavity${N}
@@ -19,4 +20,5 @@ for METHOD in CG MG RBSOR SOR; do
     done
     awk -F' ' '{k+=$1; sum+=$2;}; END { print k/NR, sum/NR, NR }' ${FILE}_${METHOD}.log >>drivencavity_${METHOD}.csv
   done
+  mv drivencavity_${METHOD}.csv ${DIR}/
 done

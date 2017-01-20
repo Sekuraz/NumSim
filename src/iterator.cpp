@@ -31,16 +31,6 @@ Iterator::Iterator(const Geometry &geom, const multi_index_t &pos) : _geom(geom)
   this->_valid = this->_value < this->_geom.DataSize();
 }
 
-// Returns the current position value
-const index_t& Iterator::Value() const {
-    return this->_value;
-}
-
-// Cast operator to convert Iterators to integers
-Iterator::operator const index_t& () const {
-    return this->_value;
-}
-
 // Returns the position coordinates
 multi_index_t Iterator::Pos() const {
     // TODO: rewrite for n dimensions
@@ -60,11 +50,6 @@ void Iterator::Next() {
     if (++this->_value >= this->_geom.DataSize()) {
         this->_valid = false;
     }
-}
-
-// Checks if the iterator still has a valid value
-bool Iterator::Valid() const {
-    return this->_valid;
 }
 
 // Returns an Iterator that is located left from this one.
