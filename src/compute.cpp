@@ -47,11 +47,11 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
   } else if(strncmp(sol, "MG", 2) == 0) {
     const multi_index_t& size = this->_geom.SizeP();
     const index_t level = (index_t)std::fmax(std::fmin( std::log2(size[0]), std::log2(size[1]))-1, 0);
-    this->_solver = new MG(geom, comm, level);
+    this->_solver = new MG(geom, comm, level, 4);
   } else if(strncmp(sol, "RB", 2) == 0) {
-    this->_solver = new RedOrBlackSOR(geom, param.Omega(), comm);
+    this->_solver = new RedOrBlackSOR(geom, comm, param.Omega());
   } else {
-    this->_solver = new SOR(geom, param.Omega(), comm);
+    this->_solver = new SOR(geom, comm, param.Omega());
   }
 
   // initialize u,v,p,particle

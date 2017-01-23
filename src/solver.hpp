@@ -26,7 +26,8 @@
 class Solver {
 public:
   /// Constructor of the abstract Solver class
-  Solver(const Geometry &geom) : _geom(geom) {};
+  Solver(const Geometry &geom, const Communicator &comm)
+      : _geom(geom), _invNumFluid(1.0/geom.NumFluid()), _comm(comm) {};
   /// Destructor of the Solver Class
   virtual ~Solver() {};
 
@@ -42,6 +43,8 @@ public:
 
 protected:
   const Geometry &_geom;
+  const real_t _invNumFluid; ///< The invers of the number of fluid cells
+  const Communicator& _comm;
 
   /// Returns the residual at [it] for the pressure-Poisson equation
   real_t localRes(const Iterator &it, const Grid &grid, const Grid &rhs) const;
@@ -53,9 +56,7 @@ protected:
 class SOR : public Solver {
 public:
   /// Constructs an actual SOR solver
-  SOR(const Geometry &geom, const real_t &omega, const Communicator &comm);
-  /// Destructor
-  virtual ~SOR() {};
+  SOR(const Geometry &geom, const Communicator &comm, const real_t &omega);
 
   /// Returns the total residual and executes a solver cycle
   /// \param[in][out] grid current pressure values
@@ -63,9 +64,7 @@ public:
   virtual real_t Cycle(Grid &grid, const Grid &rhs) const;
 
 protected:
-  const Communicator& _comm;
   const real_t _correction;  ///< The correction factor computed from over-relaxation parameter
-  const real_t _invNumFluid; ///< The invers of the number of fluid cells
 };
 //------------------------------------------------------------------------------
 
@@ -73,11 +72,9 @@ protected:
 class RedOrBlackSOR : public SOR {
 public:
   /// Constructs an RedBlackSOR solver
-  RedOrBlackSOR(const Geometry &geom, const real_t &omega, const Communicator &comm)
-      : SOR(geom, omega, comm), _firstRed(comm.EvenOdd() && (geom.Size()[0] % 2 == 0))  // TODO one size even other odd
+  RedOrBlackSOR(const Geometry &geom, const Communicator &comm, const real_t &omega)
+      : SOR(geom, comm, omega), _firstRed(comm.EvenOdd() && (geom.Size()[0] % 2 == 0))  // TODO one size even other odd
       {};
-  /// Destructor
-  ~RedOrBlackSOR() {};
 
   /// Returns the total residual and executes a red solver cycle
   /// \param[in][out] grid current pressure values
@@ -100,11 +97,9 @@ protected:
 
 class CG : public Solver {
 public:
-  /// Constructs an RedBlackSOR solver
+  /// Constructs an Conjugated Gradients solver
   CG(const Geometry &geom, const Communicator &comm)
-      : Solver(geom),
-      _comm(comm), _res(geom), _direction(geom), _Ad(geom)
-      {};
+      : Solver(geom, comm), _res(geom), _direction(geom), _Ad(geom) {};
   /// Destructor
   ~CG() {};
 
@@ -117,7 +112,6 @@ public:
   virtual void reset(const Grid &grid, const Grid &rhs);
 
 protected:
-  const Communicator& _comm;
   mutable Grid _res;
   mutable Grid _direction;
   mutable Grid _Ad;
@@ -129,7 +123,7 @@ protected:
 class MG : public Solver {
 public:
   /// Constructs an Multigrid solver
-  MG(const Geometry &geom, const Communicator &comm, const index_t level, const index_t& nu = 4);
+  MG(const Geometry &geom, const Communicator &comm, const index_t level, const index_t& nu = index_t(4));
   /// Destructor
   ~MG();
 
@@ -151,7 +145,6 @@ protected:
   /// \param rhs   The right-hand-side
   real_t Smooth(Grid &p, const Grid &rhs) const;
 
-  const Communicator &_comm;
   const index_t _level;
   const index_t _nu;
   const RedOrBlackSOR _smoother;

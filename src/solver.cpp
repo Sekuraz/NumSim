@@ -31,11 +31,10 @@ real_t Solver::localRes(const Iterator &it, const Grid &grid, const Grid &rhs) c
 // concrete SOR solver
 
 // Constructs an actual SOR solver
-SOR::SOR(const Geometry &geom, const real_t &omega, const Communicator &comm)
-  : Solver(geom), _comm(comm),
+SOR::SOR(const Geometry &geom, const Communicator &comm, const real_t &omega)
+  : Solver(geom, comm),
     _correction(omega * 0.5 * (geom.Mesh()[0]*geom.Mesh()[0]*geom.Mesh()[1]*geom.Mesh()[1])
-                / (geom.Mesh()[0]*geom.Mesh()[0]+geom.Mesh()[1]*geom.Mesh()[1])),
-    _invNumFluid(1.0/geom.NumFluid()) {}
+                / (geom.Mesh()[0]*geom.Mesh()[0]+geom.Mesh()[1]*geom.Mesh()[1])) {}
 
 // Returns the total residual and executes a solver cycle
 real_t SOR::Cycle(Grid &grid, const Grid &rhs) const {
@@ -157,14 +156,13 @@ real_t CG::Cycle(Grid &grid, const Grid &rhs __attribute__((unused))) const {
   this->_comm.copyBoundary(this->_direction);
 
   this->old_residual = residual;
-  return residual;
+  return residual * this->_invNumFluid;
 }
 
 //------------------------------------------------------------------------------
 // Constructs an actual Multigrid solver
 MG::MG(const Geometry &geom, const Communicator &comm, const index_t level, const index_t& nu)
-    : Solver(geom), _comm(comm), _level(level), _nu(nu),
-      _smoother(this->_geom, 1.0, comm),
+    : Solver(geom, comm), _level(level), _nu(nu), _smoother(geom, comm, 1.0),
       _coarse(nullptr), _e(nullptr), _res(nullptr) {
   if(this->_level > 0) {
     Geometry* geom_coarse = geom.coarse();
