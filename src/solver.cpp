@@ -208,6 +208,51 @@ void MG::Restrict(const Grid &p, const Grid &rhs) const {
       * ( this->localRes(itFine, p, rhs) + this->localRes(itFine.Right(), p, rhs)
         + this->localRes(itFine.Top(), p, rhs) + this->localRes(itFine.Top().Right(), p, rhs) );
   }
+  BoundaryIterator it(this->_coarse->_geom, BoundaryIterator::boundary::left);
+  for(it.Next(); it.Valid(); it.Next()) {
+    multi_index_t pos_fine = it.Pos();
+    for(index_t dim = 1; dim < DIM; dim++) {
+      pos_fine[dim] = 2*pos_fine[dim]-1;
+    }
+    Iterator itFine(this->_geom, pos_fine);
+    this->_e->Cell(it) = 0;
+    this->_res->Cell(it) = 0.5
+      * (p.dx_r(itFine) - rhs.Cell(itFine) + p.dx_r(itFine.Top()) - rhs.Cell(itFine.Top()));
+  }
+  it.SetBoundary(BoundaryIterator::boundary::down);
+  for(it.Next(); it.Valid(); it.Next()) {
+    multi_index_t pos_fine = it.Pos();
+    for(index_t dim = 0; dim < DIM; dim++) {
+      if(dim == 1) continue;
+      pos_fine[dim] = 2*pos_fine[dim]-1;
+    }
+    Iterator itFine(this->_geom, pos_fine);
+    this->_e->Cell(it) = 0;
+    this->_res->Cell(it) = 0.5
+      * (p.dy_r(itFine) - rhs.Cell(itFine) + p.dy_r(itFine.Right()) - rhs.Cell(itFine.Right()));
+  }
+  it.SetBoundary(BoundaryIterator::boundary::right);
+  for(it.Next(); it.Valid(); it.Next()) {
+    multi_index_t pos_fine = it.Pos();
+    for(index_t dim = 0; dim < DIM; dim++) {
+      pos_fine[dim] = 2*pos_fine[dim]-1;
+    }
+    Iterator itFine(this->_geom, pos_fine);
+    this->_e->Cell(it) = 0;
+    this->_res->Cell(it) = 0.5
+      * (p.dx_l(itFine) - rhs.Cell(itFine) + p.dx_l(itFine.Top()) - rhs.Cell(itFine.Top()));
+  }
+  it.SetBoundary(BoundaryIterator::boundary::top);
+  for(it.Next(); it.Valid(); it.Next()) {
+    multi_index_t pos_fine = it.Pos();
+    for(index_t dim = 0; dim < DIM; dim++) {
+      pos_fine[dim] = 2*pos_fine[dim]-1;
+    }
+    Iterator itFine(this->_geom, pos_fine);
+    this->_e->Cell(it) = 0;
+    this->_res->Cell(it) = 0.5
+      * (p.dy_l(itFine) - rhs.Cell(itFine) + p.dy_l(itFine.Right()) - rhs.Cell(itFine.Right()));
+  }
 }
 
 // Interpolates and adds from the coarser solution to this one
@@ -224,6 +269,47 @@ void MG::Interpolate(Grid &p) const {
     p.Cell(itFine.Top()) += this->_e->Cell(it);
     p.Cell(itFine.Top().Right()) += this->_e->Cell(it);
   }
+  BoundaryIterator it(this->_coarse->_geom, BoundaryIterator::boundary::left);
+  for(it.Next(); it.Valid(); it.Next()) {
+    multi_index_t pos_fine = it.Pos();
+    for(index_t dim = 1; dim < DIM; dim++) {
+      pos_fine[dim] = 2*pos_fine[dim]-1;
+    }
+    Iterator itFine(this->_geom, pos_fine);
+    p.Cell(itFine) += this->_e->Cell(it);
+    p.Cell(itFine.Top()) += this->_e->Cell(it);
+  }
+  it.SetBoundary(BoundaryIterator::boundary::down);
+  for(it.Next(); it.Valid(); it.Next()) {
+    multi_index_t pos_fine = it.Pos();
+    for(index_t dim = 0; dim < DIM; dim++) {
+      if(dim == 1) continue;
+      pos_fine[dim] = 2*pos_fine[dim]-1;
+    }
+    Iterator itFine(this->_geom, pos_fine);
+    p.Cell(itFine) += this->_e->Cell(it);
+    p.Cell(itFine.Right()) += this->_e->Cell(it);
+  }
+  it.SetBoundary(BoundaryIterator::boundary::right);
+  for(it.Next(); it.Valid(); it.Next()) {
+    multi_index_t pos_fine = it.Pos();
+    for(index_t dim = 0; dim < DIM; dim++) {
+      pos_fine[dim] = 2*pos_fine[dim]-1;
+    }
+    Iterator itFine(this->_geom, pos_fine);
+    p.Cell(itFine) += this->_e->Cell(it);
+    p.Cell(itFine.Top()) += this->_e->Cell(it);
+  }
+  it.SetBoundary(BoundaryIterator::boundary::top);
+  for(it.Next(); it.Valid(); it.Next()) {
+    multi_index_t pos_fine = it.Pos();
+    for(index_t dim = 0; dim < DIM; dim++) {
+      pos_fine[dim] = 2*pos_fine[dim]-1;
+    }
+    Iterator itFine(this->_geom, pos_fine);
+    p.Cell(itFine) += this->_e->Cell(it);
+    p.Cell(itFine.Right()) += this->_e->Cell(it);
+  }
 }
 
 real_t MG::Smooth(Grid &p, const Grid &rhs) const {
@@ -232,6 +318,24 @@ real_t MG::Smooth(Grid &p, const Grid &rhs) const {
     // TODO: correct
     //this->_geom.Update_P(p);
     res = this->_smoother.Cycle(p, rhs);
+
+    const multi_real_t& h = this->_geom.Mesh();
+    BoundaryIterator it(this->_geom, BoundaryIterator::boundary::left);
+    for(it.Next(); it.Valid(); it.Next()) {
+      p.Cell(it) = p.Cell(it.Right()) - rhs.Cell(it) * h[0];
+    }
+    it.SetBoundary(BoundaryIterator::boundary::down);
+    for(it.Next(); it.Valid(); it.Next()) {
+      p.Cell(it) = p.Cell(it.Top()) - rhs.Cell(it) * h[1];
+    }
+    it.SetBoundary(BoundaryIterator::boundary::right);
+    for(it.Next(); it.Valid(); it.Next()) {
+      p.Cell(it) = p.Cell(it.Left()) + rhs.Cell(it) * h[0];
+    }
+    it.SetBoundary(BoundaryIterator::boundary::top);
+    for(it.Next(); it.Valid(); it.Next()) {
+      p.Cell(it) = p.Cell(it.Down()) + rhs.Cell(it) * h[0];
+    }
   }
   //this->_geom.Update_P(p); // TODO: delete ?
   return res;

@@ -451,11 +451,24 @@ Geometry* Geometry::coarse(void) const {
 
   // only use local flag field
   geom->_flags = new char[geom->_sizeData];
-  for(index_t j = 0; j < geom->_sizeP[1]; ++j) {
+  for(index_t i = 0; i < geom->_sizeP[0]; ++i) {
+    // TODO: correct
+    if(i == 0) {
+      geom->_flags[0] = this->_flags[(this->_offset[1])*this->_sizeP[0] + this->_offset[0]];
+    } else {
+      geom->_flags[i] = this->_flags[(this->_offset[1])*this->_sizeP[0] + 2*i-1+this->_offset[0]];
+    }
+  }
+  for(index_t j = 1; j < geom->_sizeP[1]; ++j) {
     for(index_t i = 0; i < geom->_sizeP[0]; ++i) {
       // TODO: correct
-      geom->_flags[j * geom->_sizeP[0] + i] =
-          this->_flags[(this->_offset[1] + 2*j)*this->_sizeP[0] + 2*i+this->_offset[0]];
+      if(i == 0) {
+        geom->_flags[j * geom->_sizeP[0]] =
+            this->_flags[(this->_offset[1] + 2*j-1)*this->_sizeP[0] + this->_offset[0]];
+      } else {
+        geom->_flags[j * geom->_sizeP[0] + i] =
+            this->_flags[(this->_offset[1] + 2*j-1)*this->_sizeP[0] + 2*i-1+this->_offset[0]];
+      }
     }
   }
 
@@ -495,6 +508,11 @@ Geometry* Geometry::coarse(void) const {
   std::cout << "Geom: free " << geom->_free << ", offset " << geom->_offset
             << ", size " << geom->_size << ", h " << geom->_h << ", N " << geom->_N
             << std::endl;
-  // output _flags;
+  for(Iterator it(*geom); it.Valid(); it.Next()) {
+    if(it.Pos()[0] == 0) std::cout << std::endl;
+    std::cout << geom->_flags[it];
+  }
+  std::cout << std::endl;
+
   return geom;
 }
