@@ -85,10 +85,14 @@ public:
 
   /// Updates the pressure field p for a free geometry
   void Update_P(Grid &p) const;
+  /// Updates the pressure field p for the Multigrid Solver
+  void Update_P(Grid &p, const Grid &rhs) const;
   /// Updates the velocity fields u and v for a free geometry
   void Update(Grid &u, Grid &v) const;
 
   bool noslip(const Iterator &it) const;
+  /// Returns the grid flag of the cell at the position of it.
+  const char& flag(const Iterator &it) const;
 
   /// \brief Creates a coarsed Geometry for multigrid solver.
   /// The returned Geometry must be deleted after use.
@@ -97,8 +101,6 @@ public:
 private:
   /// Computes the sizes of the grids.
   void computeSizes();
-  /// Returns the grid flag of the cell at the position of it.
-  const char& flag(const Iterator &it) const;
 
   /// Returns the parabolic velocity profile (1/2*Re*dp/L_x*y*(y-L_y)).
   real_t parabolic(const Iterator &it) const;

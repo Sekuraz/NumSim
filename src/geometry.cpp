@@ -200,6 +200,86 @@ void Geometry::Update_P(Grid &p) const {
   }
 }
 
+void Geometry::Update_P(Grid &p, const Grid &rhs) const {
+  this->_comm.copyBoundary(p);
+
+  for(Iterator it(*this); it.Valid(); it.Next()) {
+    switch(this->flag(it)) {
+      case '#': // '#' Wall/Obstacle/NoSlip boundary (u = v = 0, dp/dn = 0)
+      case 'I': // General Inflow boundary (u = u_0, v = v_0, dp/dn = 0)
+        if(this->isFluid(it.Left())) {
+          if(this->isFluid(it.Top())) {
+            p.Cell(it) = 0.5 * (p.Cell(it.Left()) + p.Cell(it.Top()))
+                       + 0.5 * rhs.Cell(it) * (this->_h[0] - this->_h[1]);
+          } else {
+            p.Cell(it) = p.Cell(it.Left()) + rhs.Cell(it) * this->_h[0];
+          }
+        } else if(this->isFluid(it.Top())) {
+          if(this->isFluid(it.Right())) {
+            p.Cell(it) = 0.5 * (p.Cell(it.Top()) + p.Cell(it.Right()))
+                       - 0.5 * rhs.Cell(it) * (this->_h[0] + this->_h[1]);
+          } else {
+            p.Cell(it) = p.Cell(it.Top()) - rhs.Cell(it) * this->_h[1];
+          }
+        } else if(this->isFluid(it.Right())) {
+          if(this->isFluid(it.Down())) {
+            p.Cell(it) = 0.5 * (p.Cell(it.Right()) + p.Cell(it.Down()))
+                       - 0.5 * rhs.Cell(it) * (this->_h[0] - this->_h[1]);
+          } else {
+            p.Cell(it) = p.Cell(it.Right()) - rhs.Cell(it) * this->_h[0];
+          }
+        } else if(this->isFluid(it.Down())) {
+          if(this->isFluid(it.Left())) {
+            p.Cell(it) = 0.5 * (p.Cell(it.Down()) + p.Cell(it.Left()))
+                       + 0.5 * rhs.Cell(it) * (this->_h[0] + this->_h[1]);
+          } else {
+            p.Cell(it) = p.Cell(it.Down()) + rhs.Cell(it) * this->_h[1];
+          }
+        }
+        break;
+      case 'V': // Vertical Inflow boundary (u = u_0, v = v_0, but only fluid right or left)
+        if(this->isFluid(it.Left())) {
+          p.Cell(it) = p.Cell(it.Left()) + rhs.Cell(it) * this->_h[0];
+        } else if(this->isFluid(it.Right())) {
+          p.Cell(it) = p.Cell(it.Right()) - rhs.Cell(it) * this->_h[0];
+        }
+        break;
+      case 'H': // Horizontal Inflow boundary (u = u_0, v = v_0, but only fluid top or down)
+        if(this->isFluid(it.Top())) {
+          p.Cell(it) = p.Cell(it.Top()) + rhs.Cell(it) * this->_h[1];
+        } else if(this->isFluid(it.Down())) {
+          p.Cell(it) = p.Cell(it.Down()) - rhs.Cell(it) * this->_h[1];
+        }
+        break;
+      case 'O': // Outflow boundary (d/dn (u,v) = 0)
+        p.Cell(it) = rhs.Cell(it);
+        break;
+      case '|': // Vertical Slip-boundary (du/dx = 0, v = 0, dp determined by parameter pressure)
+        if(this->isFluid(it.Left())) {
+          // TODO: ???
+          //p.Cell(it) = 2*this->_pressure - p.Cell(it.Left()) + rhs.Cell(it) * this->_h[0];
+          p.Cell(it) = 2*rhs.Cell(it) - p.Cell(it.Left());
+        } else if(this->isFluid(it.Right())) {
+          // TODO: ???
+          //p.Cell(it) = 2*this->_pressure - p.Cell(it.Right()) - rhs.Cell(it) * this->_h[0];
+          p.Cell(it) = 2*rhs.Cell(it) - p.Cell(it.Right());
+        }
+        break;
+      case '-': // Horizontal Slip-boundary (u = 0, dv/dy = 0, dp determined by parameter pressure)
+        if(this->isFluid(it.Top())) {
+          // TODO: ???
+          //p.Cell(it) = 2*this->_pressure - p.Cell(it.Top()) - rhs.Cell(it) * this->_h[1];
+          p.Cell(it) = 2*rhs.Cell(it) - p.Cell(it.Top());
+        } else if(this->isFluid(it.Down())) {
+          // TODO: ???
+          //p.Cell(it) = 2*this->_pressure - p.Cell(it.Down()) + rhs.Cell(it) * this->_h[1];
+          p.Cell(it) = 2*rhs.Cell(it) - p.Cell(it.Down());
+        }
+        break;
+    }
+  }
+}
+
 void Geometry::Update(Grid &u, Grid &v) const {
   this->_comm.copyBoundary(u);
   this->_comm.copyBoundary(v);
@@ -426,10 +506,11 @@ Geometry* Geometry::coarse(void) const {
 
   Geometry* geom = new Geometry(this->_comm);
   geom->_free = this->_free;
+  geom->_totalLength = this->_totalLength;
 
   geom->_sizeData = 1;
   for(index_t dim = 0; dim < DIM; dim++) {
-    geom->_totalSize[dim] = this->_totalSize[dim] / 2; // TODO: correct ?
+    geom->_totalSize[dim] = this->_totalSize[dim] / 2;
     geom->_size[dim] = geom->_totalSize[dim] / numProc[dim];
     geom->_offset[dim] = tIdx[dim] * geom->_size[dim];
 
@@ -452,49 +533,23 @@ Geometry* Geometry::coarse(void) const {
   // only use local flag field
   geom->_flags = new char[geom->_sizeData];
   for(index_t i = 0; i < geom->_sizeP[0]; ++i) {
-    // TODO: correct
+    // TODO: correct for obstacles
     if(i == 0) {
-      geom->_flags[0] = this->_flags[(this->_offset[1])*this->_sizeP[0] + this->_offset[0]];
+      geom->_flags[0] = this->_flags[0];
     } else {
-      geom->_flags[i] = this->_flags[(this->_offset[1])*this->_sizeP[0] + 2*i-1+this->_offset[0]];
+      geom->_flags[i] = this->_flags[2*i-1];
     }
   }
   for(index_t j = 1; j < geom->_sizeP[1]; ++j) {
     for(index_t i = 0; i < geom->_sizeP[0]; ++i) {
-      // TODO: correct
+      // TODO: correct for obstacles
       if(i == 0) {
         geom->_flags[j * geom->_sizeP[0]] =
-            this->_flags[(this->_offset[1] + 2*j-1)*this->_sizeP[0] + this->_offset[0]];
+            this->_flags[(2*j-1)*this->_sizeP[0]];
       } else {
         geom->_flags[j * geom->_sizeP[0] + i] =
-            this->_flags[(this->_offset[1] + 2*j-1)*this->_sizeP[0] + 2*i-1+this->_offset[0]];
+            this->_flags[(2*j-1)*this->_sizeP[0] + 2*i-1];
       }
-    }
-  }
-
-  // update eXchange boundaries in local flag field
-  BoundaryIterator bit(*geom, BoundaryIterator::boundary::left);
-  for(bit.First(); bit.Valid(); bit.Next()) {
-    if(geom->isFluid(bit)) {
-      geom->_flags[bit] = 'X';
-    }
-  }
-  bit.SetBoundary(BoundaryIterator::boundary::down);
-  for(bit.First(); bit.Valid(); bit.Next()) {
-    if(geom->isFluid(bit)) {
-      geom->_flags[bit] = 'X';
-    }
-  }
-  bit.SetBoundary(BoundaryIterator::boundary::right);
-  for(bit.First(); bit.Valid(); bit.Next()) {
-    if(geom->isFluid(bit)) {
-      geom->_flags[bit] = 'X';
-    }
-  }
-  bit.SetBoundary(BoundaryIterator::boundary::top);
-  for(bit.First(); bit.Valid(); bit.Next()) {
-    if(geom->isFluid(bit)) {
-      geom->_flags[bit] = 'X';
     }
   }
 
@@ -505,9 +560,8 @@ Geometry* Geometry::coarse(void) const {
   }
 
   // TODO: output for testing
-  std::cout << "Geom: free " << geom->_free << ", offset " << geom->_offset
-            << ", size " << geom->_size << ", h " << geom->_h << ", N " << geom->_N
-            << std::endl;
+  std::cout << "Geom: offset " << geom->_offset << ", size " << geom->_size
+            << ", h " << geom->_h << ", N " << geom->_N << std::endl;
   for(Iterator it(*geom); it.Valid(); it.Next()) {
     if(it.Pos()[0] == 0) std::cout << std::endl;
     std::cout << geom->_flags[it];

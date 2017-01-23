@@ -46,7 +46,7 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
     this->_solver = new CG(geom, comm);
   } else if(strncmp(sol, "MG", 2) == 0) {
     const multi_index_t& size = this->_geom.SizeP();
-    const index_t level = (index_t)std::fmax(std::fmin(std::log2(size[0]), std::log2(size[1]))-1, 0);
+    const index_t level = (index_t)std::fmax(std::fmin(std::log2(size[0]), std::log2(size[1])), 0);
     this->_solver = new MG(geom, comm, level, 2);
   } else if(strncmp(sol, "RB", 2) == 0) {
     this->_solver = new RedOrBlackSOR(geom, comm, param.Omega());
@@ -125,8 +125,9 @@ void Compute::TimeStep(bool printInfo) {
     // set boundary values for p
     this->_geom.Update_P(*(this->_p));
   }
-  if((i == this->_param.IterMax()) && printInfo) {
+  if((i == this->_param.IterMax() || !std::isfinite(res)) && printInfo) {
     std::cerr << "Warning: Compute: Solver did not converge! res = " << std::sqrt(res) << std::endl;
+    if(!std::isfinite(res)) std::exit(2);
   }
 
   // compute new velocites

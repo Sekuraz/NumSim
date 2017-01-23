@@ -196,147 +196,190 @@ real_t MG::Cycle(Grid &p, const Grid &rhs) const {
 
 // Restricts the residuals of the solution to the next coarser Grid
 void MG::Restrict(const Grid &p, const Grid &rhs) const {
+  const Geometry &cGeom = this->_coarse->_geom;
   // compute residuals and restrict
-  for(InteriorIterator it(this->_coarse->_geom); it.Valid(); it.Next()) {
+  for(Iterator it(cGeom); it.Valid(); it.Next()) {
+    this->_e->Cell(it) = 0;
     multi_index_t pos_fine = it.Pos();
     for(index_t dim = 0; dim < DIM; dim++) {
-      pos_fine[dim] = 2*pos_fine[dim]-1;
+      pos_fine[dim] = (pos_fine[dim] == 0) ? 0 : 2*pos_fine[dim]-1;
     }
-    Iterator itFine(this->_geom, pos_fine);
-    this->_e->Cell(it) = 0;
-    this->_res->Cell(it) = 0.25
-      * ( this->localRes(itFine, p, rhs) + this->localRes(itFine.Right(), p, rhs)
-        + this->localRes(itFine.Top(), p, rhs) + this->localRes(itFine.Top().Right(), p, rhs) );
-  }
-  BoundaryIterator it(this->_coarse->_geom, BoundaryIterator::boundary::left);
-  for(it.Next(); it.Valid(); it.Next()) {
-    multi_index_t pos_fine = it.Pos();
-    for(index_t dim = 1; dim < DIM; dim++) {
-      pos_fine[dim] = 2*pos_fine[dim]-1;
+    const Iterator itFine(this->_geom, pos_fine);
+    switch(cGeom.flag(it)) {
+    case ' ':
+      this->_res->Cell(it) = 0.25
+        * ( this->localRes(itFine, p, rhs) + this->localRes(itFine.Right(), p, rhs)
+          + this->localRes(itFine.Top(), p, rhs) + this->localRes(itFine.Top().Right(), p, rhs) );
+      break;
+    case '#': // '#' Wall/Obstacle/NoSlip boundary (u = v = 0, dp/dn = 0)
+    case 'I': // General Inflow boundary (u = u_0, v = v_0, dp/dn = 0)
+      if(cGeom.isFluid(it.Left())) {
+        if(cGeom.isFluid(it.Top())) {
+          this->_res->Cell(it) = 0.5 * (p.dx_l(itFine) + p.dy_r(itFine));
+        } else {
+          this->_res->Cell(it) = p.dx_l(itFine);
+        }
+      } else if(cGeom.isFluid(it.Top())) {
+        if(cGeom.isFluid(it.Right())) {
+          this->_res->Cell(it) = 0.5 * (p.dy_r(itFine) + p.dx_r(itFine));
+        } else {
+          this->_res->Cell(it) = p.dy_r(itFine);
+        }
+      } else if(cGeom.isFluid(it.Right())) {
+        if(cGeom.isFluid(it.Down())) {
+          this->_res->Cell(it) = 0.5 * (p.dx_r(itFine) + p.dy_l(itFine));
+        } else {
+          this->_res->Cell(it) = p.dx_r(itFine);
+        }
+      } else if(cGeom.isFluid(it.Down())) {
+        if(cGeom.isFluid(it.Left())) {
+          this->_res->Cell(it) = 0.5 * (p.dy_l(itFine) + p.dx_l(itFine));
+        } else {
+          this->_res->Cell(it) = p.dy_l(itFine);
+        }
+      }
+      break;
+    case 'V': // Vertical Inflow boundary (u = u_0, v = v_0, but only fluid right or left)
+      if(cGeom.isFluid(it.Left())) {
+        this->_res->Cell(it) = p.dx_l(itFine);
+      } else if(cGeom.isFluid(it.Right())) {
+        this->_res->Cell(it) = p.dx_r(itFine);
+      }
+      break;
+    case 'H': // Horizontal Inflow boundary (u = u_0, v = v_0, but only fluid top or down)
+      if(cGeom.isFluid(it.Top())) {
+        this->_res->Cell(it) = p.dy_r(itFine);
+      } else if(cGeom.isFluid(it.Down())) {
+        this->_res->Cell(it) = p.dy_l(itFine);
+      }
+      break;
+    case 'O': // Outflow boundary (d/dn (u,v) = 0)
+      this->_res->Cell(it) = p.Cell(itFine) - rhs.Cell(itFine);
+      break;
+    case '|': // Vertical Slip-boundary (du/dx = 0, v = 0, dp determined by parameter pressure)
+      if(cGeom.isFluid(it.Left())) {
+        // TODO: ???
+        //p.Cell(it) = 2*this->_pressure - p.Cell(it.Left()) + rhs.Cell(it) * this->_h[0];
+        this->_res->Cell(it) = 0.5*(p.Cell(itFine)+p.Cell(itFine.Left())) - rhs.Cell(it);
+      } else if(cGeom.isFluid(it.Right())) {
+        // TODO: ???
+        //p.Cell(it) = 2*this->_pressure - p.Cell(it.Right()) - rhs.Cell(it) * this->_h[0];
+        this->_res->Cell(it) = 0.5*(p.Cell(itFine)+p.Cell(itFine.Right())) - rhs.Cell(it);
+      }
+      break;
+    case '-': // Horizontal Slip-boundary (u = 0, dv/dy = 0, dp determined by parameter pressure)
+      if(cGeom.isFluid(it.Top())) {
+        // TODO: ???
+        //p.Cell(it) = 2*this->_pressure - p.Cell(it.Top()) - rhs.Cell(it) * this->_h[1];
+        this->_res->Cell(it) = 0.5*(p.Cell(itFine)+p.Cell(itFine.Top())) - rhs.Cell(it);
+      } else if(cGeom.isFluid(it.Down())) {
+        // TODO: ???
+        //p.Cell(it) = 2*this->_pressure - p.Cell(it.Down()) + rhs.Cell(it) * this->_h[1];
+        this->_res->Cell(it) = 0.5*(p.Cell(itFine)+p.Cell(itFine.Down())) - rhs.Cell(it);
+      }
+      break;
     }
-    Iterator itFine(this->_geom, pos_fine);
-    this->_e->Cell(it) = 0;
-    this->_res->Cell(it) = 0.5
-      * (p.dx_r(itFine) - rhs.Cell(itFine) + p.dx_r(itFine.Top()) - rhs.Cell(itFine.Top()));
-  }
-  it.SetBoundary(BoundaryIterator::boundary::down);
-  for(it.Next(); it.Valid(); it.Next()) {
-    multi_index_t pos_fine = it.Pos();
-    for(index_t dim = 0; dim < DIM; dim++) {
-      if(dim == 1) continue;
-      pos_fine[dim] = 2*pos_fine[dim]-1;
-    }
-    Iterator itFine(this->_geom, pos_fine);
-    this->_e->Cell(it) = 0;
-    this->_res->Cell(it) = 0.5
-      * (p.dy_r(itFine) - rhs.Cell(itFine) + p.dy_r(itFine.Right()) - rhs.Cell(itFine.Right()));
-  }
-  it.SetBoundary(BoundaryIterator::boundary::right);
-  for(it.Next(); it.Valid(); it.Next()) {
-    multi_index_t pos_fine = it.Pos();
-    for(index_t dim = 0; dim < DIM; dim++) {
-      pos_fine[dim] = 2*pos_fine[dim]-1;
-    }
-    Iterator itFine(this->_geom, pos_fine);
-    this->_e->Cell(it) = 0;
-    this->_res->Cell(it) = 0.5
-      * (p.dx_l(itFine) - rhs.Cell(itFine) + p.dx_l(itFine.Top()) - rhs.Cell(itFine.Top()));
-  }
-  it.SetBoundary(BoundaryIterator::boundary::top);
-  for(it.Next(); it.Valid(); it.Next()) {
-    multi_index_t pos_fine = it.Pos();
-    for(index_t dim = 0; dim < DIM; dim++) {
-      pos_fine[dim] = 2*pos_fine[dim]-1;
-    }
-    Iterator itFine(this->_geom, pos_fine);
-    this->_e->Cell(it) = 0;
-    this->_res->Cell(it) = 0.5
-      * (p.dy_l(itFine) - rhs.Cell(itFine) + p.dy_l(itFine.Right()) - rhs.Cell(itFine.Right()));
   }
 }
 
 // Interpolates and adds from the coarser solution to this one
 void MG::Interpolate(Grid &p) const {
   // add e to p (while interpolating)
-  for(InteriorIterator it(this->_coarse->_geom); it.Valid(); it.Next()) {
+  const Geometry &cGeom = this->_coarse->_geom;
+  for(Iterator it(cGeom); it.Valid(); it.Next()) {
     multi_index_t pos_fine = it.Pos();
     for(index_t dim = 0; dim < DIM; dim++) {
-      pos_fine[dim] = 2*pos_fine[dim]-1;
+      pos_fine[dim] = (pos_fine[dim] == 0) ? 0 : 2*pos_fine[dim]-1;
     }
-    Iterator itFine(this->_geom, pos_fine);
-    p.Cell(itFine) += this->_e->Cell(it);
-    p.Cell(itFine.Right()) += this->_e->Cell(it);
-    p.Cell(itFine.Top()) += this->_e->Cell(it);
-    p.Cell(itFine.Top().Right()) += this->_e->Cell(it);
-  }
-  BoundaryIterator it(this->_coarse->_geom, BoundaryIterator::boundary::left);
-  for(it.Next(); it.Valid(); it.Next()) {
-    multi_index_t pos_fine = it.Pos();
-    for(index_t dim = 1; dim < DIM; dim++) {
-      pos_fine[dim] = 2*pos_fine[dim]-1;
+    const Iterator itFine(this->_geom, pos_fine);
+    switch(cGeom.flag(it)) {
+    case ' ':
+      p.Cell(itFine) += this->_e->Cell(it);
+      p.Cell(itFine.Right()) += this->_e->Cell(it);
+      p.Cell(itFine.Top()) += this->_e->Cell(it);
+      p.Cell(itFine.Top().Right()) += this->_e->Cell(it);
+      break;
+    case '#': // '#' Wall/Obstacle/NoSlip boundary (u = v = 0, dp/dn = 0)
+    case 'I': // General Inflow boundary (u = u_0, v = v_0, dp/dn = 0)
+      if(cGeom.isFluid(it.Left())) {
+        p.Cell(itFine) += this->_e->Cell(it);
+        p.Cell(itFine.Top()) += this->_e->Cell(it);
+        // TODO: R/RT ?
+      } else if(cGeom.isFluid(it.Top())) {
+        p.Cell(itFine) += this->_e->Cell(it);
+        p.Cell(itFine.Right()) += this->_e->Cell(it);
+        // TODO: T/RT ?
+      } else if(cGeom.isFluid(it.Right())) {
+        p.Cell(itFine) += this->_e->Cell(it);
+        p.Cell(itFine.Top()) += this->_e->Cell(it);
+        // TODO: R/RT ?
+      } else if(cGeom.isFluid(it.Down())) {
+        p.Cell(itFine) += this->_e->Cell(it);
+        p.Cell(itFine.Right()) += this->_e->Cell(it);
+        // TODO: T/RT ?
+      }
+      break;
+    case 'V': // Vertical Inflow boundary (u = u_0, v = v_0, but only fluid right or left)
+      if(cGeom.isFluid(it.Left())) {
+        p.Cell(itFine) += this->_e->Cell(it);
+        p.Cell(itFine.Top()) += this->_e->Cell(it);
+        // TODO: R/RT ?
+      } else if(cGeom.isFluid(it.Right())) {
+        p.Cell(itFine) += this->_e->Cell(it);
+        p.Cell(itFine.Top()) += this->_e->Cell(it);
+        // TODO: R/RT ?
+      }
+      break;
+    case 'H': // Horizontal Inflow boundary (u = u_0, v = v_0, but only fluid top or down)
+      if(cGeom.isFluid(it.Top())) {
+        p.Cell(itFine) += this->_e->Cell(it);
+        p.Cell(itFine.Right()) += this->_e->Cell(it);
+        // TODO: T/RT ?
+      } else if(cGeom.isFluid(it.Down())) {
+        p.Cell(itFine) += this->_e->Cell(it);
+        p.Cell(itFine.Right()) += this->_e->Cell(it);
+        // TODO: T/RT ?
+      }
+      break;
+    case 'O': // Outflow boundary (d/dn (u,v) = 0)
+      p.Cell(itFine) += this->_e->Cell(it);
+      // TODO: R/T/RT ?
+      break;
+    case '|': // Vertical Slip-boundary (du/dx = 0, v = 0, dp determined by parameter pressure)
+      if(cGeom.isFluid(it.Left())) {
+        // TODO: ???
+        p.Cell(itFine) += this->_e->Cell(it);
+        p.Cell(itFine.Top()) += this->_e->Cell(it);
+        // TODO: R/RT ?
+      } else if(cGeom.isFluid(it.Right())) {
+        // TODO: ???
+        p.Cell(itFine) += this->_e->Cell(it);
+        p.Cell(itFine.Top()) += this->_e->Cell(it);
+        // TODO: R/RT ?
+      }
+      break;
+    case '-': // Horizontal Slip-boundary (u = 0, dv/dy = 0, dp determined by parameter pressure)
+      if(cGeom.isFluid(it.Top())) {
+        // TODO: ???
+        p.Cell(itFine) += this->_e->Cell(it);
+        p.Cell(itFine.Right()) += this->_e->Cell(it);
+        // TODO: R/RT ?
+      } else if(cGeom.isFluid(it.Down())) {
+        // TODO: ???
+        p.Cell(itFine) += this->_e->Cell(it);
+        p.Cell(itFine.Right()) += this->_e->Cell(it);
+        // TODO: R/RT ?
+      }
+      break;
     }
-    Iterator itFine(this->_geom, pos_fine);
-    p.Cell(itFine) += this->_e->Cell(it);
-    p.Cell(itFine.Top()) += this->_e->Cell(it);
-  }
-  it.SetBoundary(BoundaryIterator::boundary::down);
-  for(it.Next(); it.Valid(); it.Next()) {
-    multi_index_t pos_fine = it.Pos();
-    for(index_t dim = 0; dim < DIM; dim++) {
-      if(dim == 1) continue;
-      pos_fine[dim] = 2*pos_fine[dim]-1;
-    }
-    Iterator itFine(this->_geom, pos_fine);
-    p.Cell(itFine) += this->_e->Cell(it);
-    p.Cell(itFine.Right()) += this->_e->Cell(it);
-  }
-  it.SetBoundary(BoundaryIterator::boundary::right);
-  for(it.Next(); it.Valid(); it.Next()) {
-    multi_index_t pos_fine = it.Pos();
-    for(index_t dim = 0; dim < DIM; dim++) {
-      pos_fine[dim] = 2*pos_fine[dim]-1;
-    }
-    Iterator itFine(this->_geom, pos_fine);
-    p.Cell(itFine) += this->_e->Cell(it);
-    p.Cell(itFine.Top()) += this->_e->Cell(it);
-  }
-  it.SetBoundary(BoundaryIterator::boundary::top);
-  for(it.Next(); it.Valid(); it.Next()) {
-    multi_index_t pos_fine = it.Pos();
-    for(index_t dim = 0; dim < DIM; dim++) {
-      pos_fine[dim] = 2*pos_fine[dim]-1;
-    }
-    Iterator itFine(this->_geom, pos_fine);
-    p.Cell(itFine) += this->_e->Cell(it);
-    p.Cell(itFine.Right()) += this->_e->Cell(it);
   }
 }
 
 real_t MG::Smooth(Grid &p, const Grid &rhs) const {
   real_t res = 1;
   for(index_t n = 0; n < this->_nu; n++) {
-    // TODO: correct
-    //this->_geom.Update_P(p);
     res = this->_smoother.Cycle(p, rhs);
-
-    const multi_real_t& h = this->_geom.Mesh();
-    BoundaryIterator it(this->_geom, BoundaryIterator::boundary::left);
-    for(it.Next(); it.Valid(); it.Next()) {
-      p.Cell(it) = p.Cell(it.Right()) - rhs.Cell(it) * h[0];
-    }
-    it.SetBoundary(BoundaryIterator::boundary::down);
-    for(it.Next(); it.Valid(); it.Next()) {
-      p.Cell(it) = p.Cell(it.Top()) - rhs.Cell(it) * h[1];
-    }
-    it.SetBoundary(BoundaryIterator::boundary::right);
-    for(it.Next(); it.Valid(); it.Next()) {
-      p.Cell(it) = p.Cell(it.Left()) + rhs.Cell(it) * h[0];
-    }
-    it.SetBoundary(BoundaryIterator::boundary::top);
-    for(it.Next(); it.Valid(); it.Next()) {
-      p.Cell(it) = p.Cell(it.Down()) + rhs.Cell(it) * h[0];
-    }
+    this->_geom.Update_P(p, rhs);
   }
-  //this->_geom.Update_P(p); // TODO: delete ?
   return res;
 }
