@@ -45,7 +45,7 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
   if(sol == nullptr || strncmp(sol, "CG", 2) == 0) {
     this->_solver = new CG(geom, comm);
   } else if(strncmp(sol, "MG", 2) == 0) {
-    const multi_index_t& size = this->_geom.SizeP();
+    const multi_index_t& size = this->_geom.Size();
     const index_t level = (index_t)std::fmax(std::fmin(std::log2(size[0]), std::log2(size[1])), 0);
     this->_solver = new MG(geom, comm, level, 2);
   } else if(strncmp(sol, "RB", 2) == 0) {
