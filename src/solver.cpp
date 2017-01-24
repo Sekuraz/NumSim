@@ -215,67 +215,89 @@ void MG::Restrict(const Grid &p, const Grid &rhs) const {
     case 'I': // General Inflow boundary (u = u_0, v = v_0, dp/dn = 0)
       if(cGeom.isFluid(it.Left())) {
         if(cGeom.isFluid(it.Top())) {
-          this->_res->Cell(it) = 0.5 * (p.dx_l(itFine) + p.dy_r(itFine));
+          this->_res->Cell(it) = 0.25 * ( p.dx_l(itFine) - rhs.Cell(itFine)
+                                        + p.dx_l(itFine.Top()) - rhs.Cell(itFine.Top())
+                                        + p.dy_r(itFine.Top()) - rhs.Cell(itFine.Top())
+                                        + p.dy_r(itFine.Top().Right()) - rhs.Cell(itFine.Top().Right())); // TODO
         } else {
-          this->_res->Cell(it) = p.dx_l(itFine);
+          this->_res->Cell(it) = 0.5 * ( p.dx_l(itFine) - rhs.Cell(itFine)
+                                       + p.dx_l(itFine.Top()) - rhs.Cell(itFine.Top()));
         }
       } else if(cGeom.isFluid(it.Top())) {
         if(cGeom.isFluid(it.Right())) {
-          this->_res->Cell(it) = 0.5 * (p.dy_r(itFine) + p.dx_r(itFine));
+          this->_res->Cell(it) = 0.25 * ( p.dx_r(itFine.Right()) - rhs.Cell(itFine.Right())
+                                        + p.dx_r(itFine.Right().Top()) - rhs.Cell(itFine.Right().Top())
+                                        + p.dy_r(itFine.Top()) - rhs.Cell(itFine.Top())
+                                        + p.dy_r(itFine.Right().Top()) - rhs.Cell(itFine.Right().Top())); // TODO
         } else {
-          this->_res->Cell(it) = p.dy_r(itFine);
+          this->_res->Cell(it) = 0.5 * ( p.dy_r(itFine) - rhs.Cell(itFine)
+                                       + p.dy_r(itFine.Right()) - rhs.Cell(itFine.Right()));
         }
       } else if(cGeom.isFluid(it.Right())) {
         if(cGeom.isFluid(it.Down())) {
-          this->_res->Cell(it) = 0.5 * (p.dx_r(itFine) + p.dy_l(itFine));
+          this->_res->Cell(it) = 0.5 * ( p.dx_r(itFine) - rhs.Cell(itFine)
+                                       + p.dy_l(itFine) - rhs.Cell(itFine)); // TODO
         } else {
-          this->_res->Cell(it) = p.dx_r(itFine);
+          this->_res->Cell(it) = 0.5 * ( p.dx_r(itFine) - rhs.Cell(itFine)
+                                       + p.dx_r(itFine.Top()) - rhs.Cell(itFine.Top()));
         }
       } else if(cGeom.isFluid(it.Down())) {
         if(cGeom.isFluid(it.Left())) {
-          this->_res->Cell(it) = 0.5 * (p.dy_l(itFine) + p.dx_l(itFine));
+          this->_res->Cell(it) = 0.5 * ( p.dy_l(itFine) - rhs.Cell(itFine)
+                                       + p.dx_l(itFine) - rhs.Cell(itFine)); // TODO
         } else {
-          this->_res->Cell(it) = p.dy_l(itFine);
+          this->_res->Cell(it) = 0.5 * ( p.dy_l(itFine) - rhs.Cell(itFine)
+                                       + p.dy_l(itFine.Right()) - rhs.Cell(itFine.Right()));
         }
       }
       break;
     case 'V': // Vertical Inflow boundary (u = u_0, v = v_0, but only fluid right or left)
       if(cGeom.isFluid(it.Left())) {
-        this->_res->Cell(it) = p.dx_l(itFine);
+        this->_res->Cell(it) = 0.5 * ( p.dx_l(itFine) - rhs.Cell(itFine)
+                                     + p.dx_l(itFine.Top()) - rhs.Cell(itFine.Top()));
       } else if(cGeom.isFluid(it.Right())) {
-        this->_res->Cell(it) = p.dx_r(itFine);
+        this->_res->Cell(it) = 0.5 * ( p.dx_r(itFine) - rhs.Cell(itFine)
+                                     + p.dx_r(itFine.Top()) - rhs.Cell(itFine.Top()));
       }
       break;
     case 'H': // Horizontal Inflow boundary (u = u_0, v = v_0, but only fluid top or down)
       if(cGeom.isFluid(it.Top())) {
-        this->_res->Cell(it) = p.dy_r(itFine);
+        this->_res->Cell(it) = 0.5 * ( p.dy_r(itFine) - rhs.Cell(itFine)
+                                     + p.dy_r(itFine.Right()) - rhs.Cell(itFine.Right()));
       } else if(cGeom.isFluid(it.Down())) {
-        this->_res->Cell(it) = p.dy_l(itFine);
+        this->_res->Cell(it) = 0.5 * ( p.dy_l(itFine) - rhs.Cell(itFine)
+                                     + p.dy_l(itFine.Right()) - rhs.Cell(itFine.Right()));
       }
       break;
     case 'O': // Outflow boundary (d/dn (u,v) = 0)
-      this->_res->Cell(it) = p.Cell(itFine) - rhs.Cell(itFine);
+      if(cGeom.isFluid(it.Top()) || cGeom.isFluid(it.Down())) {
+        this->_res->Cell(it) = 0.5 * ( p.Cell(itFine) - rhs.Cell(itFine)
+                                     + p.Cell(itFine.Right()) - rhs.Cell(itFine.Right()));
+      } else if(cGeom.isFluid(it.Left()) || cGeom.isFluid(it.Right())) {
+        this->_res->Cell(it) = 0.5 * ( p.Cell(itFine) - rhs.Cell(itFine)
+                                     + p.Cell(itFine.Top()) - rhs.Cell(itFine.Top()));
+      }
       break;
     case '|': // Vertical Slip-boundary (du/dx = 0, v = 0, dp determined by parameter pressure)
       if(cGeom.isFluid(it.Left())) {
         // TODO: ???
-        //p.Cell(it) = 2*this->_pressure - p.Cell(it.Left()) + rhs.Cell(it) * this->_h[0];
-        this->_res->Cell(it) = 0.5*(p.Cell(itFine)+p.Cell(itFine.Left())) - rhs.Cell(it);
+        this->_res->Cell(it) = 0.5 * (0.5*(p.Cell(itFine) + p.Cell(itFine.Left())) - rhs.Cell(itFine)
+                             + 0.5*(p.Cell(itFine.Top()) + p.Cell(itFine.Top().Left())) - rhs.Cell(itFine.Top()));
       } else if(cGeom.isFluid(it.Right())) {
         // TODO: ???
-        //p.Cell(it) = 2*this->_pressure - p.Cell(it.Right()) - rhs.Cell(it) * this->_h[0];
-        this->_res->Cell(it) = 0.5*(p.Cell(itFine)+p.Cell(itFine.Right())) - rhs.Cell(it);
+        this->_res->Cell(it) = 0.5 * (0.5*(p.Cell(itFine) + p.Cell(itFine.Right())) - rhs.Cell(itFine)
+                             + 0.5*(p.Cell(itFine.Top()) + p.Cell(itFine.Top().Right())) - rhs.Cell(itFine.Top()));
       }
       break;
     case '-': // Horizontal Slip-boundary (u = 0, dv/dy = 0, dp determined by parameter pressure)
       if(cGeom.isFluid(it.Top())) {
         // TODO: ???
-        //p.Cell(it) = 2*this->_pressure - p.Cell(it.Top()) - rhs.Cell(it) * this->_h[1];
-        this->_res->Cell(it) = 0.5*(p.Cell(itFine)+p.Cell(itFine.Top())) - rhs.Cell(it);
+        this->_res->Cell(it) = 0.5 * (0.5*(p.Cell(itFine) + p.Cell(itFine.Top())) - rhs.Cell(itFine)
+                             + 0.5*(p.Cell(itFine.Right()) + p.Cell(itFine.Top().Right()))) - rhs.Cell(itFine.Right());
       } else if(cGeom.isFluid(it.Down())) {
         // TODO: ???
-        //p.Cell(it) = 2*this->_pressure - p.Cell(it.Down()) + rhs.Cell(it) * this->_h[1];
-        this->_res->Cell(it) = 0.5*(p.Cell(itFine)+p.Cell(itFine.Down())) - rhs.Cell(it);
+        this->_res->Cell(it) = 0.5 * (0.5*(p.Cell(itFine) + p.Cell(itFine.Down())) - rhs.Cell(itFine)
+                             + 0.5*(p.Cell(itFine.Right()) + p.Cell(itFine.Right().Down())) - rhs.Cell(itFine.Right()));
       }
       break;
     }
@@ -299,7 +321,7 @@ void MG::Interpolate(Grid &p) const {
       p.Cell(itFine.Top()) += this->_e->Cell(it);
       p.Cell(itFine.Top().Right()) += this->_e->Cell(it);
       break;
-    case '#': // '#' Wall/Obstacle/NoSlip boundary (u = v = 0, dp/dn = 0)
+/*    case '#': // '#' Wall/Obstacle/NoSlip boundary (u = v = 0, dp/dn = 0)
     case 'I': // General Inflow boundary (u = u_0, v = v_0, dp/dn = 0)
       if(cGeom.isFluid(it.Left())) {
         p.Cell(itFine) += this->_e->Cell(it);
@@ -342,41 +364,57 @@ void MG::Interpolate(Grid &p) const {
       }
       break;
     case 'O': // Outflow boundary (d/dn (u,v) = 0)
-      p.Cell(itFine) += this->_e->Cell(it);
+      if(cGeom.isFluid(it.Top()) || cGeom.isFluid(it.Down())) {
+        p.Cell(itFine) +=  this->_e->Cell(it);
+        p.Cell(itFine.Right()) +=  this->_e->Cell(it);
+      } else if(cGeom.isFluid(it.Left()) || cGeom.isFluid(it.Right())) {
+        p.Cell(itFine) +=  this->_e->Cell(it);
+        p.Cell(itFine.Top()) +=  this->_e->Cell(it);
+      }
       // TODO: R/T/RT ?
       break;
     case '|': // Vertical Slip-boundary (du/dx = 0, v = 0, dp determined by parameter pressure)
       if(cGeom.isFluid(it.Left())) {
         // TODO: ???
-        p.Cell(itFine) += this->_e->Cell(it);
-        p.Cell(itFine.Top()) += this->_e->Cell(it);
+        p.Cell(itFine) += 0.5*this->_e->Cell(it);
+        p.Cell(itFine.Top()) += 0.5*this->_e->Cell(it);
+        p.Cell(itFine.Left()) += 0.5*this->_e->Cell(it);
+        p.Cell(itFine.Left().Top()) += 0.5*this->_e->Cell(it);
         // TODO: R/RT ?
       } else if(cGeom.isFluid(it.Right())) {
         // TODO: ???
         p.Cell(itFine) += this->_e->Cell(it);
         p.Cell(itFine.Top()) += this->_e->Cell(it);
+        //p.Cell(itFine.Right()) += 0.5*this->_e->Cell(it);
+        //p.Cell(itFine.Right().Top()) += 0.5*this->_e->Cell(it);
         // TODO: R/RT ?
       }
       break;
     case '-': // Horizontal Slip-boundary (u = 0, dv/dy = 0, dp determined by parameter pressure)
       if(cGeom.isFluid(it.Top())) {
         // TODO: ???
-        p.Cell(itFine) += this->_e->Cell(it);
-        p.Cell(itFine.Right()) += this->_e->Cell(it);
-        // TODO: R/RT ?
+        p.Cell(itFine) += 0.5*this->_e->Cell(it);
+        p.Cell(itFine.Right()) += 0.5*this->_e->Cell(it);
+        p.Cell(itFine.Top()) += 0.5*this->_e->Cell(it);
+        p.Cell(itFine.Right().Top()) += 0.5*this->_e->Cell(it);
+        // TODO: T/RT ?
       } else if(cGeom.isFluid(it.Down())) {
         // TODO: ???
-        p.Cell(itFine) += this->_e->Cell(it);
-        p.Cell(itFine.Right()) += this->_e->Cell(it);
-        // TODO: R/RT ?
+        p.Cell(itFine) += 0.5*this->_e->Cell(it);
+        p.Cell(itFine.Right()) += 0.5*this->_e->Cell(it);
+        p.Cell(itFine.Top()) += 0.5*this->_e->Cell(it);
+        p.Cell(itFine.Right().Top()) += 0.5*this->_e->Cell(it);
+        // TODO: T/RT ?
       }
       break;
+*/
     }
   }
 }
 
 real_t MG::Smooth(Grid &p, const Grid &rhs) const {
   real_t res = 1;
+  this->_geom.Update_P(p, rhs); // TODO: before and after Cycle?
   for(index_t n = 0; n < this->_nu; n++) {
     res = this->_smoother.Cycle(p, rhs);
     this->_geom.Update_P(p, rhs);
