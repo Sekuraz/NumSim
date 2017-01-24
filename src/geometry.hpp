@@ -96,11 +96,11 @@ public:
 
   /// \brief Creates a coarsed Geometry for multigrid solver.
   /// The returned Geometry must be deleted after use.
-  Geometry* coarse(void) const;
+  Geometry* coarse(const bool printinfo = false) const;
 
 private:
   /// Computes the sizes of the grids.
-  void computeSizes();
+  void computeSizes(const bool printinfo);
 
   /// Returns the parabolic velocity profile (1/2*Re*dp/L_x*y*(y-L_y)).
   real_t parabolic(const Iterator &it) const;

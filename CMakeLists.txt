@@ -116,6 +116,9 @@ add_library (_numsim ${SOURCES})
 add_executable (numsim ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 target_link_libraries (numsim _numsim ${SDL2_LIBRARIES} ${MPI_LIBRARIES})
 
+add_executable (compare_solvers ${CMAKE_CURRENT_SOURCE_DIR}/src/compare_solvers.cpp)
+target_link_libraries (compare_solvers _numsim ${MPI_LIBRARIES})
+
 add_executable (creator ${CMAKE_CURRENT_SOURCE_DIR}/src/creator.cpp)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)

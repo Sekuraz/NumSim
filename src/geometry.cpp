@@ -30,7 +30,7 @@ Geometry::Geometry(const Communicator &comm, const multi_index_t& size,
   if(file != nullptr) {
     this->Load(file, printinfo);
   } else {
-    this->computeSizes();
+    this->computeSizes(printinfo);
   }
 }
 
@@ -103,7 +103,7 @@ void Geometry::Load(const char file[], const bool printinfo) {
   }
   in.close();
 
-  this->computeSizes();
+  this->computeSizes(printinfo);
 }
 
 void Geometry::Update_P(Grid &p) const {
@@ -402,7 +402,7 @@ void Geometry::Update(Grid &u, Grid &v) const {
 }
 
 // compute grid sizes
-void Geometry::computeSizes() {
+void Geometry::computeSizes(const bool printinfo) {
   const multi_index_t& numProc = this->_comm.ThreadDim();
   const multi_index_t& tIdx = this->_comm.ThreadIdx();
 
@@ -415,7 +415,7 @@ void Geometry::computeSizes() {
       }
       this->_flags[this->_totalSize[0] * (j+1)-1] = (j == this->_totalSize[1]-1? 'H' : '#');
     }
-    if(this->_comm.ThreadNum() == 0) {
+    if(printinfo) {
       std::cout << "Geometry: Load Driven Cavity." << std::endl;
     }
   }
@@ -498,7 +498,7 @@ real_t Geometry::parabolic(const Iterator &it) const {
 }
 
 // Creates a coarsed Geometry for multigrid solver
-Geometry* Geometry::coarse(void) const {
+Geometry* Geometry::coarse(const bool printinfo) const {
   // TODO: correct geom->_velocity, geom->_pressure?
 
   const multi_index_t& numProc = this->_comm.ThreadDim();
@@ -560,13 +560,15 @@ Geometry* Geometry::coarse(void) const {
   }
 
   // TODO: output for testing
-  std::cout << "Geom: offset " << geom->_offset << ", size " << geom->_size
-            << ", h " << geom->_h << ", N " << geom->_N << std::endl;
-  for(Iterator it(*geom); it.Valid(); it.Next()) {
-    if(it.Pos()[0] == 0) std::cout << std::endl;
-    std::cout << geom->_flags[it];
+  if(printinfo) {
+    std::cout << "Geom: offset " << geom->_offset << ", size " << geom->_size
+              << ", h " << geom->_h << ", N " << geom->_N << std::endl;
+    for(Iterator it(*geom); it.Valid(); it.Next()) {
+      if(it.Pos()[0] == 0) std::cout << std::endl;
+      std::cout << geom->_flags[it];
+    }
+    std::cout << std::endl;
   }
-  std::cout << std::endl;
 
   return geom;
 }
