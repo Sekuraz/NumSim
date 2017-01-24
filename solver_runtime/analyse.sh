@@ -8,7 +8,7 @@ rm -f drivencavity*.log drivencavity*.err drivencavity_*.csv
 for METHOD in CG MG RBSOR SOR; do
   echo "Method ${METHOD}:"
 
-  for N in 8 16 #32 64 #128
+  for N in 16 32 #64 #128 #8
   do
     echo "  Size ${N}:"
     FILE=drivencavity${N}
