@@ -183,18 +183,24 @@ void Geometry::Update_P(Grid &p) const {
         p.Cell(it) = 0;
         break;
       case '|': // Vertical Slip-boundary (du/dx = 0, v = 0, dp determined by parameter pressure)
+        p.Cell(it) = this->_pressure;
+/*
         if(this->isFluid(it.Left())) {
           p.Cell(it) = 2*this->_pressure - p.Cell(it.Left());
         } else if(this->isFluid(it.Right())) {
           p.Cell(it) = 2*this->_pressure - p.Cell(it.Right());
         }
+*/
         break;
       case '-': // Horizontal Slip-boundary (u = 0, dv/dy = 0, dp determined by parameter pressure)
+        p.Cell(it) = this->_pressure;
+/*
         if(this->isFluid(it.Top())) {
           p.Cell(it) = 2*this->_pressure - p.Cell(it.Top());
         } else if(this->isFluid(it.Down())) {
           p.Cell(it) = 2*this->_pressure - p.Cell(it.Down());
         }
+*/
         break;
     }
   }
@@ -251,10 +257,7 @@ void Geometry::Update_P(Grid &p, const Grid &rhs) const {
           p.Cell(it) = p.Cell(it.Down()) - rhs.Cell(it) * this->_h[1];
         }
         break;
-      case 'O': // Outflow boundary (d/dn (u,v) = 0)
-        p.Cell(it) = rhs.Cell(it);
-        break;
-      case '|': // Vertical Slip-boundary (du/dx = 0, v = 0, dp determined by parameter pressure)
+      /*case '|': // Vertical Slip-boundary (du/dx = 0, v = 0, dp determined by parameter pressure)
         if(this->isFluid(it.Left())) {
           // TODO: ???
           //p.Cell(it) = 2*this->_pressure - p.Cell(it.Left()) + rhs.Cell(it) * this->_h[0];
@@ -275,7 +278,7 @@ void Geometry::Update_P(Grid &p, const Grid &rhs) const {
           //p.Cell(it) = 2*this->_pressure - p.Cell(it.Down()) + rhs.Cell(it) * this->_h[1];
           p.Cell(it) = 2*rhs.Cell(it) - p.Cell(it.Down());
         }
-        break;
+        break;*/
     }
   }
 }
