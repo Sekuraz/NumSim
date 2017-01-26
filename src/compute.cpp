@@ -20,6 +20,7 @@
 #include <iterator>
 #include <cmath>
 #include <cstring>
+#include <omp.h>
 #include "typedef.hpp"
 #include "comm.hpp"
 #include "compute.hpp"
@@ -173,16 +174,18 @@ void Compute::TimeStep(bool printInfo) {
 
 // Computes and returns the absolute velocity
 const Grid *Compute::GetVelocity() {
+  #pragma omp parallel
   for(Iterator it(this->_geom); it.Valid(); it.Next()) {
-    real_t uMean = (this->_u->Cell(it) + this->_u->Cell(it.Top()))/2;
-    real_t vMean = (this->_v->Cell(it) + this->_v->Cell(it.Right()))/2;
-    this->_velocities->Cell(it) = std::sqrt(uMean*uMean + vMean*vMean);
+    const real_t uMean = (this->_u->Cell(it) + this->_u->Cell(it.Top()))/2;
+    const real_t vMean = (this->_v->Cell(it) + this->_v->Cell(it.Right()))/2;
+    this->_velocities->Cell(it) = std::hypot(uMean, vMean); // hypot(x,y) = sqrt(x^2+y^2)
   }
   return _velocities;
 }
 
 // Computes and returns the vorticity
 const Grid* Compute::GetVorticity() {
+  #pragma omp parallel
   for(Iterator it(this->_geom); it.Valid(); it.Next()) {
     this->_vorticity->Cell(it) = this->_u->dy_r(it) - this->_v->dx_r(it);
   }
@@ -202,6 +205,7 @@ const Grid* Compute::GetStreamline() {
     }
   }
   real_t offset = this->_comm.copyOffset(*this->_streamline);
+  #pragma omp parallel
   for(Iterator it(this->_geom); it.Valid(); it.Next()) {
     this->_streamline->Cell(it) += offset;
   }
@@ -278,6 +282,7 @@ void Compute::ParticleStepVisu(multi_real_t &lastPos, const real_t &dt, const in
 
 // Compute the new velocites u,v
 void Compute::NewVelocities(const real_t &dt) {
+  #pragma omp parallel
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_u->Cell(it) = this->_F->Cell(it) - dt * this->_p->dx_r(it);
     this->_v->Cell(it) = this->_G->Cell(it) - dt * this->_p->dy_r(it);
@@ -286,6 +291,7 @@ void Compute::NewVelocities(const real_t &dt) {
 
 // Compute the temporary velocities F,G
 void Compute::MomentumEqu(const real_t &dt) {
+  #pragma omp parallel
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_F->Cell(it) = this->_u->Cell(it) + dt * (
         ( this->_u->dxx(it) + this->_u->dyy(it) )/this->_param.Re()
@@ -303,6 +309,7 @@ void Compute::MomentumEqu(const real_t &dt) {
 
 // Compute the RHS of the poisson equation
 void Compute::RHS(const real_t &dt) {
+  #pragma omp parallel
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_rhs->Cell(it) = (this->_F->dx_l(it) + this->_G->dy_l(it)) / dt;
   }

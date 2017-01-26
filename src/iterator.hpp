@@ -59,6 +59,10 @@ public:
   // If we are at the upper domain boundary, the cell sees itself.
   virtual Iterator Top() const;
 
+  /// Returns an Iterator that is located below this one
+  // If we are at the lower domain boundary, the cell sees itself
+  virtual Iterator Down() const;
+
   /// Returns the value of an Iterator that is located below this one
   // If we are at the lower domain boundary, the cell sees itself
   virtual index_t Down(int __attribute__((unused))) const;
@@ -75,13 +79,11 @@ public:
   // If we are at the upper domain boundary, the cell sees itself.
   virtual index_t Top(int __attribute__((unused))) const;
 
-  /// Returns an Iterator that is located below this one
-  // If we are at the lower domain boundary, the cell sees itself
-  virtual Iterator Down() const;
-
 protected:
   const Geometry &_geom; ///< The geometry on which the iterator operates.
   index_t _value;    ///< The (linear) index, of the current Geometry cell.
+  index_t _begin;    ///< The (linear) index, of the first (inclusive) Geometry cell.
+  index_t _end;      ///< The (linear) index, of the last (exclusive) Geometry cell.
   bool _valid;       ///< Whether the index is inside the Geometry's data array.
 };
 

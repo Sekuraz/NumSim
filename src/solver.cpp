@@ -84,6 +84,7 @@ real_t RedOrBlackSOR::RedCycle(Grid &grid, const Grid &rhs) const {
     grid.Cell(it) -= this->_correction * localRes;
     it.Next();
   }*/
+  #pragma omp parallel
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     const multi_index_t pos = it.Pos();
     if((pos[0]+pos[1]) % 2 == 0) {
@@ -106,6 +107,7 @@ real_t RedOrBlackSOR::BlackCycle(Grid &grid, const Grid &rhs) const {
     grid.Cell(it) -= this->_correction * localRes;
     it.Next();
   }*/
+  #pragma omp parallel
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     const multi_index_t pos = it.Pos();
     if((pos[0]+pos[1]) % 2 == 1) {

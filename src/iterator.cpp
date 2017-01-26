@@ -15,20 +15,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <iostream>
+#include <cstdio>
+#include <omp.h>
 #include "iterator.hpp"
 #include "geometry.hpp"
 
-Iterator::Iterator(const Geometry &geom) : _geom(geom), _value(0), _valid(true) {}
-Iterator::Iterator(const Geometry &geom, const index_t &value)
-    : _geom(geom), _value(value), _valid(value < geom.DataSize()) {}
-Iterator::Iterator(const Geometry &geom, const multi_index_t &pos) : _geom(geom) {
+Iterator::Iterator(const Geometry &geom) : _geom(geom), _valid(true) {
+  const int n = omp_get_num_threads();
+  const int i = omp_get_thread_num();
+  const index_t &size = geom.DataSize();
+  index_t part = size / n;
+  this->_begin = i * part;
+  this->_value = this->_begin;
+  this->_end = (i+1 == n)? size : (i+1) * part;
+//  printf("It: n = %d, i = %d, starting at %lu end at %lu, total %lu\n", n, i, _value, _end, size);
+}
+Iterator::Iterator(const Geometry &geom, const index_t &value) : Iterator(geom) {
+  this->_value = std::max(this->_begin, value);
+  this->_valid = value < this->_end;
+}
+Iterator::Iterator(const Geometry &geom, const multi_index_t &pos) : Iterator(geom) {
   this->_value = pos[DIM-1];
   const multi_index_t &size = this->_geom.SizeP();
   for(index_t dim = DIM-1; dim-- > 0; ) {
     this->_value *= size[dim];
     this->_value += pos[dim];
   }
-  this->_valid = this->_value < this->_geom.DataSize();
+  this->_valid = this->_value < this->_end;
 }
 
 // Returns the position coordinates
@@ -41,13 +54,13 @@ multi_index_t Iterator::Pos() const {
 
 // Sets the iterator to the first element
 void Iterator::First() {
-    this->_value = 0;
+    this->_value = this->_begin;
     this->_valid = true;
 }
 
 // Goes to the next element of the iterator, disables it if position is end
 void Iterator::Next() {
-    if (++this->_value >= this->_geom.DataSize()) {
+    if (++this->_value >= this->_end) {
         this->_valid = false;
     }
 }
@@ -130,8 +143,8 @@ index_t Iterator::Down(int __attribute__((unused))) const {
 // Sets the iterator to the first element
 void InteriorIterator::First() {
   Iterator::First();
-  while( !this->_geom.isFluid(*this) ) {
-    Iterator::Next();
+  if( !this->_geom.isFluid(*this) ) {
+    this->Next();
   }
 }
 

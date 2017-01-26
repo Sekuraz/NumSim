@@ -16,6 +16,7 @@
  */
 
 #include <iostream>
+#include <omp.h>
 #include "typedef.hpp"
 #include "comm.hpp"
 #include "geometry.hpp"
@@ -30,7 +31,6 @@ int main(int argc, char *argv[]) {
   Communicator comm(&argc, &argv);
   // Create parameter and geometry instances and load values
   Parameter param;
-  param.Load("param.txt");
   Geometry geom (comm, {6, 6});
 
   const multi_real_t &h = geom.Mesh();
@@ -44,19 +44,20 @@ int main(int argc, char *argv[]) {
   visu.Init(600,600);
 #endif
 
-  for (InteriorIterator it (geom); it.Valid(); it.Next()) {
-
-    g.Cell(it) = 1;
-    geom.Update_P(g);
+  #pragma omp parallel
+  { for (InteriorIterator it (geom); it.Valid(); it.Next()) {
+    g.Cell(it) = it;
+//    geom.Update_P(g);
 #ifdef USE_DEBUG_VISU
     visu.Render(&g);
 #endif
-    g.print();
-    std::cin.get();
+//    g.print();
+//    std::cin.get();
 
-    g.Cell(it) = 0;
-  }
+//    g.Cell(it) = 0;
+  } }
 
+  if(omp_get_thread_num() == 0) g.print();
 /*
     BoundaryIterator it (geom);
     for (int i = 0; i < 4; i++) {

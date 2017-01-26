@@ -30,6 +30,12 @@ set (CMAKE_CXX_COMPILER "/usr/bin/mpic++")
 # set some good compiler flags
 add_definitions(-Wall -Wextra -pedantic -O3 -march=native -std=c++11)
 
+find_package(OpenMP)
+if (OPENMP_FOUND)
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 # debug visu?
 option (DEBUG_VISU
   "Enable debugging visualization" ON)

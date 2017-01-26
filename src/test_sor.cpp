@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
   g.Initialize(0);
   rhs.Initialize(0);
 
-  SOR sor(geom, param.Omega());
+  SOR sor(geom, comm, param.Omega());
 
 #ifdef DEBUG_VISU
   // Create and initialize the visualization

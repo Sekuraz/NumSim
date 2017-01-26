@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <cmath>
 #include <algorithm>
+#include <omp.h>
 #include "typedef.hpp"
 #include "grid.hpp"
 #include "iterator.hpp"
@@ -45,6 +46,7 @@ Grid::~Grid() {
 
 // Initializes the grid with a value
 void Grid::Initialize(const real_t &value) {
+  #pragma omp parallel for
   for(index_t i = 0; i < this->_geom.DataSize(); i++) {
     this->_data[i] = value;
   }
@@ -152,35 +154,41 @@ real_t Grid::DC_vdv_y(const Iterator &it, const real_t &alpha) const {
 // Returns the maximal value of the grid
 real_t Grid::Max() const {
   // TODO rewrite efficient
-  real_t max = this->_data[0];
-  for(index_t i = 1; i < this->_geom.DataSize(); i++)
-    max = std::max(max, this->_data[i]);
-  return max;
+  real_t m = this->_data[0];
+  const index_t& end = this->_geom.DataSize();
+  //#pragma omp parallel for reduction(min:m) default(shared)
+  for(index_t i = 1; i < end; i++)
+    m = std::max(m, this->_data[i]);
+  return m;
 }
 // Returns the minimal value of the grid
 real_t Grid::Min() const {
-  // TODO rewrite efficient
-  real_t min = this->_data[0];
-  for(index_t i = 1; i < this->_geom.DataSize(); i++)
-    min = std::min(min, this->_data[i]);
-  return min;
+  real_t m = this->_data[0];
+  const index_t& end = this->_geom.DataSize();
+  //#pragma omp parallel for reduction(min:m)
+  for(index_t i = 1; i < end; i++)
+    m = std::min(m, this->_data[i]);
+  return m;
 }
 // Returns the absolute maximal value
 real_t Grid::AbsMax() const {
-  // TODO rewrite efficient
-  real_t max = std::fabs(this->_data[0]);
-  for(index_t i = 1; i < this->_geom.DataSize(); i++)
-    max = std::max(max, std::fabs(this->_data[i]));
-  return max;
+  real_t m = std::fabs(this->_data[0]);
+  const index_t& end = this->_geom.DataSize();
+  //#pragma omp parallel for reduction(max:m)
+  for(index_t i = 1; i < end; i++)
+    m = std::max(m, std::fabs(this->_data[i]));
+  return m;
 }
 // Sets min, max to the minimal and maximal value of the grid
-void Grid::MinMax(real_t &min, real_t &max) const {
-  min = max = this->_data[0];
-  for(index_t i = 1; i < this->_geom.DataSize(); i++) {
-    if(min > this->_data[i]) {
-      min = this->_data[i];
-    } else if(max < this->_data[i]) {
-      max = this->_data[i];
+void Grid::MinMax(real_t &mi, real_t &ma) const {
+  mi = ma = this->_data[0];
+  const index_t& end = this->_geom.DataSize();
+  //#pragma omp parallel for reduction(min:mi) reduction(max:ma)
+  for(index_t i = 1; i < end; i++) {
+    if(mi > this->_data[i]) {
+      mi = this->_data[i];
+    } else if(ma < this->_data[i]) {
+      ma = this->_data[i];
     }
   }
 }
@@ -197,6 +205,7 @@ void Grid::print() const {
 
 real_t Grid::InnerProduct(const Grid& other) const {
   real_t retval = 0;
+  #pragma omp parallel reduction(+:retval)
   for (InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     retval += this->_data[it] * other._data[it];
   }
