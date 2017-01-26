@@ -48,25 +48,45 @@ Communicator::~Communicator () {
 
 bool Communicator::gatherAnd(const bool& val) const {
   bool ret;
+#if MPI_VERSION <= 2 && MPI_SUBVERSION <= 2
+  bool value = val;
+  MPI_Allreduce(&value, &ret, 1, MPI::BOOL, MPI_LAND, this->_mpi_cart_comm);
+#else
   MPI_Allreduce(&val, &ret, 1, MPI_CXX_BOOL, MPI_LAND, this->_mpi_cart_comm);
+#endif
   return ret;
 }
 
 real_t Communicator::gatherSum(const real_t& val) const {
   real_t sum;
+#if MPI_VERSION <= 2 && MPI_SUBVERSION <= 2
+  real_t value = val;
+  MPI_Allreduce(&value, &sum, 1, REAL_TYPE_FOR_MPI, MPI_SUM, this->_mpi_cart_comm);
+#else
   MPI_Allreduce(&val, &sum, 1, REAL_TYPE_FOR_MPI, MPI_SUM, this->_mpi_cart_comm);
+#endif
   return sum;
 }
 
 real_t Communicator::gatherMin(const real_t& val) const {
   real_t min;
+#if MPI_VERSION <= 2 && MPI_SUBVERSION <= 2
+  real_t value = val;
+  MPI_Allreduce(&value, &min, 1, REAL_TYPE_FOR_MPI, MPI_MIN, this->_mpi_cart_comm);
+#else
   MPI_Allreduce(&val, &min, 1, REAL_TYPE_FOR_MPI, MPI_MIN, this->_mpi_cart_comm);
+#endif
   return min;
 }
 
 real_t Communicator::gatherMax(const real_t& val) const {
   real_t max;
+#if MPI_VERSION <= 2 && MPI_SUBVERSION <= 2
+  real_t value = val;
+  MPI_Allreduce(&value, &max, 1, REAL_TYPE_FOR_MPI, MPI_MAX, this->_mpi_cart_comm);
+#else
   MPI_Allreduce(&val, &max, 1, REAL_TYPE_FOR_MPI, MPI_MAX, this->_mpi_cart_comm);
+#endif
   return max;
 }
 

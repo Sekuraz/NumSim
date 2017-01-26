@@ -150,8 +150,8 @@ void Compute::TimeStep(bool printInfo) {
   if(printInfo) {
     std::cout.precision(4);
     std::cout << "t = " << this->_t << " \tdt = " << dt << "\titer = " << i
-              << "\tres = " << std::scientific << std::sqrt(res)
-              << std::defaultfloat << std::endl;
+              << "\tres = " << std::scientific << std::sqrt(res) << std::endl;
+    std::cout.unsetf(std::ios_base::floatfield);
   }
 #endif
 
