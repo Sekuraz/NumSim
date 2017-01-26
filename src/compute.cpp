@@ -46,8 +46,13 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
     this->_solver = new CG(geom, comm);
   } else if(strncmp(sol, "MG", 2) == 0) {
     const multi_index_t& size = this->_geom.Size();
-    const index_t level = (index_t)std::fmax(std::fmin(std::log2(size[0]), std::log2(size[1])), 0);
-    this->_solver = new MG(geom, comm, level, 2);
+    index_t lev = 0;
+    index_t div = 2;
+    while(size[0] % div == 0 && size[1] % div == 0) {
+      lev++;
+      div*=2;
+    }
+    this->_solver = new MG(geom, comm, lev, 2);
   } else if(strncmp(sol, "RB", 2) == 0) {
     this->_solver = new RedOrBlackSOR(geom, comm, param.Omega());
   } else {
