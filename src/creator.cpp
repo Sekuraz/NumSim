@@ -35,6 +35,8 @@ int getOpt(const char *opt, int &argc, char **&argv) {
 struct param_t {
   real_t  re;
   real_t  omega;
+  index_t gamma;
+  index_t nu;
   real_t  alpha;
   real_t  dt;
   real_t  tend;
@@ -45,8 +47,8 @@ struct param_t {
   real_t  visuDt;
   std::list<multi_real_t>  particlePos;
 
-  param_t() : re(1000), omega(1.7), alpha(0.9),  dt(1e-2), tend(50), eps(1e-3),
-              tau(0.5), itermax(500), vtkDt(0.5), visuDt(0) {}
+  param_t() : re(1000), omega(1.7), gamma(1), nu(4), alpha(0.9), dt(1e-2),
+              tend(50), eps(1e-3), tau(0.5), itermax(500), vtkDt(0.5), visuDt(0) {}
 };
 
 struct geom_t {
@@ -81,6 +83,8 @@ int main (int argc, char **argv) {
          << "\t-rand <mu>x<sigma>  Chooses the reynolds number drawn from a nomal distribution with" << endl
          << "\t\t\tmean <mu> and standard deviation <sigma>. Default: disabled." << endl
          << "\t-omg <float>\tSOR parameter. Default: is " << param.omega << endl
+         << "\t-gam <float>\tMG type parameter (1 == V, 2 == W). Default: is " << param.gamma << endl
+         << "\t-nu <float>\tMG smoother iteration number. Default: is " << param.nu << endl
          << "\t-alpha <float>\tDonor-Cell weighting parameter. Default: "<< param.alpha << endl
          << "\t-dt <float>\tTime-step. Default: " << param.dt << endl
          << "\t-eps <float>\tTolerance of the solver. Default: " << param.eps << endl
@@ -175,6 +179,14 @@ int main (int argc, char **argv) {
   if (pos) {
     sscanf(argv[pos+1],"%lf",&param.omega);
   }
+  pos = getOpt("-gam",argc,argv);
+  if (pos) {
+    sscanf(argv[pos+1],"%lu",&param.gamma);
+  }
+  pos = getOpt("-nu",argc,argv);
+  if (pos) {
+    sscanf(argv[pos+1],"%lu",&param.nu);
+  }
   pos = getOpt("-re",argc,argv);
   if (pos) {
     sscanf(argv[pos+1],"%lf",&param.re);
@@ -248,6 +260,8 @@ int main (int argc, char **argv) {
   if(of.is_open()) {
     of << "re = " << param.re << endl
        << "omega = " << param.omega << endl
+       << "gamma = " << param.gamma << endl
+       << "nu = " << param.nu << endl
        << "alpha = " << param.alpha << endl
        << "dt = " << param.dt << endl
        << "tend = " << param.tend << endl
