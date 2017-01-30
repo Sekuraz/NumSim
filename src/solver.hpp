@@ -31,20 +31,20 @@ public:
   /// Destructor of the Solver Class
   virtual ~Solver() {};
 
+  /// \brief Returns the total residual and executes a solver cycle
   /// This function must be implemented in a child class
-  // @param [in][out] grid current values
-  // @param [in]      rhs  right hand side values
-  // @returns accumulated residual
+  /// \param [in,out] grid current values
+  /// \param [in]     rhs  right hand side values
+  /// \returns accumulated residual
   virtual real_t Cycle(Grid &grid, const Grid &rhs) const = 0;
 
   /// Resets the solver and prepares it for a new time step
   virtual void reset(const Grid &grid __attribute__((unused)), const Grid &rhs __attribute__((unused))) {};
 
-
 protected:
-  const Geometry &_geom;
+  const Geometry &_geom;     ///< The geometry defining the domain
   const real_t _invNumFluid; ///< The invers of the number of fluid cells
-  const Communicator& _comm;
+  const Communicator& _comm; ///< The communicator for communication between MPI processes
 
   /// Returns the residual at [it] for the pressure-Poisson equation
   real_t localRes(const Iterator &it, const Grid &grid, const Grid &rhs) const;
@@ -58,9 +58,9 @@ public:
   /// Constructs an actual SOR solver
   SOR(const Geometry &geom, const Communicator &comm, const real_t &omega);
 
-  /// Returns the total residual and executes a solver cycle
-  /// \param[in][out] grid current pressure values
-  /// \param[in] rhs right hand side
+  /// \brief Returns the total residual and executes a solver cycle
+  /// \param[in,out] grid current pressure values
+  /// \param[in]     rhs  right hand side
   virtual real_t Cycle(Grid &grid, const Grid &rhs) const;
 
 protected:
@@ -76,18 +76,18 @@ public:
       : SOR(geom, comm, omega), _firstRed(comm.EvenOdd() && (geom.Size()[0] % 2 == 0))  // TODO one size even other odd
       {};
 
-  /// Returns the total residual and executes a red solver cycle
-  /// \param[in][out] grid current pressure values
-  /// \param[in] rhs right hand side
+  /// \brief Returns the total residual and executes a red and black solver cycle
+  /// \param[in,out] grid current pressure values
+  /// \param[in]     rhs  right hand side
   real_t Cycle(Grid &grid, const Grid &rhs) const;
 
-  /// Returns the total residual and executes a red solver cycle
-  /// \param[in][out] grid current pressure values
-  /// \param[in] rhs right hand side
+  /// \brief Returns the total residual and executes a red solver cycle
+  /// \param[in,out] grid current pressure values
+  /// \param[in]     rhs  right hand side
   real_t RedCycle(Grid &grid, const Grid &rhs) const;
-  /// Returns the total residual and executes a black solver cycle
-  /// \param[in][out] grid current pressure values
-  /// \param[in] rhs right hand side
+  /// \brief Returns the total residual and executes a black solver cycle
+  /// \param[in,out] grid current pressure values
+  /// \param[in]     rhs  right hand side
   real_t BlackCycle(Grid &grid, const Grid &rhs) const;
 
 protected:
@@ -100,22 +100,20 @@ public:
   /// Constructs an Conjugated Gradients solver
   CG(const Geometry &geom, const Communicator &comm)
       : Solver(geom, comm), _res(geom), _direction(geom), _Ad(geom) {};
-  /// Destructor
-  ~CG() {};
 
-  /// Returns the total residual and executes a red solver cycle
-  /// \param[in][out] grid current pressure values
-  /// \param[in] rhs right hand side
+  /// \brief Returns the total residual and executes a solver cycle
+  /// \param[in,out] grid current pressure values
+  /// \param[in]     rhs  right hand side
   real_t Cycle(Grid &grid, const Grid &rhs) const;
 
   /// Resets the solver and prepares it for a new time step
   virtual void reset(const Grid &grid, const Grid &rhs);
 
 protected:
-  mutable Grid _res;
-  mutable Grid _direction;
-  mutable Grid _Ad;
-  mutable real_t old_residual;
+  mutable Grid _res;           ///< The pointwise residual
+  mutable Grid _direction;     ///< The direction of the correction
+  mutable Grid _Ad;            ///< A*_direction where A is the discrete Laplassian
+  mutable real_t old_residual; ///< The 2-norm of the old residual
 };
 //------------------------------------------------------------------------------
 
@@ -123,36 +121,41 @@ protected:
 class MG : public Solver {
 public:
   /// Constructs an Multigrid solver
+  /// \param[in] geom  The geometry defining the domain
+  /// \param[in] comm  The communicator for communication between MPI processes
+  /// \param[in] level The level of the multigrid solver (0 == coarsest grid)
+  /// \param[in] gamma The type of MG-Cycle (1 == V, 2 == W)
+  /// \param[in] nu    The number of pre- and postsmooting iterations done per Cycle
   MG(const Geometry &geom, const Communicator &comm, const index_t level,
-     const index_t& gamma, const index_t& nu = index_t(4));
+     const index_t& gamma, const index_t& nu);
   /// Destructor
   ~MG();
 
-  /// Returns the total residual and executes a solver cycle (V-Cycle)
-  // @param grid current pressure values
-  // @param rhs right hand side
+  /// \brief Returns the total residual and executes a solver cycle (MG-Cycle)
+  /// \param[in,out] grid current pressure values
+  /// \param[in]     rhs  right hand side
   real_t Cycle(Grid &grid, const Grid &rhs) const;
 
 protected:
   /// Restricts the residuals of the solution to the next coarser Grid
-  /// \param p          The current pressure grid
-  /// \param rhs        The current right-hand-side
+  /// \param[in] p   The current pressure grid
+  /// \param[in] rhs The current right-hand-side
   void Restrict(const Grid &p, const Grid &rhs) const;
   /// Interpolates and adds from the coarser solution to this one
-  /// \param p          The current pressure grid
+  /// \param[out] p The current pressure grid
   void Interpolate(Grid &p) const;
-  /// Smoothing cycle
-  /// \param p     The pressure grid
-  /// \param rhs   The right-hand-side
+  /// Smoothing iteration
+  /// \param[in,out] p   The pressure grid
+  /// \param[in]     rhs The right-hand-side
   real_t Smooth(Grid &p, const Grid &rhs) const;
 
-  const index_t _level;
-  const index_t _gamma;
-  const index_t _nu;
-  const RedOrBlackSOR _smoother;
-  const MG *_coarse;
-  Grid *_e;
-  Grid *_res;
+  const index_t _level;  ///< The level of the multigrid solver (0 == coarsest grid)
+  const index_t &_gamma; ///< The type of MG-Cycle (1 == V, 2 == W)
+  const index_t &_nu;    ///< The number of pre- and postsmooting iterations done per Cycle
+  const RedOrBlackSOR _smoother; ///< The smoother
+  const MG *_coarse;     ///< The MG solver on the next coarser level
+  Grid *_e;              ///< The error approximation on the next coarser level
+  Grid *_res;            ///< The restriction of the residual on the next coarser level
 };
 //------------------------------------------------------------------------------
 #endif // __SOLVER_HPP

@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
     // Set optimal level for MG
     const index_t level = (index_t)std::fmax(std::log2(n), 0);
 
-    MG mg(geom, comm, level, 2);
+    MG mg(geom, comm, level, 1, 4);
     CG cg(geom, comm);
     RedOrBlackSOR rb(geom, comm, omega);
     SOR sor(geom, comm, omega);

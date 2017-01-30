@@ -52,7 +52,7 @@ Compute::Compute(const Geometry &geom, const Parameter &param, const Communicato
       lev++;
       div*=2;
     }
-    this->_solver = new MG(geom, comm, lev, 1, 4);
+    this->_solver = new MG(geom, comm, lev, param.Gamma(), param.Nu());
   } else if(strncmp(sol, "RB", 2) == 0) {
     this->_solver = new RedOrBlackSOR(geom, comm, param.Omega());
   } else {

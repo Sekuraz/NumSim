@@ -48,6 +48,16 @@ void Parameter::Load(const char file[], const bool printinfo) {
       if(printinfo) {
         std::cout << "Parameter: Load omega = " << this->_omega << std::endl;
       }
+    } else if(!param.compare("Gamma") || !param.compare("gamma")) {
+      this->_gamma = value;
+      if(printinfo) {
+        std::cout << "Parameter: Load gamma = " << this->_gamma << std::endl;
+      }
+    } else if(!param.compare("Nu") || !param.compare("nu")) {
+      this->_nu = value;
+      if(printinfo) {
+        std::cout << "Parameter: Load nu = " << this->_nu << std::endl;
+      }
     } else if(!param.compare("Alpha") || !param.compare("alpha")) {
       this->_alpha = value;
       if(printinfo) {

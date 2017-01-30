@@ -27,7 +27,7 @@ public:
   /// Constructs a new Parameter set with default values
   // Driven Cavity parameters; see exercise sheet 1
   Parameter(const char file[] = nullptr, const bool printinfo = 0)
-      : _re(1000), _omega(1.7), _alpha(0.9), _dt(1e-2), _tend(50),
+      : _re(1000), _omega(1.7), _gamma(1), _nu(4), _alpha(0.9), _dt(1e-2), _tend(50),
         _eps(1e-3), _tau(0.5), _itermax(500), _vtkDt(0.5), _visuDt(0) {
       if(file != nullptr) {
         this->Load(file, printinfo);
@@ -43,6 +43,10 @@ public:
   inline const real_t &Omega() const { return this->_omega; };
   /// Returns the over-relaxation parameter for SOR and RedBlackSOR (write access)
   inline real_t &Omega() { return this->_omega; };
+  /// Returns the type of MGCycle for the multigrid solver MG
+  inline const index_t &Gamma() const { return this->_gamma; };
+  /// Returns the number of smoother iterations for the multigrid solver MG
+  inline const index_t &Nu() const { return this->_nu; };
   /// Returns the weighting between Donor-Cell and central differences
   inline const real_t &Alpha() const { return this->_alpha; };
   /// Returns the maximal time-step
@@ -65,6 +69,8 @@ public:
 private:
   real_t _re;
   real_t _omega;
+  index_t _gamma;
+  index_t _nu;
   real_t _alpha;
   real_t _dt;
   real_t _tend;
