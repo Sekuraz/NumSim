@@ -123,7 +123,8 @@ protected:
 class MG : public Solver {
 public:
   /// Constructs an Multigrid solver
-  MG(const Geometry &geom, const Communicator &comm, const index_t level, const index_t& nu = index_t(4));
+  MG(const Geometry &geom, const Communicator &comm, const index_t level,
+     const index_t& gamma, const index_t& nu = index_t(4));
   /// Destructor
   ~MG();
 
@@ -146,6 +147,7 @@ protected:
   real_t Smooth(Grid &p, const Grid &rhs) const;
 
   const index_t _level;
+  const index_t _gamma;
   const index_t _nu;
   const RedOrBlackSOR _smoother;
   const MG *_coarse;

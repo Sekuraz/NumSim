@@ -161,14 +161,15 @@ real_t CG::Cycle(Grid &grid, const Grid &rhs __attribute__((unused))) const {
 
 //------------------------------------------------------------------------------
 // Constructs an actual Multigrid solver
-MG::MG(const Geometry &geom, const Communicator &comm, const index_t level, const index_t& nu)
-    : Solver(geom, comm), _level(level), _nu(nu), _smoother(geom, comm, 1.0),
+MG::MG(const Geometry &geom, const Communicator &comm, const index_t level,
+       const index_t& gamma, const index_t& nu)
+    : Solver(geom, comm), _level(level), _gamma(gamma), _nu(nu), _smoother(geom, comm, 1.0),
       _coarse(nullptr), _e(nullptr), _res(nullptr) {
   if(this->_level > 0) {
     Geometry* geom_coarse = geom.coarse();
     this->_e = new Grid(*geom_coarse);
     this->_res = new Grid(*geom_coarse);
-    this->_coarse = new MG(*geom_coarse, comm, this->_level-1);
+    this->_coarse = new MG(*geom_coarse, comm, this->_level-1, gamma, nu);
   }
 }
 
@@ -188,7 +189,9 @@ real_t MG::Cycle(Grid &p, const Grid &rhs) const {
   this->Smooth(p, rhs);
   if(this->_level > 0) {
     this->Restrict(p, rhs);
-    this->_coarse->Cycle(*this->_e, *this->_res);
+    for(index_t i = 0; i < this->_gamma; ++i) {
+      this->_coarse->Cycle(*this->_e, *this->_res);
+    }
     this->Interpolate(p);
   } // TODO: else solve
   return this->Smooth(p, rhs);
