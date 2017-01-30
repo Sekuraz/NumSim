@@ -94,7 +94,7 @@ protected:
   const bool _firstRed; ///< Whether first Red of Black Cycle is done
 };
 
-
+/// concrete Conjugated-Gradients (CG) solver
 class CG : public Solver {
 public:
   /// Constructs an Conjugated Gradients solver

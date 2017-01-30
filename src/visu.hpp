@@ -95,15 +95,15 @@ private:
  *      \param  length  total size of the area
  */
 /*!     \fn     void Renderer::Init (const index_t& width, const index_t&
- * height, const int& idx = 0)
+ * height, const int& idx = 0, const multi_index_t &t_idx = multi_index_t(0), const multi_index_t &t_dim = multi_index_t(1))
  *      Initializes the SDL window and sets its size.
  *
  *      \param  width   The width of the window in pixels
  *      \param  height  The height of the window in pixels
  *      \param  idx     The Index of the window. If zero, no index is
  * printed in the title.
- *      \param  posX    The x-position of the window.
- *      \param  posY    The y-position of the window.
+ *      \param  t_idx   The cartesian index (position) of the window (and process).
+ *      \param  t_dim   The cartesian dimension of all windows (and processes).
  */
 /*!     \fn void Renderer::SetSlice (const index_t& xdim, const index_t& ydim,
  * const multi_real_t& origin)
@@ -127,14 +127,14 @@ private:
  *              \arg    10: The enter key was pressed. This doesn't effect the
  * status.
  */
-/*!     \fn int Renderer::Render (const Grid *grid, const multi_real_t& offset)
+/*!     \fn int Renderer::Render (const Grid *grid)
  *      Updates the SDL window and checks for pressed keys. The visualization is
  *      auto scaled based on the maximal and minal value in the grid.
  *
  *      \param grid             Pointer to the grid that should be visualized.
  *      \return                 The status of the window.
  */
-/*!     \fn int Renderer::Render (const Grid *grid, const multi_real_t& offset,
+/*!     \fn int Renderer::Render (const Grid *grid,
  * const real_t& min, const real_t& max)
  *      Updates the SDL window and checks for pressed keys. The visualization is
  *      scaled based on \p min and \p max. Grid values are cropped by these

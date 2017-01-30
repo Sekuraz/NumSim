@@ -23,23 +23,22 @@
 /// The geometry of the underlying physical domain.
 class Geometry {
 public:
-  /// Constructs a default geometry:
-  /// driven cavity with 128 x 128 grid, no-slip boundary conditions
-  /// as shown below
-  /// <pre>
-  ///       u=1, v=0
-  ///     -------------
-  ///     |           |
-  /// u=0 |           | u=0
-  /// v=0 |           | v=0
-  ///     |           |
-  ///     -------------
-  ///       u=0, v=0
-  /// </pre>
+  /// Constructor for Geometry
+  /// \param comm The Communicator for exchange between MPI processes
+  /// \param file The file/path to load a geometry from.
+  ///             If no path is given, a driven cavity with 128 x 128 grid is loaded.
+  /// \param printinfo Whether to print information about loaded geometry.
   Geometry(const Communicator &comm, const char file[] = nullptr, const bool printinfo = false)
       : Geometry(comm, multi_index_t(128), file, printinfo) {}
+  /// Constructor for Geometry
+  /// \param comm The Communicator for exchange between MPI processes
+  /// \param size The size of the Geometry if not loaded from file
+  /// \param file The file/path to load a geometry from.
+  ///             If no path is given, a driven cavity with 128 x 128 grid is loaded.
+  /// \param printinfo Whether to print information about loaded geometry.
   Geometry(const Communicator &comm, const multi_index_t& size,
            const char file[] = nullptr, const bool printinfo = false);
+  /// Destructor for Geometry
   ~Geometry() { if(this->_flags != nullptr) delete[] this->_flags; }
 
   /// \brief Loads a geometry from a file
@@ -90,6 +89,7 @@ public:
   /// Updates the velocity fields u and v for a free geometry
   void Update(Grid &u, Grid &v) const;
 
+  /// Returns whether the cell at the position of the iterator is noslip boundary cell.
   bool noslip(const Iterator &it) const;
   /// Returns the grid flag of the cell at the position of it.
   const char& flag(const Iterator &it) const;

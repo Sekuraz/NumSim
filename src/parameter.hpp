@@ -67,19 +67,19 @@ public:
   inline const std::list<multi_real_t> &ParticleInitPos() const { return this->_particleInitPos; };
 
 private:
-  real_t _re;
-  real_t _omega;
-  index_t _gamma;
-  index_t _nu;
-  real_t _alpha;
-  real_t _dt;
-  real_t _tend;
-  real_t _eps;
-  real_t _tau;
-  index_t _itermax;
-  real_t _vtkDt;
-  real_t _visuDt;
-  std::list<multi_real_t> _particleInitPos;
+  real_t _re;       ///< The Reynolds-number
+  real_t _omega;    ///< The over-relaxation parameter for SOR and RedBlackSOR
+  index_t _gamma;   ///< The type of MGCycle for the multigrid solver MG
+  index_t _nu;      ///< The number of smoother iterations for the multigrid solver MG
+  real_t _alpha;    ///< The weighting between Donor-Cell and central differences
+  real_t _dt;       ///< The maximal time-step
+  real_t _tend;     ///< The final time
+  real_t _eps;      ///< The maximal error allowed in the iterative solver
+  real_t _tau;      ///< The savety-factor for the time-step restriction
+  index_t _itermax; ///< The maximal number of iterations done by the iterative solver
+  real_t _vtkDt;    ///< The time-step after which a vtk-output is written
+  real_t _visuDt;   ///< The time-step after which the visualization is updated
+  std::list<multi_real_t> _particleInitPos; ///< The initial positions of the particles
 };
 //------------------------------------------------------------------------------
 #endif // __PARAMETER_HPP

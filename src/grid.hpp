@@ -94,6 +94,7 @@ public:
   /// Prints the data of the grid
   void print() const;
 
+  /// Computes the inner L2-product of this and the other grid (over all interior cells)
   real_t InnerProduct(const Grid& other) const;
 
 private:

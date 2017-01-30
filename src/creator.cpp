@@ -32,32 +32,36 @@ int getOpt(const char *opt, int &argc, char **&argv) {
   return 0;
 }
 
+/// struct for parameters
 struct param_t {
-  real_t  re;
-  real_t  omega;
-  index_t gamma;
-  index_t nu;
-  real_t  alpha;
-  real_t  dt;
-  real_t  tend;
-  real_t  eps;
-  real_t  tau;
-  index_t itermax;
-  real_t  vtkDt;
-  real_t  visuDt;
-  std::list<multi_real_t>  particlePos;
+  real_t re;       ///< The Reynolds-number
+  real_t omega;    ///< The over-relaxation parameter for SOR and RedBlackSOR
+  index_t gamma;   ///< The type of MGCycle for the multigrid solver MG
+  index_t nu;      ///< The number of smoother iterations for the multigrid solver MG
+  real_t alpha;    ///< The weighting between Donor-Cell and central differences
+  real_t dt;       ///< The maximal time-step
+  real_t tend;     ///< The final time
+  real_t eps;      ///< The maximal error allowed in the iterative solver
+  real_t tau;      ///< The savety-factor for the time-step restriction
+  index_t itermax; ///< The maximal number of iterations done by the iterative solver
+  real_t vtkDt;    ///< The time-step after which a vtk-output is written
+  real_t visuDt;   ///< The time-step after which the visualization is updated
+  std::list<multi_real_t> particlePos; ///< The initial positions of the particles
 
+  /// Default Constructor for parameters
   param_t() : re(1000), omega(1.7), gamma(1), nu(4), alpha(0.9), dt(1e-2),
               tend(50), eps(1e-3), tau(0.5), itermax(500), vtkDt(0.5), visuDt(0) {}
 };
 
+/// struct for geometry
 struct geom_t {
-  multi_index_t size;
-  multi_real_t  length;
-  multi_real_t  velocity;
-  real_t        pressure;
-  int           type;
+  multi_index_t size;     ///< Cartesian size of the Grid
+  multi_real_t  length;   ///< Length of the physical domain in each dimension
+  multi_real_t  velocity; ///< Constant boundary velocities (u,v) at inflow boundaries
+  real_t        pressure; ///< Pressure difference between slip and outflow boundary
+  int           type;     ///< The predefined type of the geometry
 
+  /// Default Constructor for geometry
   geom_t() : size(128), length(1), velocity(1,0), pressure(0), type(0) {}
 };
 
