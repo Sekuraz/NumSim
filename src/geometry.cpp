@@ -418,8 +418,18 @@ void Geometry::computeSizes(const bool printinfo) {
       }
       this->_flags[this->_totalSize[0] * (j+1)-1] = (j == this->_totalSize[1]-1? 'H' : '#');
     }
+    this->_N = (this->_totalSize[0]-2)*(this->_totalSize[1]-2);
+
     if(printinfo) {
       std::cout << "Geometry: Load Driven Cavity." << std::endl;
+    }
+  } else {
+    // compute number of fluid cells
+    this->_N = 0;
+    for(index_t i = 1; i < this->_totalSize[0]-1; i++) {
+      for(index_t j = 1; j < this->_totalSize[1]-1; j++) {
+        if(this->_flags[i+j*this->_totalSize[0]] == ' ') this->_N++;
+      }
     }
   }
 
@@ -477,12 +487,6 @@ void Geometry::computeSizes(const bool printinfo) {
     if(this->isFluid(bit)) {
       this->_flags[bit] = 'X';
     }
-  }
-
-  this->_N = 0;
-  // compute local number of fluid cells
-  for(InteriorIterator it(*this); it.Valid(); it.Next()) {
-    this->_N++;
   }
 }
 
@@ -561,6 +565,7 @@ Geometry* Geometry::coarse(const bool printinfo) const {
   for(InteriorIterator it(*geom); it.Valid(); it.Next()) {
     geom->_N++;
   }
+  geom->_N = (index_t)_comm.gatherSum(geom->_N);
 
   // TODO: output for testing
   if(printinfo) {

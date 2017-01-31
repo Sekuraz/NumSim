@@ -32,7 +32,10 @@ int main(int argc, char *argv[]) {
   // set maximal Grid size (2^k)
   const index_t maxSize = 128;
   // set number of repetitions
-  const index_t nRepeat = 1;
+  const index_t nRepeat = 5;
+  // set type of MG-Cycle and number of smoother Cycles
+  const index_t gamma = 1;
+  const index_t nu = 3;
 
   // Create normal distribution random generator
   const index_t seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -54,7 +57,7 @@ int main(int argc, char *argv[]) {
     // Set optimal level for MG
     const index_t level = (index_t)std::fmax(std::log2(n), 0);
 
-    MG mg(geom, comm, level, 1, 4);
+    MG mg(geom, comm, level, gamma, nu);
     CG cg(geom, comm);
     RedOrBlackSOR rb(geom, comm, omega);
     SOR sor(geom, comm, omega);
