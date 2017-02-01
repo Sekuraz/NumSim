@@ -9,7 +9,10 @@
 \usepackage{hyperref}
 \usepackage{pgfplots}\pgfplotsset{compat=1.13} % necessary?
 \usepackage{multimedia}
-\usepackage{multimedia}
+\usepackage{algpseudocode}
+\algnewcommand{\IIf}[1]{\State\algorithmicif\ #1\ \algorithmicthen}
+\algnewcommand{\EndIIf}{\unskip\ \algorithmicend\ \algorithmicif}
+\renewcommand{\Comment}[2][.5\linewidth]{\leavevmode\hfill\makebox[#1][l]{//~#2}}
 
 \hypersetup{unicode=true, pdftoolbar=true, pdfmenubar=true, pdffitwindow=false, 
 	pdfstartview={FitH},
@@ -90,8 +93,40 @@ Universität Stuttgart}
 \section{Konjugierte Gradienten Methode}\label{sec:CG}
 \begin{frame}{Konjugierte Gradienten Methode (CG)}
   \begin{itemize}[<+(1)->]
-    \item \textcolor{red}{\huge TODO}
+    \item Minimierung von $E(x) = \tfrac{1}{2}\langle Ax, x\rangle - \langle b,x \rangle$\\
+        $\qquad\Rightarrow E'(x) = Ax - b \stackrel{!}{=} 0 \qquad\text{für}\quad A$
+        symmetrisch positiv definit
+    \item Suchrichtung in Gradientenrichtung liefert schnelle Konvergenz
+    \item Ausschöpfen des kompletten $\R^N$  durch $A$-Konjugieren
+        $\langle Ad_k, d_j\rangle = 0 \ \forall k \neq j$
+    \item Optimierung des Algorithmus liefert als wesentlichen Aufwand eine
+        Matrix-Vektor-Multiplikation
   \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Konjugierte Gradienten Methode (CG)}
+  \small
+  \begin{algorithmic}
+    \Function{CG}{$A,b,x_0$} \Comment{Löst das LGS $Ax = b$}
+    \State $r_0 := Ax - b$ \Comment{Initiales Residuum}
+    \State $d_0 := r_0$    \Comment{Initiale Suchrichtung}
+    \For{$k = 0, 1, \dots$}
+      \State $z := Ad_k$
+      \State $\alpha_k := \frac{\langle r_k, r_k \rangle}{\langle d_k, z\rangle}$
+        \Comment{Optimale Suchweite}
+      \State $x_{k+1} := x_k + \alpha_k d_k$
+        \Comment{Korrektur der Lösung}
+      \State $r_{k+1} := r_k - \alpha_k z$
+        \Comment{Korrektur des Residuums}
+      \State $\beta_k := \frac{\langle r_{k+1}, r_{k+1} \rangle}{\langle r_k, r_k\rangle}$
+        \Comment{$A$-Konjugiertheit}
+      \State $d_{k+1} := r_{k+1} + \beta_k d_k$
+        \Comment{Korrektur der Suchrichtung}
+      \State // Update der Randbedingungen
+      \IIf{$\|r_{k+1}\| < \varepsilon$} break \EndIIf \Comment{Abbbruchbedingung}
+    \EndFor
+    \EndFunction
+  \end{algorithmic}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

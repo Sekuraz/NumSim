@@ -51,6 +51,7 @@ doc/
 *.aux
 *.out
 *.nav
+*.vrb
 *.snm
 *.toc
 *.pdf
