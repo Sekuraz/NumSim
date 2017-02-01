@@ -48,7 +48,7 @@ END {
   for(i=2; i<=N; i++) {
     if(N%i == 0 && (NR-1)%i == 0) {
       print nr[i],
-          abs(reM[i]-1500)/abs(reM[N]-1500),
+          abs(reM[i]-1500),#/abs(reM[N]-1500),
           abs(reSD[i]-166.666666666667)/abs(reSD[N]-166.666666666667),
           abs(u1M[i]-u1M[1])/abs(u1M[N]-u1M[1]),
           abs(u1SD[i]-u1SD[1])/abs(u1SD[N]-u1SD[1]),
