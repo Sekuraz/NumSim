@@ -126,6 +126,9 @@ void CG::reset(const Grid &grid, const Grid &rhs) {
     this->_res.Cell(it) = local;
     this->_direction.Cell(it) = local;
   }
+
+  this->_comm.copyBoundary(this->_direction);
+
   this->old_residual = this->_res.InnerProduct(this->_res);
   // gather global residual
   this->old_residual = this->_comm.gatherSum(this->old_residual);
