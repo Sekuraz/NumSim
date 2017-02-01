@@ -50,4 +50,7 @@ doc/
 *.err
 *.aux
 *.out
+*.nav
+*.snm
+*.toc
 *.pdf

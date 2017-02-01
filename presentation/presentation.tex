@@ -1,0 +1,173 @@
+\documentclass[aspectratio=169]{beamer}
+\mode<presentation>
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[ngerman]{babel}
+\usepackage{presentationST}
+\usepackage{hyperref}
+\usepackage{pgfplots}\pgfplotsset{compat=1.13} % necessary?
+\usepackage{multimedia}
+\usepackage{multimedia}
+
+\hypersetup{unicode=true, pdftoolbar=true, pdfmenubar=true, pdffitwindow=false, 
+	pdfstartview={FitH},
+	pdftitle={Numerische Simulation: Mehrgitter und Konjugierte Gradienten Methode},
+	pdfauthor={Stephan Lunowa, Jonas Harsch, Markus Baur},
+	pdfsubject={Mehrgitter, Konjugierte Gradienten, Wintersemester 2016/17},
+	pdfcreator={\LaTeX\ with ptextbfkage \flqq hyperref\frqq},
+	pdfproducer={pdfTeX \the\pdftexversion.\pdftexrevision},
+	pdfnewwindow=true,
+	colorlinks=true,linkcolor=black,citecolor=black,filecolor=magenta,urlcolor=black}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% For Printing
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\usepackage{pgfpages}
+%\pgfpagesuselayout{resize to}[a4paper,border shrink=5mm,landscape]
+%Zum Drucken von 8 Folien pro Seite setzt man die Layoutoptionen entsprechend des ntextbfhfolgenden Beispiels.
+%\pgfpagesuselayout{8 on 1}[a4paper,border shrink=5mm]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Mathematical Symbols and blocks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\diff}[1]{\partial_{#1}}
+\DeclareMathOperator{\divergence}{div}
+\newtheoremstyle{thm}%
+  {}%         Sptextbfe above, empty = `usual value'
+  {}%         Sptextbfe below
+  {\itshape}% Body font
+  {}%         Indent amount (empty = no indent, \parindent = para indent)
+  {\bfseries}% Thm head font
+  {}%         Punctuation after thm head
+  {\newline}% Sptextbfe after thm head: \newline = linebreak
+  {}%         Thm head spec
+\theoremstyle{thm}
+%\newtheorem{theorem}{Satz}[section] % schon definiert
+%\newtheorem{lemma}[theorem]{Lemma} % schon definiert
+%\newtheorem{definition}[theorem]{Definition} % schon definiert
+\newtheorem{assumption}[theorem]{Annahme}
+\newtheorem{remark}[theorem]{Bemerkung}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Titlepage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Mehrgitter und Konjugierte Gradienten Methode}
+\subtitle{Numerische Simulation}
+\author{Markus Baur \and Jonas Harsch \and Stephan Lunowa}
+\institute[IPVS]{Prof. Dr. rer. nat. habil. M. Mehl\\
+Institut für Parallele und Verteilte Systeme\\
+Universität Stuttgart}
+\date{\today}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\frame[plain]{\mbox{}\vspace{2em}\titlepage}
+\frame[plain]{\frametitle{Inhalt} \setcounter{tocdepth}{1} \tableofcontents }
+% framenumber neu setzen, damit Nummerierung bei 1 anfängt.
+%\setcounter{framenumber}{0}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Mehrgitter Methode
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Mehrgitter Methode}\label{sec:MG}
+\begin{frame}{Mehrgitter Methode (MG)}
+  \begin{itemize}[<+(1)->]
+    \item Multigrid / Multilevel / Mehrgitter Methode
+    \item \textcolor{red}{\huge TODO}
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Konjugierte Gradienten Methode
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Konjugierte Gradienten Methode}\label{sec:CG}
+\begin{frame}{Konjugierte Gradienten Methode (CG)}
+  \begin{itemize}[<+(1)->]
+    \item \textcolor{red}{\huge TODO}
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Numerische Ergebnisse
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Numerische Ergebnisse}\label{sec:Ergebnisse}
+\begin{frame}{Numerische Ergebnisse}
+  \centering \textcolor{red}{\huge TODO}
+  \begin{tikzpicture}\begin{loglogaxis}[width=8cm,
+    xlabel={\#Gitterpunkte $N$ in einer Dimension}, ylabel={\#Iterationen}, grid=minor,
+    log basis x=2, legend pos= outer north east,
+    legend entries={MG, CG, RBSOR, SOR, $\mathcal{O}(N)$},
+    domain=4:128]
+    \addplot table {it_MG.csv};
+    \addplot table {it_CG.csv};
+    \addplot table {it_RB.csv};
+    \addplot table {it_SOR.csv};
+    \addplot[black, dashed] {8*x};
+  \end{loglogaxis}\end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Numerische Ergebnisse}
+  \centering
+  \begin{tikzpicture}\begin{loglogaxis}[width=8cm,
+    xlabel={\#Gitterpunkte $N$ in einer Dimension}, ylabel={Laufzeit}, grid=minor,
+    log basis x=2, legend pos= outer north east,
+    legend entries={MG, CG, RBSOR, SOR, $\mathcal{O}(N^3)$, $\mathcal{O}(N^2)$},
+    domain=8:128]
+    \addplot table {sequential/drivencavity_MG.csv};
+    \addplot table {sequential/drivencavity_CG.csv};
+    \addplot table {sequential/drivencavity_RBSOR.csv};
+    \addplot table {sequential/drivencavity_SOR.csv};
+    \addplot[black, dashed] {x^3/2000};
+    \addplot[black, dotted] {x^2/600};
+  \end{loglogaxis}\end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Numerische Ergebnisse}
+  \centering
+  \begin{tikzpicture}\begin{loglogaxis}[width=8cm,
+    xlabel={\#Gitterpunkte $N$ in einer Dimension}, ylabel={Laufzeit}, grid=minor,
+    log basis x=2, legend pos= outer north east,
+    legend entries={MG, CG, RBSOR, SOR, $\mathcal{O}(N^3)$, $\mathcal{O}(N^2)$},
+    domain=8:128]
+    \addplot table {parallel/drivencavity_MG.csv};
+    \addplot table {parallel/drivencavity_CG.csv};
+    \addplot table {parallel/drivencavity_RBSOR.csv};
+    \addplot table {parallel/drivencavity_SOR.csv};
+    \addplot[black, dashed] {x^3/2000};
+    \addplot[black, dotted] {x^2/600};
+  \end{loglogaxis}\end{tikzpicture}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Fazit & Ausblick
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Fazit und Ausblick}\label{sec:Fazit}
+\begin{frame}{Fazit und Ausblick}
+  \begin{itemize}[<+(1)->]
+    \item \textcolor{red}{\huge TODO}
+    \item Ausblick:
+      \begin{itemize}
+        \item Mehrgitter für Gitter mit Hindernissen
+        \item Full Multigrid und Full Approximation Scheme
+        \item Vorkonditionierte CG Verfahren
+        \item Approximation mit Operatoren höherer Ordnung (Rand und im Gebiet)
+        \item Kombination CG und MG
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \begin{center}
+    \Large \textcolor{simtechred}{ Vielen Dank für die Aufmerksamkeit } \\[2em]
+    \normalsize Noch Fragen?
+  \end{center}
+\end{frame}
+
+\end{document}

@@ -1,0 +1,80 @@
+%----------------------------------------------------------------------------------------
+%	INITIALIZE
+%----------------------------------------------------------------------------------------
+%	Last update 2016-04-14 by Stephan Lunowa.
+%
+%----------------------------------------------------------------------------------------
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{presentationST}
+%----------------------------------------------------------------------------------------
+%	IMPORT
+%----------------------------------------------------------------------------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Layout
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% veränderter absatz
+\parindent0em
+\parskip=0.5\baselineskip
+
+\setbeamercovered{dynamic}%{transparent=5}
+\usefonttheme{professionalfonts}
+
+% Farben
+\definecolor{simtechdarkblue}{HTML}{004884}
+\definecolor{simtechbrightblue}{HTML}{BDC7DD}
+\definecolor{simtechred}{HTML}{CF0000}
+
+\setbeamercolor{title}{fg = simtechred}
+\setbeamercolor{subtitle}{fg = black}
+\setbeamercolor{frametitle}{fg = simtechred}
+\setbeamercolor{block title}{fg=white,bg = simtechdarkblue}
+\setbeamercolor{block body}{fg=black,bg=simtechbrightblue!25!white}
+
+\setbeamertemplate{itemize item}[square]
+\setbeamertemplate{itemize subitem}[triangle]
+\setbeamertemplate{itemize subsubitem}[ball]
+\setbeamercolor{itemize item}{fg = simtechred}
+\setbeamercolor{itemize subitem}{fg = simtechred}
+\setbeamercolor{itemize subsubitem}{fg = simtechred}
+\setbeamercolor{enumerate item}{fg = simtechdarkblue}
+
+% Hintergrund
+\usebackgroundtemplate{\includegraphics[width=\paperwidth]{presentationBG.pdf}}
+\setbeamertemplate{frametitle}{\vspace*{1cm}\hspace*{0.3cm} \insertframetitle \vspace{0.3cm}}
+
+\makeatletter
+\setbeamertemplate{theorem begin}{%
+	\begin{\inserttheoremblockenv}{%
+		\inserttheoremheadfont
+		\inserttheoremname
+		\inserttheoremnumber
+		\ifx\inserttheoremaddition\@empty\else\ (\inserttheoremaddition)\fi%
+	}%
+}\makeatother
+
+\setbeamertemplate{theorem end}{\end{\inserttheoremblockenv}}
+
+\setbeamersize{text margin left=1.2cm}
+\setbeamersize{text margin right=0.75cm}
+
+\setbeamertemplate{section in toc}{\leavevmode\leftskip=0cm \textcolor{simtechred}{$\blacksquare$}
+\textcolor{black}{\inserttocsection}\par}
+\setbeamertemplate{subsection in toc}{\leavevmode\leftskip=1cm {\footnotesize \textcolor{simtechred}{--}
+\textcolor{black}{\inserttocsubsection}}\par}
+
+\beamertemplatenavigationsymbolsempty
+
+% Framenumbering
+\setbeamertemplate{footline}{\hfill\footnotesize\insertframenumber\hspace*{0.3cm}\vspace*{0.3cm}}
+
+% Auto scale graphics, use via: \includegraphics[width=\ScaleIfNeeded]{Bild}
+\makeatletter
+\def\ScaleIfNeeded{%
+    \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+    \else
+    \Gin@nat@width
+    \fi
+}
+\makeatother
+
