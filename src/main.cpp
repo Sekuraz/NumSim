@@ -19,6 +19,7 @@
 #include <cmath>
 #include <cstring>
 #include <cstdlib>
+#include <omp.h>
 #include "typedef.hpp"
 #include "comm.hpp"
 #include "compute.hpp"
@@ -151,6 +152,8 @@ void writeVTK(VTK &vtk, Compute &comp, bool writeParticles) {
 
 int main(int argc, char *argv[]) {
   char *paramPath = nullptr, *geomPath = nullptr, *solver = nullptr;
+
+  omp_set_num_threads(2);
 
   parseCommandLine(argc, argv, paramPath, geomPath, solver);
 

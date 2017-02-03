@@ -156,7 +156,7 @@ real_t Grid::Max() const {
   // TODO rewrite efficient
   real_t m = this->_data[0];
   const index_t& end = this->_geom.DataSize();
-  //#pragma omp parallel for reduction(min:m) default(shared)
+  #pragma omp parallel for reduction(max:m)
   for(index_t i = 1; i < end; i++)
     m = std::max(m, this->_data[i]);
   return m;
@@ -165,7 +165,7 @@ real_t Grid::Max() const {
 real_t Grid::Min() const {
   real_t m = this->_data[0];
   const index_t& end = this->_geom.DataSize();
-  //#pragma omp parallel for reduction(min:m)
+  #pragma omp parallel for reduction(min:m)
   for(index_t i = 1; i < end; i++)
     m = std::min(m, this->_data[i]);
   return m;
@@ -174,7 +174,7 @@ real_t Grid::Min() const {
 real_t Grid::AbsMax() const {
   real_t m = std::fabs(this->_data[0]);
   const index_t& end = this->_geom.DataSize();
-  //#pragma omp parallel for reduction(max:m)
+  #pragma omp parallel for reduction(max:m)
   for(index_t i = 1; i < end; i++)
     m = std::max(m, std::fabs(this->_data[i]));
   return m;
@@ -183,7 +183,7 @@ real_t Grid::AbsMax() const {
 void Grid::MinMax(real_t &mi, real_t &ma) const {
   mi = ma = this->_data[0];
   const index_t& end = this->_geom.DataSize();
-  //#pragma omp parallel for reduction(min:mi) reduction(max:ma)
+  #pragma omp parallel for reduction(min:mi) reduction(max:ma)
   for(index_t i = 1; i < end; i++) {
     if(mi > this->_data[i]) {
       mi = this->_data[i];
@@ -205,9 +205,12 @@ void Grid::print() const {
 
 real_t Grid::InnerProduct(const Grid& other) const {
   real_t retval = 0;
-  #pragma omp parallel reduction(+:retval)
-  for (InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
-    retval += this->_data[it] * other._data[it];
+  const index_t& size = this->_geom.DataSize();
+  #pragma omp parallel for reduction(+:retval)
+  for(index_t i = 0; i < size; ++i) {
+    if(this->_geom.isFluid(i)) {
+      retval += this->_data[i] * other._data[i];
+    }
   }
   return retval;
 }

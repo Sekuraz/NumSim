@@ -93,6 +93,8 @@ public:
 
   /// Returns whether the cell at the position of the iterator is fluid cell.
   inline bool isFluid(const Iterator &it) const { return ( this->flag(it) == ' ' ); }
+  /// Returns whether the cell at the linear position is fluid cell.
+  inline bool isFluid(const index_t &i) const { return ( this->_flags[i] == ' ' ); }
 
   /// Updates the pressure field p for a free geometry
   void Update_P(Grid &p) const;

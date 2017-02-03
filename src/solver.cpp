@@ -78,12 +78,6 @@ real_t RedOrBlackSOR::Cycle(Grid &grid, const Grid &rhs) const {
 real_t RedOrBlackSOR::RedCycle(Grid &grid, const Grid &rhs) const {
   real_t residual = 0;
 
-  /*for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
-    real_t localRes = Solver::localRes(it, grid, rhs);
-    residual += localRes * localRes;
-    grid.Cell(it) -= this->_correction * localRes;
-    it.Next();
-  }*/
   #pragma omp parallel
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     const multi_index_t pos = it.Pos();
@@ -100,13 +94,6 @@ real_t RedOrBlackSOR::RedCycle(Grid &grid, const Grid &rhs) const {
 real_t RedOrBlackSOR::BlackCycle(Grid &grid, const Grid &rhs) const {
   real_t residual = 0;
 
-  /*InteriorIterator it(this->_geom);
-  for(it.Next(); it.Valid(); it.Next()) {
-    real_t localRes = Solver::localRes(it, grid, rhs);
-    residual += localRes * localRes;
-    grid.Cell(it) -= this->_correction * localRes;
-    it.Next();
-  }*/
   #pragma omp parallel
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     const multi_index_t pos = it.Pos();
@@ -121,12 +108,12 @@ real_t RedOrBlackSOR::BlackCycle(Grid &grid, const Grid &rhs) const {
 }
 
 void CG::reset(const Grid &grid, const Grid &rhs) {
-  real_t local;
-  for (InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
-    local = Solver::localRes(it, grid, rhs);
+  real_t *const resData = this->_res.Data();
+  real_t *const dirData = this->_direction.Data();
 
-    this->_res.Cell(it) = local;
-    this->_direction.Cell(it) = local;
+  #pragma omp parallel
+  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
+    dirData[it] = resData[it] = Solver::localRes(it, grid, rhs);
   }
 
   this->_comm.copyBoundary(this->_direction);
@@ -137,6 +124,7 @@ void CG::reset(const Grid &grid, const Grid &rhs) {
 }
 
 real_t CG::Cycle(Grid &grid, const Grid &rhs __attribute__((unused))) const {
+  #pragma omp parallel
   for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
     this->_Ad.Cell(it) = this->_direction.dxx(it) + this->_direction.dyy(it);
   }
@@ -144,9 +132,17 @@ real_t CG::Cycle(Grid &grid, const Grid &rhs __attribute__((unused))) const {
   real_t dTAd = this->_direction.InnerProduct(this->_Ad);
   real_t alpha = this->old_residual / this->_comm.gatherSum(dTAd);
 
-  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
-    grid.Cell(it) += alpha * this->_direction.Cell(it);
-    this->_res.Cell(it) -= alpha * this->_Ad.Cell(it);
+  const index_t& size = this->_geom.DataSize();
+  real_t *const gridData = grid.Data();
+  real_t *const resData = this->_res.Data();
+  real_t *const dirData = this->_direction.Data();
+  const real_t *const AdData = this->_Ad.cData();
+  #pragma omp parallel for simd
+  for(index_t i = 0; i < size; ++i) {
+    if(this->_geom.isFluid(i)) {
+      gridData[i] += alpha * dirData[i];
+      resData[i] -= alpha * AdData[i];
+    }
   }
 
   real_t residual = this->_res.InnerProduct(this->_res);
@@ -154,9 +150,12 @@ real_t CG::Cycle(Grid &grid, const Grid &rhs __attribute__((unused))) const {
   residual = this->_comm.gatherSum(residual);
   real_t beta = residual / this->old_residual;
 
-  for(InteriorIterator it(this->_geom); it.Valid(); it.Next()) {
-    this->_direction.Cell(it) *= beta;
-    this->_direction.Cell(it) += this->_res.Cell(it);
+  #pragma omp parallel for simd
+  for(index_t i = 0; i < size; ++i) {
+    if(this->_geom.isFluid(i)) {
+      dirData[i] *= beta;
+      dirData[i] += resData[i];
+    }
   }
   this->_comm.copyBoundary(this->_direction);
 
