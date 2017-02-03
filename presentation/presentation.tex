@@ -83,8 +83,34 @@ Universität Stuttgart}
 \begin{frame}{Mehrgitter Methode (MG)}
   \begin{itemize}[<+(1)->]
     \item Multigrid / Multilevel / Mehrgitter Methode
+    \item Iterative Löser schlecht für glatte Fehler
+    \item Glatte Fehler auf gröberen Gittern oszillierend
+    \item Mehrgitter hat $h$-unabhängige Konvergenzrate
+    \item Essentiell: Beachtung der Randbedingungen um kleine Konvergenzfaktoren
+        zu erhalten
     \item \textcolor{red}{\huge TODO}
   \end{itemize}
+\end{frame}
+
+\begin{frame}{Mehrgitter Methode (MG)}
+  \begin{minipage}{0.49\linewidth}
+  \begin{align*}
+    \intertext{Im Gebiet:}
+    \Delta p &= rhs + res \\
+    \Delta e^c &= res^c = R_\Omega\ res
+    \intertext{Analog auf dem Rand für Neumann-RB:}
+    \partial_n p &= rhs + res \\
+    \partial_n e^c &= res^c = R_\Gamma\ res
+  \end{align*}
+  \end{minipage}
+  \begin{minipage}{0.49\linewidth}
+  Beispiel linker Rand:\\
+  \textcolor{red}{\huge TODO: Image}
+  \begin{align*}
+    \tfrac{p_{1,j}-p_{0,j}}{h} &= rhs_{0,j} + res_{0,j} \\
+    \tfrac{e^c_{1,j}-e^c_{0,j}}{2h} &= rhs^c_{0,j} = \tfrac{1}{2}(res_{0,j+1}+res_{0,j})
+  \end{align*}
+  \end{minipage}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -202,16 +228,22 @@ Universität Stuttgart}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Fazit und Ausblick}\label{sec:Fazit}
 \begin{frame}{Fazit und Ausblick}
+  Fazit:
   \begin{itemize}[<+(1)->]
-    \item \textcolor{red}{\huge TODO}
-    \item Ausblick:
-      \begin{itemize}
-        \item Mehrgitter für Gitter mit Hindernissen
-        \item Full Multigrid und Full Approximation Scheme
-        \item Vorkonditionierte CG Verfahren
-        \item Approximation mit Operatoren höherer Ordnung (Rand und im Gebiet)
-        \item Kombination CG und MG
-      \end{itemize}
+    \item CG: gleiche Konvergenzgeschwindigkeit wie (RB)SOR mit optimalem
+        Parameter (für komplexe Geometrie unbekannt), aber keine freien Parameter
+    \item MG: bessere Konvergenzgeschwindigkeit, benötigt aber guten Glätter
+        und ist problemspezifisch
+  \end{itemize}
+  Ausblick:
+  \begin{itemize}
+    \item Vorkonditionierte CG Verfahren
+    \item Mehrgitter für Gitter mit Hindernissen
+    \item Lösung der Gesamten Navier-Stokes-Gleichungen als System mittels MG
+    \item Adaptive Mehrgitter Methode (Adaptive lokale Gitterlevel,
+        hierarchische Gitter)
+    \item Full Multigrid und Full Approximation Scheme (Nichtlineare Probleme)
+    \item Kombination CG und MG (sogenannter Krylovbeschleunigte MG)
   \end{itemize}
 \end{frame}
 
