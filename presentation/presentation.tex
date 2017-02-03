@@ -154,12 +154,12 @@ Universität Stuttgart}
     xlabel={\#Gitterpunkte $N$ in einer Dimension}, ylabel={Laufzeit}, grid=minor,
     log basis x=2, legend pos= outer north east,
     legend entries={MG, CG, RBSOR, SOR, $\mathcal{O}(N^3)$, $\mathcal{O}(N^2)$},
-    domain=8:128]
-    \addplot table {sequential/drivencavity_MG.csv};
-    \addplot table {sequential/drivencavity_CG.csv};
-    \addplot table {sequential/drivencavity_RBSOR.csv};
-    \addplot table {sequential/drivencavity_SOR.csv};
-    \addplot[black, dashed] {x^3/2000};
+    domain=16:256]
+    \addplot table {speedup/drivencavity_1MG.csv};
+    \addplot table {speedup/drivencavity_1CG.csv};
+    \addplot table {speedup/drivencavity_1RBSOR.csv};
+    \addplot table {speedup/drivencavity_1SOR.csv};
+    \addplot[black, dashed] {x^3/1500};
     \addplot[black, dotted] {x^2/600};
   \end{loglogaxis}\end{tikzpicture}
 \end{frame}
@@ -170,14 +170,31 @@ Universität Stuttgart}
     xlabel={\#Gitterpunkte $N$ in einer Dimension}, ylabel={Laufzeit}, grid=minor,
     log basis x=2, legend pos= outer north east,
     legend entries={MG, CG, RBSOR, SOR, $\mathcal{O}(N^3)$, $\mathcal{O}(N^2)$},
-    domain=8:128]
-    \addplot table {parallel/drivencavity_MG.csv};
-    \addplot table {parallel/drivencavity_CG.csv};
-    \addplot table {parallel/drivencavity_RBSOR.csv};
-    \addplot table {parallel/drivencavity_SOR.csv};
-    \addplot[black, dashed] {x^3/2000};
+    domain=16:256]
+    \addplot table {speedup/drivencavity_2parallelMG.csv};
+    \addplot table {speedup/drivencavity_2parallelCG.csv};
+    \addplot table {speedup/drivencavity_2parallelRBSOR.csv};
+    \addplot table {speedup/drivencavity_2parallelSOR.csv};
+    \addplot[black, dashed] {x^3/1500};
     \addplot[black, dotted] {x^2/600};
   \end{loglogaxis}\end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Numerische Ergebnisse}
+  \centering
+  \begin{tikzpicture}\begin{semilogxaxis}[width=8cm,
+    xlabel={\#Gitterpunkte $N$ in einer Dimension}, ylabel={Speedup},
+    log basis x=2, legend pos= outer north east, grid=major,
+    legend entries={MG (2), CG (2), RBSOR (2), SOR (2), MG (4), CG (4), RBSOR (4), SOR (4)}]
+    \addplot table {speedup/speedup2_MG.csv};
+    \addplot table {speedup/speedup2_CG.csv};
+    \addplot table {speedup/speedup2_RB.csv};
+    \addplot table {speedup/speedup2_SOR.csv};
+    \addplot table {speedup/speedup4_MG.csv};
+    \addplot table {speedup/speedup4_CG.csv};
+    \addplot table {speedup/speedup4_RB.csv};
+    \addplot table {speedup/speedup4_SOR.csv};
+  \end{semilogxaxis}\end{tikzpicture}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
