@@ -10,6 +10,8 @@
 \usepackage{pgfplots}\pgfplotsset{compat=1.13} % necessary?
 \usepackage{multimedia}
 \usepackage{algpseudocode}
+\usepackage{tikz}
+\usetikzlibrary{patterns}
 \algnewcommand{\IIf}[1]{\State\algorithmicif\ #1\ \algorithmicthen}
 \algnewcommand{\EndIIf}{\unskip\ \algorithmicend\ \algorithmicif}
 \renewcommand{\Comment}[2][.5\linewidth]{\leavevmode\hfill\makebox[#1][l]{//~#2}}
@@ -105,7 +107,36 @@ Universität Stuttgart}
   \end{minipage}
   \begin{minipage}{0.49\linewidth}
   Beispiel linker Rand:\\
-  \textcolor{red}{\huge TODO: Image}
+  \begin{tikzpicture}[scale=1.0]
+    \draw [step=1.0cm, pattern=north east lines, opacity=0.5] (1.0,0.0) rectangle (2.0,1.0);
+    \draw [step=1.0cm, pattern=north east lines, opacity=0.5] (1.0,1.0) rectangle (2.0,2.0);
+    \draw [white, step=1.0cm, pattern=north east lines, opacity=0.5] (1.0,2.0) rectangle (2.0,2.5);
+    \draw [white, step=1.0cm, pattern=north east lines, opacity=0.5] (1.0,0.0) rectangle (2.0,-0.5);
+    \draw[step=2.0, red, ultra thick] (0.0, -0.5) grid (4.5, 2.5);
+    \draw[step=1.0, black] (0.0, -0.5) grid (4.5, 2.5);
+
+	\foreach \i in {1.5,...,3.5} {
+      \foreach \j in {0.5,...,1.5} {
+        \draw[blue, fill] (\i, \j) circle[radius=0.08cm];
+      }
+    }
+
+    \draw[blue] (1.5, 0.5) node[above] {\scriptsize $p_{0,j}$};
+    \draw[blue] (1.5, 1.5) node[above] {\scriptsize $p_{0,j+1}$};
+    \draw[blue] (2.5, 0.5) node[above] {\scriptsize $p_{1,j}$};
+    \draw[blue] (2.5, 1.5) node[above] {\scriptsize $p_{1,j+1}$};
+
+	\foreach \i in {1.0,3.0} {
+      \draw[red, fill] (\i, 1.0) circle[radius=0.08cm];
+    }
+
+	\draw[red] (1.0, 1.0) node[above, xshift=-0.25cm, yshift=-0.05cm] {\scriptsize $p^c_{0,j}$};
+    \draw[red] (3.0, 1.0) node[above, xshift=-0.25cm, yshift=-0.05cm] {\scriptsize $p^c_{1,j}$};
+
+    
+    \draw[red, ultra thick] (4.8, 1.5) -- (5.2,1.5) node[right] {\textcolor{black}{grobes Gitter}};
+    \draw[black] (4.8, 0.5) -- (5.2,0.5) node[right] {feines Gitter};
+  \end{tikzpicture}
   \begin{align*}
     \tfrac{p_{1,j}-p_{0,j}}{h} &= rhs_{0,j} + res_{0,j} \\
     \tfrac{e^c_{1,j}-e^c_{0,j}}{2h} &= rhs^c_{0,j} = \tfrac{1}{2}(res_{0,j+1}+res_{0,j})
@@ -166,10 +197,10 @@ Universität Stuttgart}
     log basis x=2, legend pos= outer north east,
     legend entries={MG, CG, RBSOR, SOR, $\mathcal{O}(N)$},
     domain=4:128]
-    \addplot table {it_MG.csv};
-    \addplot table {it_CG.csv};
-    \addplot table {it_RB.csv};
-    \addplot table {it_SOR.csv};
+    %\addplot table {it_MG.csv};
+    %\addplot table {it_CG.csv};
+    %\addplot table {it_RB.csv};
+    %\addplot table {it_SOR.csv};
     \addplot[black, dashed] {8*x};
   \end{loglogaxis}\end{tikzpicture}
 \end{frame}
@@ -181,10 +212,10 @@ Universität Stuttgart}
     log basis x=2, legend pos= outer north east,
     legend entries={MG, CG, RBSOR, SOR, $\mathcal{O}(N^3)$, $\mathcal{O}(N^2)$},
     domain=16:256]
-    \addplot table {speedup/drivencavity_1MG.csv};
-    \addplot table {speedup/drivencavity_1CG.csv};
-    \addplot table {speedup/drivencavity_1RBSOR.csv};
-    \addplot table {speedup/drivencavity_1SOR.csv};
+    %\addplot table {speedup/drivencavity_1MG.csv};
+    %\addplot table {speedup/drivencavity_1CG.csv};
+    %\addplot table {speedup/drivencavity_1RBSOR.csv};
+    %\addplot table {speedup/drivencavity_1SOR.csv};
     \addplot[black, dashed] {x^3/1500};
     \addplot[black, dotted] {x^2/600};
   \end{loglogaxis}\end{tikzpicture}
@@ -197,10 +228,10 @@ Universität Stuttgart}
     log basis x=2, legend pos= outer north east,
     legend entries={MG, CG, RBSOR, SOR, $\mathcal{O}(N^3)$, $\mathcal{O}(N^2)$},
     domain=16:256]
-    \addplot table {speedup/drivencavity_2parallelMG.csv};
-    \addplot table {speedup/drivencavity_2parallelCG.csv};
-    \addplot table {speedup/drivencavity_2parallelRBSOR.csv};
-    \addplot table {speedup/drivencavity_2parallelSOR.csv};
+    %\addplot table {speedup/drivencavity_2parallelMG.csv};
+    %\addplot table {speedup/drivencavity_2parallelCG.csv};
+    %\addplot table {speedup/drivencavity_2parallelRBSOR.csv};
+    %\addplot table {speedup/drivencavity_2parallelSOR.csv};
     \addplot[black, dashed] {x^3/1500};
     \addplot[black, dotted] {x^2/600};
   \end{loglogaxis}\end{tikzpicture}
