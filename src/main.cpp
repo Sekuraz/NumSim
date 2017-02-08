@@ -55,7 +55,7 @@ void parseCommandLine(const int argc, char *argv[], char* &paramPath, char* &geo
          << "\t-s <type>\tUse the specified solver for the poisson equation" << std::endl
          << "\t\t\t\tSOR: Successive OverRelaxation (lexicographic order)" << std::endl
          << "\t\t\t\tRB: RedBlack SOR (checkerboard order)" << std::endl
-         << "\t\t\t\tMG: Multigrid Method" << std::endl
+         << "\t\t\t\tMG: Multigrid Method (does NOT work for obstacles in the geometry)" << std::endl
          << "\t\t\t\tCG: Conjugated Gradient Method (Default)" << std::endl
          << std::endl;
       exit(0);

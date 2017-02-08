@@ -30,6 +30,7 @@ public:
   /// \param printinfo Whether to print information about loaded geometry.
   Geometry(const Communicator &comm, const char file[] = nullptr, const bool printinfo = false)
       : Geometry(comm, multi_index_t(128), file, printinfo) {}
+
   /// Constructor for Geometry
   /// \param comm The Communicator for exchange between MPI processes
   /// \param size The size of the Geometry if not loaded from file
@@ -38,6 +39,7 @@ public:
   /// \param printinfo Whether to print information about loaded geometry.
   Geometry(const Communicator &comm, const multi_index_t& size,
            const char file[] = nullptr, const bool printinfo = false);
+
   /// Destructor for Geometry
   ~Geometry() { if(this->_flags != nullptr) delete[] this->_flags; }
 
@@ -55,27 +57,37 @@ public:
 
   /// Returns the global offset in each dimension
   inline const multi_index_t& Offset() const { return this->_offset; }
+
   /// Returns the total number of cells in each dimension
   inline const multi_index_t& TotalSize() const { return this->_totalSize; }
+
   /// Returns the number of cells in each dimension
   inline const multi_index_t &Size() const { return this->_size; }
+
   /// Returns the number of variables (grid-size) in each dimension
   inline const multi_index_t &SizeP() const { return this->_sizeP; }
+
   /// Returns the total data size of the Grid
   inline const index_t &DataSize() const { return this->_sizeData; }
 
   /// Returns the local length of the domain
   inline const multi_real_t &Length() const { return this->_length; }
+
   /// Returns the local length of the domain
   inline const multi_real_t &TotalLength() const { return this->_totalLength; }
+
   /// Returns the velocity at the boundary
   inline const multi_real_t &Velocity() const { return this->_velocity; }
+
   /// Returns the meshwidth
   inline const multi_real_t &Mesh() const { return this->_h; }
+
   /// Returns the invers meshwidth
   inline const multi_real_t &invMesh() const { return this->_hInv; }
+
   /// Returns whether the geometry is free.
   inline bool isFree() const { return this->_free; }
+
   /// Returns the local number of fluid cells
   inline const index_t &NumFluid() const { return this->_N; }
 
@@ -84,13 +96,16 @@ public:
 
   /// Updates the pressure field p for a free geometry
   void Update_P(Grid &p) const;
+
   /// Updates the pressure field p for the Multigrid Solver
   void Update_P(Grid &p, const Grid &rhs) const;
+
   /// Updates the velocity fields u and v for a free geometry
   void Update(Grid &u, Grid &v) const;
 
   /// Returns whether the cell at the position of the iterator is noslip boundary cell.
   bool noslip(const Iterator &it) const;
+
   /// Returns the grid flag of the cell at the position of it.
   const char& flag(const Iterator &it) const;
 

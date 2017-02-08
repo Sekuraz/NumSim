@@ -41,4 +41,4 @@ To use the fluid simulation for a Karman vortex street of real length 6x1 with
     ./numsim -I kar30
 
 The vtk-output is then inside the directory `VTK/`.
-
+This can be disabled by adding `-DWRITE_VTK=off` to the cmake call.
