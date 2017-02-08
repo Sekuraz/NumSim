@@ -11,10 +11,11 @@
 \usepackage{multimedia}
 \usepackage{algpseudocode}
 \usepackage{tikz}
-\usetikzlibrary{patterns}
+\usetikzlibrary{patterns, calc}
 \algnewcommand{\IIf}[1]{\State\algorithmicif\ #1\ \algorithmicthen}
 \algnewcommand{\EndIIf}{\unskip\ \algorithmicend\ \algorithmicif}
 \renewcommand{\Comment}[2][.5\linewidth]{\leavevmode\hfill\makebox[#1][l]{//~#2}}
+\usepackage{floatflt} 
 
 \hypersetup{unicode=true, pdftoolbar=true, pdfmenubar=true, pdffitwindow=false, 
 	pdfstartview={FitH},
@@ -290,8 +291,8 @@ Universität Stuttgart}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Fazit & Ausblick
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Fazit und Ausblick}\label{sec:Fazit}
-\begin{frame}{Fazit und Ausblick}
+\section{Fazit}\label{sec:Fazit}
+\begin{frame}{Fazit}
   Fazit:
   \begin{itemize}[<+(1)->]
     \item CG: gleiche Konvergenzgeschwindigkeit wie (RB)SOR mit optimalem
@@ -299,7 +300,22 @@ Universität Stuttgart}
     \item MG: bessere Konvergenzgeschwindigkeit, benötigt aber guten Glätter
         und ist problemspezifisch
   \end{itemize}
-  \pause
+%  \pause
+%  Ausblick:
+%  \begin{itemize}[<+(1)->]
+%    \item Vorkonditionierte CG Verfahren
+%    \item Mehrgitter für Gitter mit Hindernissen
+%    \item Lösung der gesamten Navier-Stokes-Gleichungen als System mittels MG
+%    \item Adaptive Mehrgitter Methode (Adaptive lokale Gitterlevel,
+%        hierarchische Gitter)
+    %\includegraphics[scale=0.4]{quadtree_octree_netzverfeinerung_kante.png}
+%    \item Full Multigrid und Full Approximation Scheme (Nichtlineare Probleme)
+%    \item Kombination CG und MG (sogenannter Krylovbeschleunigter MG)
+%  \end{itemize}
+\end{frame}
+
+\section{Ausblick}\label{sec:Ausblick}
+\begin{frame}{Ausblick}
   Ausblick:
   \begin{itemize}[<+(1)->]
     \item Vorkonditionierte CG Verfahren
@@ -307,7 +323,25 @@ Universität Stuttgart}
     \item Lösung der gesamten Navier-Stokes-Gleichungen als System mittels MG
     \item Adaptive Mehrgitter Methode (Adaptive lokale Gitterlevel,
         hierarchische Gitter)
+    %\only<5>{
+    %\begin{figure}
+    %  \centering
+    %  \includegraphics[scale=0.5]{quadtree_octree_netzverfeinerung_kante.png}
+    %\end{figure}
+    %}
+    \only<5>{
+      \tikz[overlay, remember picture] {
+        \coordinate (picture) at ($(current page.south west)+(8cm,8cm)$);
+        \node [below right] at (picture) {\includegraphics[scale=0.5]{quadtree_octree_netzverfeinerung_kante.png}};
+      }%
+    }
     \item Full Multigrid und Full Approximation Scheme (Nichtlineare Probleme)
+    \only<6>{
+      \tikz[overlay, remember picture] {
+        \coordinate (picture) at ($(current page.south west)+(8cm,8cm)$);
+        \node [below right] at (picture) {\includegraphics[scale=0.3]{FullMGCycle.png}};
+      }%
+    }
     \item Kombination CG und MG (sogenannter Krylovbeschleunigter MG)
   \end{itemize}
 \end{frame}
