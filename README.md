@@ -42,3 +42,16 @@ To use the fluid simulation for a Karman vortex street of real length 6x1 with
 
 The vtk-output is then inside the directory `VTK/`.
 This can be disabled by adding `-DWRITE_VTK=off` to the cmake call.
+
+
+Scripts
+-------
+
+There are several scripts in this repo for different tasks. They are documented
+on the top of the script itself. The scripts are:
+
+    runtime.sh  - runtime measurement for different process counts
+    profiler.sh - generation of callgraphs for the different solvers
+
+    solver_runtime/analyse.sh           - runtime measurements for different solvers and problem sizes, sequential
+    solver_runtime/analyse_parallel.sh  - runtime measurements for different solvers and problem sizes, parallel
