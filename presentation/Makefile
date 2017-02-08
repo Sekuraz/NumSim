@@ -1,5 +1,6 @@
 presentation.pdf: presentation.tex presentationST.sty presentationBG.pdf data/*
 	pdflatex presentation.tex
+	pdflatex presentation.tex
 
 .PHONY: clean
 clean:

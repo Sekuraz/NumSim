@@ -85,13 +85,14 @@ Universität Stuttgart}
 \section{Mehrgitter Methode}\label{sec:MG}
 \begin{frame}{Mehrgitter Methode (MG)}
   \begin{itemize}[<+(1)->]
-    \item Multigrid / Multilevel / Mehrgitter Methode
     \item Iterative Löser langsam für glatte Fehler
     \item Glatte Fehler auf gröberen Gittern oszillierend
     \item Mehrgitter hat $h$-unabhängige Konvergenzrate
+    \item reduzierter Speicherplatzverbrauch durch zusammenfassen von
+          Residuumsberechnung und Restriktion sowie Interplolation und
+          Lösungsupdate
     \item Essentiell: Beachtung der Randbedingungen um kleine Konvergenzfaktoren
         zu erhalten
-    \item \textcolor{red}{\huge TODO}
   \end{itemize}
 \end{frame}
 
@@ -101,11 +102,13 @@ Universität Stuttgart}
     \intertext{Im Gebiet:}
     \Delta p &= rhs + res \\
     \Delta e^c &= res^c = R_\Omega\ res
+    \pause
     \intertext{Analog auf dem Rand für Neumann-RB:}
-    \partial_n p &= rhs + res \\
-    \partial_n e^c &= res^c = R_\Gamma\ res
+    \frac{\partial p}{\partial n} &= rhs + res \\
+    \frac{\partial e^c}{\partial n} &= res^c = R_\Gamma\ res
   \end{align*}
   \end{minipage}
+  \pause
   \begin{minipage}{0.49\linewidth}
   Beispiel linker Rand:\\[0.2cm]
   \begin{tikzpicture}[scale=1.0]
@@ -131,15 +134,15 @@ Universität Stuttgart}
       \draw[red, fill] (\i, 1.0) circle[radius=0.08cm];
     }
 
-	\draw[red] (1.0, 1.0) node[above, xshift=-0.25cm, yshift=-0.05cm] {\scriptsize $p^c_{0,j}$};
-    \draw[red] (3.0, 1.0) node[above, xshift=-0.25cm, yshift=-0.05cm] {\scriptsize $p^c_{1,j}$};
+	\draw[red] (1.0, 1.0) node[above, xshift=-0.25cm, yshift=-0.05cm] {\scriptsize $e^c_{0,j}$};
+    \draw[red] (3.0, 1.0) node[above, xshift=-0.25cm, yshift=-0.05cm] {\scriptsize $e^c_{1,j}$};
 
     \draw[red, ultra thick] (4.8, 1.5) -- (5.2,1.5) node[right] {\textcolor{black}{grobes Gitter}};
     \draw[black] (4.8, 0.5) -- (5.2,0.5) node[right] {feines Gitter};
   \end{tikzpicture}
   \begin{align*}
-    \tfrac{p_{1,j}-p_{0,j}}{h} &= rhs_{0,j} + res_{0,j} \\
-    \tfrac{e^c_{1,j}-e^c_{0,j}}{2h} &= rhs^c_{0,j} = \tfrac{1}{2}(res_{0,j+1}+res_{0,j})
+    \frac{p_{1,j}-p_{0,j}}{h} &= rhs_{0,j} + res_{0,j} \\
+    \frac{e^c_{1,j}-e^c_{0,j}}{2h} &= rhs^c_{0,j} = \tfrac{1}{2}(res_{0,j+1}+res_{0,j})
   \end{align*}
   \end{minipage}
 \end{frame}
@@ -157,11 +160,11 @@ Universität Stuttgart}
     \item Ausschöpfen des kompletten $\R^N$  durch $A$-Konjugieren
         $\langle Ad_k, d_j\rangle = 0 \ \forall k \neq j$
     \item Optimierung des Algorithmus liefert als wesentlichen Aufwand eine
-        Matrix-Vektor-Multiplikation pro Iteration
+        Matrix-Vektor-Multiplikation und zwei Skalarprodukte pro Iteration
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Konjugierte Gradienten Methode (CG)}
+\begin{frame}{Konjugierte Gradienten Methode (CG)}
   \small
   \begin{algorithmic}
     \Function{CG}{$A,b,x_0$} \Comment{Löst das LGS $Ax = b$}
@@ -300,18 +303,6 @@ Universität Stuttgart}
     \item MG: bessere Konvergenzgeschwindigkeit, benötigt aber guten Glätter
         und ist problemspezifisch
   \end{itemize}
-%  \pause
-%  Ausblick:
-%  \begin{itemize}[<+(1)->]
-%    \item Vorkonditionierte CG Verfahren
-%    \item Mehrgitter für Gitter mit Hindernissen
-%    \item Lösung der gesamten Navier-Stokes-Gleichungen als System mittels MG
-%    \item Adaptive Mehrgitter Methode (Adaptive lokale Gitterlevel,
-%        hierarchische Gitter)
-    %\includegraphics[scale=0.4]{quadtree_octree_netzverfeinerung_kante.png}
-%    \item Full Multigrid und Full Approximation Scheme (Nichtlineare Probleme)
-%    \item Kombination CG und MG (sogenannter Krylovbeschleunigter MG)
-%  \end{itemize}
 \end{frame}
 
 \section{Ausblick}\label{sec:Ausblick}
@@ -323,12 +314,6 @@ Universität Stuttgart}
     \item Lösung der gesamten Navier-Stokes-Gleichungen als System mittels MG
     \item Adaptive Mehrgitter Methode (Adaptive lokale Gitterlevel,
         hierarchische Gitter)
-    %\only<5>{
-    %\begin{figure}
-    %  \centering
-    %  \includegraphics[scale=0.5]{quadtree_octree_netzverfeinerung_kante.png}
-    %\end{figure}
-    %}
     \only<5>{
       \tikz[overlay, remember picture] {
         \coordinate (picture) at ($(current page.south west)+(8cm,8cm)$);
