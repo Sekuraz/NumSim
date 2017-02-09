@@ -4,7 +4,7 @@
 #
 #  analyse.sh
 #
-#  A script to measure the runtime of the current source tree comparing the different solvers on random initial grids.
+#  A script to measure the runtime of the current source tree comparing the different solvers for the Driven-Cavity.
 #  It is using ${REP} repetition to get more reliable results. This is the sequential version.
 #  The output is written to runtime_seq_${date}/${METHOD}.csv
 #
@@ -22,7 +22,7 @@ make -j
 for METHOD in CG MG RBSOR SOR; do
   echo "Method ${METHOD}:"
 
-  for N in 8 16 32 64 128
+  for N in 16 32 64 128 256 #8 # not used because too small
   do
     echo "  Size ${N}:"
     FILE=drivencavity${N}
